@@ -1,0 +1,83 @@
+<head>
+  <style> 
+    body { margin: 0; }
+    #tooltip {
+      position: absolute;
+      display: none;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 5px;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    #inputContainer { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); }
+  </style>
+
+  <script src="https://unpkg.com/globe.gl"></script>
+  <!--<script src="../../dist/globe.gl.js"></script>-->
+</head>
+
+<body>
+<div id="inputContainer">
+  <input type="text" id="markerText" placeholder="Enter marker text">
+  <button id="submitMarker">Add Marker</button>
+</div>
+
+<div id="globeViz"></div>
+<div id="tooltip"></div>
+
+<script>
+  const markerSvg = `<svg viewBox="-4 0 36 36">
+    <path fill="currentColor" d="M14,0 C21.732,0 28,5.641 28,12.6 C28,23.963 14,36 14,36 C14,36 0,24.064 0,12.6 C0,5.641 6.268,0 14,0 Z"></path>
+    <circle fill="black" cx="14" cy="14" r="7"></circle>
+  </svg>`;
+
+  // Function to add a new marker to the globe
+  function addMarker(lat, lng, text) {
+    Globe()
+      .globeImageUrl('https:////unpkg.com/three-globe/example/img/earth-dark.jpg')
+      .htmlElementsData([{ lat, lng }])
+      .htmlElement(d => {
+        const el = document.createElement('div');
+        el.innerHTML = markerSvg;
+        el.style.color = 'blue';
+        el.style.width = '20px';
+        el.style['pointer-events'] = 'auto';
+        el.style.cursor = 'pointer';
+
+        el.addEventListener('mouseenter', () => {
+          // Show tooltip
+          tooltip.innerHTML = text;
+          tooltip.style.display = 'block';
+          // Position tooltip relative to marker
+          const rect = el.getBoundingClientRect();
+          tooltip.style.top = `${rect.top + window.pageYOffset - tooltip.offsetHeight - 5}px`;
+          tooltip.style.left = `${rect.left + window.pageXOffset + (rect.width - tooltip.offsetWidth) / 2}px`;
+        });
+
+        el.addEventListener('mouseleave', () => {
+          // Hide tooltip
+          tooltip.style.display = 'none';
+        });
+
+        return el;
+      })
+      (document.getElementById('globeViz'));
+  }
+
+  // Add event listener for the submit button
+  document.getElementById('submitMarker').addEventListener('click', function() {
+    const markerText = document.getElementById('markerText').value;
+    // Get user's geolocation
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        // Add the marker with the entered text at the user's location
+        addMarker(lat, lng, markerText);
+      });
+    } else {
+      console.error('Geolocation is not supported by this browser.');
+    }
+  });
+</script>
+</body>
