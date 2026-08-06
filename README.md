@@ -29,7 +29,9 @@ disponibilidad cambian rápido — conviene confirmar con la inmobiliaria.
 ## Estructura
 
 - `index.html` — página completa: markup, CSS y JS embebidos, sin dependencias
-  ni build. Incluye filtros por zona, filtro de picks y orden por precio.
+  ni build. Incluye filtro por zona, por cantidad de dormitorios (3 / 4 / 5+),
+  filtro de picks y orden por precio. Los tres filtros se combinan y los
+  contadores de cada botón se recalculan según lo que esté seleccionado.
 
 ## Desarrollo
 
