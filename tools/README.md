@@ -67,6 +67,12 @@ python tools/scrape.py --force
   de inventar un valor. El filtro de la página es por dormitorios, que es confiable.
 - En CABA no se muestra "jardín" en las notas, ni en las nuevas ni en las 192
   originales.
+- **Distribuidora**: en CABA el límite Edenor/Edesur no sigue las comunas. La franja norte (Belgrano, Núñez, Saavedra, Coghlan, Villa Urquiza, Villa Pueyrredón,
+  Colegiales, Chacarita, Villa Ortúzar, Palermo, Parque Chas, Agronomía) es Edenor;
+  el centro, sur y **oeste** — Devoto, Villa del Parque, Monte Castro, La Paternal,
+  Villa Crespo — es Edesur. El mapeo vive en `EDENOR_CABA` de `build2.py`. Las
+  fuentes públicas se contradicen en el oeste; esto sigue el criterio confirmado
+  por el dueño del sitio, no una fuente oficial del ENRE.
 
 ## Nota sobre los datos
 

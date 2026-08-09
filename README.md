@@ -18,7 +18,9 @@ en Zonaprop en agosto de 2026, repartidos en seis zonas:
 | La Cumbre | 79 |
 
 De esos, **481 tienen 4 dormitorios o más** y **366 mencionan jardín o parque
-propio**. Cada tarjeta enlaza al aviso original.
+propio**. Cada tarjeta enlaza al aviso original y aclara la distribuidora
+eléctrica: en CABA la concesión se parte entre **Edenor** (franja norte, 95
+avisos) y **Edesur** (centro, sur y oeste, 388).
 
 Las marcadas **★ pick** (49) son las elegidas a mano al comparar relación
 metros/precio, terreno o algún dato que cambia la ecuación; su nota es editorial.
@@ -31,9 +33,13 @@ publican en Argentina. Los precios y la disponibilidad cambian rápido.
 ## Estructura
 
 - `index.html` — página completa: markup, CSS y JS embebidos, sin dependencias
-  ni build. Filtros por zona, por dormitorios (2 / 3 / 4+), con jardín y solo
-  picks. Se combinan entre sí y los contadores de cada botón se recalculan según
-  lo que esté seleccionado. Las fichas se pintan de a 120 con un botón "Ver más".
+  ni build. Filtros por zona, dormitorios (2 / 3 / 4+), con jardín, distribuidora
+  eléctrica (Edenor / Edesur) y solo picks. Se combinan entre sí y los contadores
+  de cada botón se recalculan según lo que esté seleccionado. Las fichas se pintan
+  de a 120 con un botón "Ver más".
+  Responsive: hasta 1000 px las filas de filtros se deslizan de costado en lugar
+  de apilarse, así la barra pegada arriba no se come la pantalla; una columna
+  abajo de 430 px.
 - `tools/` — scripts del relevamiento y la caché. Ver [tools/README.md](tools/README.md).
 
 ## Desarrollo

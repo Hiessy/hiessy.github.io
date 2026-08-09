@@ -3,6 +3,7 @@
 Row shape (unchanged prefix, two new trailing fields):
   0 region  1 img  2 slug  3 priceStr  4 priceNum  5 address
   6 specs   7 note 8 pick  9 caption  10 ambientes  11 dormitorios  12 jardín
+  13 distribuidora eléctrica
 """
 import json, os, re
 from collections import Counter
@@ -75,6 +76,24 @@ def specs(r):
     return " · ".join(b)
 
 
+# Distribuidora eléctrica. En CABA la concesión se parte en dos y no sigue las
+# comunas: la franja norte es Edenor y el resto (centro, sur y oeste) Edesur.
+# Fuera de CABA: Tigre y San Miguel son Edenor; Córdoba EPEC y Neuquén EPEN.
+EDENOR_CABA = {"belgrano", "nunez", "núñez", "saavedra", "coghlan", "villa urquiza",
+               "villa pueyrredon", "villa pueyrredón", "colegiales", "chacarita",
+               "villa ortuzar", "villa ortúzar", "palermo", "parque chas", "agronomia",
+               "agronomía"}
+PROV_BY_REG = {0: "EPEN", 1: "EPEC", 2: "EPEC", 4: "Edenor", 5: "Edenor"}
+
+
+def provider(reg, loc):
+    if reg != 3:
+        return PROV_BY_REG.get(reg, "")
+    l = (loc or "").strip().lower()
+    # "Palermo Hollywood", "Belgrano R" etc. resolve to their parent barrio
+    return "Edenor" if any(l == b or l.startswith(b + " ") for b in EDENOR_CABA) else "Edesur"
+
+
 def lid(slug):
     m = re.search(r"-(\d+)\.html$", slug)
     return m.group(1) if m else None
@@ -125,6 +144,7 @@ def main():
         row.append(amb)
         row.append(dorm)
         row.append(gar)
+        row.append(provider(row[0], (s or {}).get('loc') or row[9]))
 
     # --- 2. new listings, sampled evenly across each region's price range ---
     have = {lid(r[2]) for r in ex}
@@ -161,7 +181,8 @@ def main():
                 amb = 0          # publisher error -> unknown rather than a wrong bucket
             new.append([reg, r["img"], r["url"], f"{r['price']:,}".replace(",", "."),
                         r["price"], r.get("addr") or r.get("loc") or "", specs(r), n, 0,
-                        r.get("loc") or "", amb, r.get("dorm", 0), r.get("gar", 0)])
+                        r.get("loc") or "", amb, r.get("dorm", 0), r.get("gar", 0),
+                        provider(reg, r.get("loc"))])
 
     allrows = ex + new
     allrows.sort(key=lambda r: (r[0], r[4]))
@@ -172,6 +193,7 @@ def main():
     print("4+ dorm", sum(1 for r in allrows if r[11] >= 4),
           "| con jardín", sum(1 for r in allrows if r[12]))
     print("picks", sum(1 for r in allrows if r[8]))
+    print("CABA distribuidora", Counter(r[13] for r in allrows if r[0] == 3))
 
     js = "const D=" + json.dumps(allrows, ensure_ascii=False, separators=(",", ":")) + ";"
     open(os.path.join(D, "D.js"), "w", encoding="utf-8").write(js)
