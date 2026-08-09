@@ -5,33 +5,36 @@ Sitio estático publicado con GitHub Pages en <https://hiessy.github.io>.
 ## Contenido
 
 **Dónde comprar en Argentina con menos de USD 200.000** — una página única
-([`index.html`](index.html)) con 192 propiedades relevadas en Zonaprop en agosto
-de 2026, repartidas en seis zonas:
+([`index.html`](index.html)) con 1.297 casas y PH de 3 ambientes o más relevados
+en Zonaprop en agosto de 2026, repartidos en seis zonas:
 
 | Zona | Avisos |
 | --- | --- |
-| San Martín de los Andes | 25 |
-| La Cumbre (Córdoba) | 41 |
-| Santa Rosa de Calamuchita | 49 |
-| CABA Norte | 24 |
-| Tigre | 25 |
-| San Miguel · Bella Vista | 28 |
+| CABA (29 barrios) | 483 |
+| Tigre (+ sublocalidades) | 265 |
+| San Miguel · Bella Vista | 208 |
+| Santa Rosa de Calamuchita | 149 |
+| San Martín de los Andes | 113 |
+| La Cumbre | 79 |
 
-Cada tarjeta enlaza al aviso original en Zonaprop. Las marcadas **★ pick** (49 en
-total) son las destacadas al comparar relación metros/precio, terreno o algún
-dato que cambia la ecuación.
+De esos, **481 tienen 4 dormitorios o más** y **366 mencionan jardín o parque
+propio**. Cada tarjeta enlaza al aviso original.
 
-Notas sobre los datos: los m² que muestra Zonaprop son de **terreno**, no de
-superficie cubierta; los cubiertos se aclaran en la nota cuando el aviso los
-declaraba. Precios en dólares, como se publican en Argentina. Los precios y la
-disponibilidad cambian rápido — conviene confirmar con la inmobiliaria.
+Las marcadas **★ pick** (49) son las elegidas a mano al comparar relación
+metros/precio, terreno o algún dato que cambia la ecuación; su nota es editorial.
+El resto viene del relevamiento automático y la nota resume el texto del aviso.
+
+Notas sobre los datos: `m² cub` son metros cubiertos y `m² tot` superficie total
+del lote — algunos avisos solo declaran lo segundo. Precios en dólares, como se
+publican en Argentina. Los precios y la disponibilidad cambian rápido.
 
 ## Estructura
 
 - `index.html` — página completa: markup, CSS y JS embebidos, sin dependencias
-  ni build. Incluye filtro por zona, por cantidad de dormitorios (3 / 4 / 5+),
-  filtro de picks y orden por precio. Los tres filtros se combinan y los
-  contadores de cada botón se recalculan según lo que esté seleccionado.
+  ni build. Filtros por zona, por dormitorios (2 / 3 / 4+), con jardín y solo
+  picks. Se combinan entre sí y los contadores de cada botón se recalculan según
+  lo que esté seleccionado. Las fichas se pintan de a 120 con un botón "Ver más".
+- `tools/` — scripts del relevamiento y la caché. Ver [tools/README.md](tools/README.md).
 
 ## Desarrollo
 

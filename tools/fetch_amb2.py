@@ -7,7 +7,7 @@ could latch onto the wrong number. CFT1 is the actual room count.
 import json, os, re, time, random
 from scrape import get
 
-D = os.path.dirname(os.path.abspath(__file__))
+D = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".work")
 BASE = "https://www.zonaprop.com.ar/propiedades/clasificado/"
 CFT = re.compile(r'"(CFT\d+)":\{"featureId":"\1","label":"[^"]*","measure":[^,]*,"value":"(\d+)"')
 

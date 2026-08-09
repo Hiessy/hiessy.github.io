@@ -7,7 +7,7 @@ locality, so a bad slug (which silently falls back to a nationwide search) is
 discarded instead of polluting the zone.
 """
 import json, os, time, random
-from scrape import get, url_for, postings, parse, OUT, MAXP, MINP
+from scrape import get, url_for, postings, parse, OUT, MAXP, MINP, save, fresh
 
 TIGRE = ['rincon-de-milberg', 'nordelta', 'benavidez', 'general-pacheco',
          'don-torcuato', 'el-talar', 'troncos-del-talar', 'dique-lujan',
@@ -31,7 +31,11 @@ def locpath(raw):
 
 def main():
     data = json.load(open(OUT, encoding='utf-8')) if os.path.exists(OUT) else {}
+    force = '--force' in __import__('sys').argv
     for key, slug, reg, maxp, require in JOBS:
+        if not force and fresh(data, slug):
+            print(f"{key}/{slug}: cache — skip", flush=True)
+            continue
         bucket = data.setdefault(key, [])
         seen = {x['id'] for x in bucket}
         for p in range(1, maxp + 1):
@@ -64,14 +68,16 @@ def main():
                 bucket.append(r)
                 added += 1
             print(f"{key}/{slug} p{p}: +{added} (tot {len(bucket)}) over={over} offzone={wrong}", flush=True)
-            json.dump(data, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False)
+            save(data)
             if wrong >= 25:          # slug not recognised -> nationwide fallback
                 print(f"{key}/{slug}: bad slug, skipping", flush=True); break
             if over >= 8:
                 break
             time.sleep(1.1 + random.random() * 0.6)
-    json.dump(data, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False)
-    print("DONE", {k: len(v) for k, v in data.items()}, flush=True)
+        data.setdefault('_fetched', {})[slug] = time.time()
+        save(data)
+    save(data)
+    print("DONE", {k: len(v) for k, v in data.items() if not k.startswith('_')}, flush=True)
 
 
 if __name__ == '__main__':

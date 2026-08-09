@@ -5,23 +5,40 @@ a mano y el resultado se pega en el array `const D=[...]` de `index.html`.
 
 Requieren solo la stdlib de Python 3.11 (sin dependencias).
 
-## Estado al 6 de agosto de 2026
+## Estado
 
-El filtro por **dormitorios** ya está publicado (commit `f86da45`). Lo que quedó
-a medio camino es el dataset ampliado a **3+ ambientes** y el cambio del filtro
-de dormitorios a ambientes.
+Relevado y cacheado en `.work/scraped.json` (fuera de git): **4.537 avisos** de
+casas y PH hasta USD 200.000, 3+ ambientes. La página publica 1.297 de ellos.
 
-Relevado y guardado en `.work/scraped.json` (fuera de git, 2 MB): **2.863 avisos**
-de casas y PH hasta USD 200.000, 3+ ambientes, en las seis zonas.
-
-| Zona | Avisos | Rango |
+| Zona | Relevados | Publicados |
 | --- | --- | --- |
-| CABA (16 barrios norte/oeste) | 1.298 | 67.900 – 200.000 |
-| Tigre (+ sublocalidades) | 856 | 30.000 – 200.000 |
-| San Miguel · Bella Vista | 389 | 28.000 – 200.000 |
-| Santa Rosa de Calamuchita | 140 | 32.000 – 200.000 |
-| San Martín de los Andes | 111 | 45.000 – 200.000 |
-| La Cumbre | 69 | 50.000 – 200.000 |
+| CABA (29 barrios) | 2.975 | 483 |
+| Tigre (+ sublocalidades) | 849 | 265 |
+| San Miguel · Bella Vista | 390 | 208 |
+| Santa Rosa de Calamuchita | 141 | 149 |
+| San Martín de los Andes | 111 | 113 |
+| La Cumbre | 71 | 79 |
+
+El recorte por zona lo define `CAP` en `build2.py`: entran **todos** los avisos de
+4+ dormitorios (hasta el 60% del cupo) y el resto se samplea parejo por precio,
+así no se pierden los grandes, que son los escasos. Los publicados por zona pueden
+superar a los relevados porque incluyen los 192 originales.
+
+## Caché
+
+`.work/scraped.json` es la caché: guarda los avisos **y** un `_fetched` con el
+timestamp del último barrido de cada slug. Correr los scripts de nuevo saltea todo
+slug relevado hace menos de `MAX_AGE_H` (24 h) en vez de volver a pedirlo:
+
+```bash
+python tools/scrape.py
+```
+
+Para forzar el re-relevamiento igual:
+
+```bash
+python tools/scrape.py --force
+```
 
 ## Pipeline
 
@@ -40,17 +57,16 @@ de casas y PH hasta USD 200.000, 3+ ambientes, en las seis zonas.
 4. `build2.py` — mergea los 192 originales con el barrido, samplea por zona según
    `CAP` y escribe `.work/D.js`.
 
-## Lo que falta
+## Detalles que cuestan caro re-descubrir
 
-- Correr `fetch_amb2.py` y re-correr `build2.py` con `amb_lookup2.json`.
-- Marcar como desconocido (`0`) los `ambientes` implausibles — hay ~11 avisos con
-  `amb < dorm` o valores absurdos (uno dice 40 ambientes). Son errores de carga
-  del publicador, no del parseo: la fuente misma trae el dato mal.
-- Reemplazar el array `D` de `index.html` y pasar el filtro de dormitorios a
-  ambientes (3 / 4 / 5 / 6+).
-- Render incremental ("Ver más"): con ~970 fichas conviene no pintar todo de una.
-- Actualizar los textos: el header dice 192 propiedades, y `REG[3]` dice
-  "CABA Norte" cuando ahora incluye barrios del oeste.
+- **Jardín** no viene como dato estructurado: en los resultados de listado
+  `generalFeatures` llega vacío y `mainFeatures` solo trae superficie y ambientes.
+  La bandera se deduce del texto completo del aviso, antes de truncarlo.
+- **Ambientes** lo carga el publicador y a veces está mal (un aviso declara 40).
+  Si es menor que los dormitorios o mayor a `AMB_MAX`, se marca desconocido en vez
+  de inventar un valor. El filtro de la página es por dormitorios, que es confiable.
+- En CABA no se muestra "jardín" en las notas, ni en las nuevas ni en las 192
+  originales.
 
 ## Nota sobre los datos
 
