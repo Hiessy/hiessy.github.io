@@ -57,6 +57,20 @@ python tools/scrape.py --force
 4. `build2.py` — mergea los 192 originales con el barrido, samplea por zona según
    `CAP` y escribe `.work/D.js`.
 
+## Otras fuentes
+
+- **Argenprop** (`argenprop.py`): anda, pero rinde poco. No expone JSON; los datos
+  duros vienen en atributos del `<a>` de cada ficha. Detrás de CloudFront devuelve
+  **202 con cuerpo vacío** —ni captcha ni error, un bloqueo mudo— después de una
+  docena de pedidos. Con 7–11 s entre pedidos igual corta: Tigre y San Miguel
+  quedaron en cero. Un slug solo se sella en la caché si trajo avisos, así que
+  volver a correrlo reintenta lo bloqueado.
+- **Mercado Libre**: no se puede sin credenciales. El scraping redirige a
+  `gz/account-verification` (su frontend de "suspicious traffic"), y la API pública
+  (`api.mercadolibre.com/sites/MLA/search`) devuelve **403** sin token OAuth. La vía
+  legítima es registrar una app de desarrollador y usar un access token; saltear la
+  verificación no es una opción.
+
 ## Detalles que cuestan caro re-descubrir
 
 - **Jardín** no viene como dato estructurado: en los resultados de listado

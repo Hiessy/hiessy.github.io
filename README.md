@@ -5,20 +5,20 @@ Sitio estático publicado con GitHub Pages en <https://hiessy.github.io>.
 ## Contenido
 
 **Dónde comprar en Argentina con menos de USD 200.000** — una página única
-([`index.html`](index.html)) con 1.297 casas y PH de 3 ambientes o más relevados
-en Zonaprop en agosto de 2026, repartidos en seis zonas:
+([`index.html`](index.html)) con 1.364 casas y PH de 3 ambientes o más relevados
+en **Zonaprop** (1.297) y **Argenprop** (67) en agosto de 2026, en seis zonas:
 
 | Zona | Avisos |
 | --- | --- |
-| CABA (29 barrios) | 483 |
+| CABA (29 barrios) | 501 |
 | Tigre (+ sublocalidades) | 265 |
 | San Miguel · Bella Vista | 208 |
-| Santa Rosa de Calamuchita | 149 |
-| San Martín de los Andes | 113 |
-| La Cumbre | 79 |
+| Santa Rosa de Calamuchita | 168 |
+| San Martín de los Andes | 129 |
+| La Cumbre | 93 |
 
-De esos, **481 tienen 4 dormitorios o más** y **366 mencionan jardín o parque
-propio**. Cada tarjeta enlaza al aviso original y aclara la distribuidora
+De esos, **490 tienen 4 dormitorios o más** y **366 mencionan jardín o parque
+propio**. Cada tarjeta enlaza al aviso original, dice de qué portal salió y aclara la distribuidora
 eléctrica: en CABA la concesión se parte entre **Edenor** (franja norte, 95
 avisos) y **Edesur** (centro, sur y oeste, 388).
 
@@ -34,7 +34,7 @@ publican en Argentina. Los precios y la disponibilidad cambian rápido.
 
 - `index.html` — página completa: markup, CSS y JS embebidos, sin dependencias
   ni build. Filtros por zona, dormitorios (2 / 3 / 4+), con jardín, distribuidora
-  eléctrica (Edenor / Edesur) y solo picks. Se combinan entre sí y los contadores
+  eléctrica (Edenor / Edesur), fuente (Zonaprop / Argenprop) y solo picks. Se combinan entre sí y los contadores
   de cada botón se recalculan según lo que esté seleccionado. Las fichas se pintan
   de a 120 con un botón "Ver más".
   Responsive: hasta 1000 px las filas de filtros se deslizan de costado en lugar

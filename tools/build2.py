@@ -3,7 +3,7 @@
 Row shape (unchanged prefix, two new trailing fields):
   0 region  1 img  2 slug  3 priceStr  4 priceNum  5 address
   6 specs   7 note 8 pick  9 caption  10 ambientes  11 dormitorios  12 jardín
-  13 distribuidora eléctrica
+  13 distribuidora eléctrica  14 fuente (Zonaprop / Argenprop)
 """
 import json, os, re
 from collections import Counter
@@ -13,6 +13,7 @@ REPO = r"C:\Users\Tincho\Documents\Proyects\hiessy.github.io"
 
 # how many scraped listings to publish per region (the sweep found far more)
 CAP = {3: 460, 4: 240, 5: 180, 2: 125, 0: 105, 1: 78}
+AP_SHARE = 0.45      # cuánto de ese cupo puede aportar Argenprop, además de Zonaprop
 
 BLOCK = re.compile(r"corredor|matr[ií]cula|\bcpi\b|cucicba|cmcp|contacto\s*:|responsable|"
                    r"inmobiliaria|\bmls\b|ficha\s*brick|@|https?:|www\.", re.I)
@@ -94,6 +95,28 @@ def provider(reg, loc):
     return "Edenor" if any(l == b or l.startswith(b + " ") for b in EDENOR_CABA) else "Edesur"
 
 
+AP_BARRIO = re.compile(r"\ben\s+Venta\s+en\s+([^,]+?)(?:,|\s+en\s+|$)", re.I)
+
+
+def ap_barrio(title):
+    """'PH en Venta en Villa Crespo, Capital Federal' -> 'Villa Crespo'."""
+    m = AP_BARRIO.search(title or "")
+    return m.group(1).strip() if m else ""
+
+
+def dedupe_key(price, dorm, addr):
+    a = re.sub(r"[^a-z0-9]", "", (addr or "").lower())[:14]
+    return (price, dorm, a)
+
+
+def spread(rows, n):
+    rows = sorted(rows, key=lambda r: r["price"])
+    if len(rows) <= n:
+        return rows
+    step = len(rows) / n
+    return [rows[int(i * step)] for i in range(n)]
+
+
 def lid(slug):
     m = re.search(r"-(\d+)\.html$", slug)
     return m.group(1) if m else None
@@ -145,6 +168,7 @@ def main():
         row.append(dorm)
         row.append(gar)
         row.append(provider(row[0], (s or {}).get('loc') or row[9]))
+        row.append('Zonaprop')
 
     # --- 2. new listings, sampled evenly across each region's price range ---
     have = {lid(r[2]) for r in ex}
@@ -154,13 +178,6 @@ def main():
             if r["id"] in have:
                 continue
             per.setdefault(r["reg"], {})[r["id"]] = r
-
-    def spread(rows, n):
-        rows = sorted(rows, key=lambda r: r["price"])
-        if len(rows) <= n:
-            return rows
-        step = len(rows) / n
-        return [rows[int(i * step)] for i in range(n)]
 
     new = []
     for reg, d in per.items():
@@ -182,9 +199,42 @@ def main():
             new.append([reg, r["img"], r["url"], f"{r['price']:,}".replace(",", "."),
                         r["price"], r.get("addr") or r.get("loc") or "", specs(r), n, 0,
                         r.get("loc") or "", amb, r.get("dorm", 0), r.get("gar", 0),
-                        provider(reg, r.get("loc"))])
+                        provider(reg, r.get("loc")), 'Zonaprop'])
 
-    allrows = ex + new
+    # --- 3. Argenprop, como segunda fuente ---
+    ap_rows = []
+    app = os.path.join(D, "argenprop.json")
+    if os.path.exists(app):
+        ap = json.load(open(app, encoding="utf-8"))
+        # no repetir un aviso que ya tenemos por Zonaprop
+        seen_key = {dedupe_key(r[4], r[11], r[5]) for r in ex + new}
+        for key, rows in ap.items():
+            if key.startswith("_"):
+                continue
+            byreg = {}
+            for r in rows:
+                byreg.setdefault(r["reg"], []).append(r)
+            for reg, rr in byreg.items():
+                cap = int(CAP.get(reg, 100) * AP_SHARE)
+                big = spread([x for x in rr if x["dorm"] >= 4], int(cap * 0.6))
+                small = spread([x for x in rr if x["dorm"] < 4], max(cap - len(big), 0))
+                for r in big + small:
+                    bar = ap_barrio(r.get("loc", ""))
+                    k = dedupe_key(r["price"], r.get("dorm", 0), r.get("addr", ""))
+                    if k in seen_key:
+                        continue
+                    seen_key.add(k)
+                    n = note(r.get("d", ""), reg)
+                    if not n:
+                        continue
+                    ap_rows.append([reg, r["img"], r["url"],
+                                    f"{r['price']:,}".replace(",", "."), r["price"],
+                                    r.get("addr") or bar, specs(r), n, 0, bar,
+                                    r.get("amb", 0), r.get("dorm", 0),
+                                    int(bool(GARDEN.search(r.get("d", "")))),
+                                    provider(reg, bar), 'Argenprop'])
+
+    allrows = ex + new + ap_rows
     allrows.sort(key=lambda r: (r[0], r[4]))
     print("existing", len(ex), "unresolved amb", len(unresolved))
     print("new", len(new), "total", len(allrows))
@@ -193,6 +243,7 @@ def main():
     print("4+ dorm", sum(1 for r in allrows if r[11] >= 4),
           "| con jardín", sum(1 for r in allrows if r[12]))
     print("picks", sum(1 for r in allrows if r[8]))
+    print("fuente", Counter(r[14] for r in allrows))
     print("CABA distribuidora", Counter(r[13] for r in allrows if r[0] == 3))
 
     js = "const D=" + json.dumps(allrows, ensure_ascii=False, separators=(",", ":")) + ";"
