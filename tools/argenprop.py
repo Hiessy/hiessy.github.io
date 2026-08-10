@@ -122,7 +122,11 @@ def main():
     data = json.load(open(OUT, encoding="utf-8")) if os.path.exists(OUT) else {}
     force = "--force" in sys.argv
     stamp = data.setdefault("_fetched", {})
-    for key, reg, loc in ZONES:
+    # Los primeros ~12 pedidos pasan; después CloudFront corta. Así que arrancamos
+    # por las zonas que menos avisos tienen, si no las últimas de la lista nunca
+    # llegan a relevarse.
+    zones = sorted(ZONES, key=lambda z: len(data.get(z[0], [])))
+    for key, reg, loc in zones:
         for tipo in TIPOS:
             tag = f"{tipo}/{loc}"
             if not force and (time.time() - stamp.get(tag, 0)) < MAX_AGE_H * 3600:

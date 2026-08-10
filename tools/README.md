@@ -62,9 +62,11 @@ python tools/scrape.py --force
 - **Argenprop** (`argenprop.py`): anda, pero rinde poco. No expone JSON; los datos
   duros vienen en atributos del `<a>` de cada ficha. Detrás de CloudFront devuelve
   **202 con cuerpo vacío** —ni captcha ni error, un bloqueo mudo— después de una
-  docena de pedidos. Con 7–11 s entre pedidos igual corta: Tigre y San Miguel
-  quedaron en cero. Un slug solo se sella en la caché si trajo avisos, así que
-  volver a correrlo reintenta lo bloqueado.
+  docena de pedidos, y con 7–11 s entre pedidos igual corta. Dos cosas lo vuelven
+  utilizable: un slug solo se sella en la caché si trajo avisos, y cada corrida
+  arranca por la zona con menos avisos. Sin eso las últimas zonas de la lista
+  nunca llegaban a relevarse — Tigre quedó en cero tres corridas seguidas. Con
+  eso, tres pasadas juntaron 336 avisos (275 publicados).
 - **Mercado Libre**: no se puede sin credenciales. El scraping redirige a
   `gz/account-verification` (su frontend de "suspicious traffic"), y la API pública
   (`api.mercadolibre.com/sites/MLA/search`) devuelve **403** sin token OAuth. La vía
