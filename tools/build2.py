@@ -203,7 +203,7 @@ def main():
 
     # --- 3. Argenprop, como segunda fuente ---
     ap_rows = []
-    app = os.path.join(D, "argenprop.json")
+    app = os.path.join(D, "argenprop_merged.json")
     if os.path.exists(app):
         ap = json.load(open(app, encoding="utf-8"))
         # no repetir un aviso que ya tenemos por Zonaprop

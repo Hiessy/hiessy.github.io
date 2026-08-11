@@ -65,8 +65,21 @@ python tools/scrape.py --force
   docena de pedidos, y con 7–11 s entre pedidos igual corta. Dos cosas lo vuelven
   utilizable: un slug solo se sella en la caché si trajo avisos, y cada corrida
   arranca por la zona con menos avisos. Sin eso las últimas zonas de la lista
-  nunca llegaban a relevarse — Tigre quedó en cero tres corridas seguidas. Con
-  eso, tres pasadas juntaron 336 avisos (275 publicados).
+  nunca llegaban a relevarse — Tigre quedó en cero tres corridas seguidas.
+  **No correr dos instancias a la vez**: las dos escriben el mismo archivo y se
+  pisan (una corrida dejó Calamuchita en 0 después de haber juntado 34).
+- La tarjeta de Argenprop muestra **solo 3 features y rota cuáles**: a veces
+  (m², dorm, antigüedad), a veces (m², dorm, baños). Por eso los baños aparecen en
+  ~1 de cada 4 avisos: no es que el portal no los tenga —la ficha individual los
+  trae— es que el listado no siempre los muestra. Los **ambientes** casi nunca
+  están en la tarjeta pero sí en el slug de la URL (`-3-ambientes-`), de donde se
+  leen. Traer los baños que faltan exigiría pedir las ~380 fichas individuales.
+- La superficie viene con **coma decimal** (`113,50 m² cubie.`). Un `(\d+)` toma
+  los decimales y no el número: daba 50 en vez de 113. Hay que cortar por la coma.
+- `ap_merge.py` combina el relevamiento nuevo con el anterior por id (gana el
+  nuevo) y repara lo que puede sin volver a pedir: ambientes desde la URL, y deja
+  en 0 la superficie absurda para la cantidad de dormitorios.
+
 - **Mercado Libre**: no se puede sin credenciales. El scraping redirige a
   `gz/account-verification` (su frontend de "suspicious traffic"), y la API pública
   (`api.mercadolibre.com/sites/MLA/search`) devuelve **403** sin token OAuth. La vía

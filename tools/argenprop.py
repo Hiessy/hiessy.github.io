@@ -86,22 +86,34 @@ def parse(page_html):
             img = mi.group(1)
         feats = re.search(r'card__main-features">(.*?)</ul>', body, re.S)
         fe = txt(feats.group(1)) if feats else ""
-        num = lambda pat: int((re.search(pat, fe) or [0, 0])[1]) if re.search(pat, fe) else 0
+
+        def num(pat):
+            """La superficie viene con coma decimal ('113,50 m²'), así que hay que
+            tomar el número entero completo y no los dos dígitos de after la coma."""
+            m = re.search(pat, fe)
+            if not m:
+                return 0
+            return int(re.split(r"[.,]", m.group(1))[0])
         addr = re.search(r'card__address"[^>]*>(.*?)</p>', body, re.S)
         title = re.search(r'card__title--primary">(.*?)</p>', body, re.S)
         desc = re.search(r'card__info\s*">(.*?)</p>', body, re.S)
+        href = m.group("href")
+        amb = int(ATTR(a, "ambientes") or 0)
+        if not amb:
+            ma = re.search(r"-(\d+)-ambientes", href)
+            amb = int(ma.group(1)) if ma else 0
         out.append({
             "id": m.group("id"),
-            "url": "https://www.argenprop.com" + m.group("href"),
+            "url": "https://www.argenprop.com" + href,
             "img": img,
             "price": price,
             "addr": txt(addr.group(1)) if addr else "",
             "loc": txt(title.group(1)) if title else "",
-            "cub": num(r"(\d+) m² cubie"),
-            "tot": num(r"(\d+) m² tot"),
+            "cub": num(r"([\d.,]+) m² cubie"),
+            "tot": num(r"([\d.,]+) m² tot"),
             "dorm": int(ATTR(a, "dormitorios") or 0),
-            "amb": int(ATTR(a, "ambientes") or 0),
-            "ban": num(r"(\d+) baño"),
+            "amb": amb,
+            "ban": num(r"([\d.,]+) baño"),
             "d": txt(desc.group(1))[:400] if desc else "",
             "src": "Argenprop",
         })

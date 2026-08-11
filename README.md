@@ -5,19 +5,19 @@ Sitio estático publicado con GitHub Pages en <https://hiessy.github.io>.
 ## Contenido
 
 **Dónde comprar en Argentina con menos de USD 200.000** — una página única
-([`index.html`](index.html)) con 1.572 casas y PH de 3 ambientes o más relevados
-en **Zonaprop** (1.297) y **Argenprop** (275) en agosto de 2026, en seis zonas:
+([`index.html`](index.html)) con 1.605 casas y PH de 3 ambientes o más relevados
+en **Zonaprop** (1.297) y **Argenprop** (308) en agosto de 2026, en seis zonas:
 
 | Zona | Avisos |
 | --- | --- |
-| CABA (29 barrios) | 584 |
-| Tigre (+ sublocalidades) | 340 |
-| San Miguel · Bella Vista | 258 |
-| Santa Rosa de Calamuchita | 168 |
-| San Martín de los Andes | 129 |
-| La Cumbre | 93 |
+| CABA (29 barrios) | 585 |
+| Tigre (+ sublocalidades) | 342 |
+| San Miguel · Bella Vista | 276 |
+| Santa Rosa de Calamuchita | 176 |
+| San Martín de los Andes | 132 |
+| La Cumbre | 94 |
 
-De esos, **516 tienen 4 dormitorios o más** y **413 mencionan jardín o parque
+De esos, **518 tienen 4 dormitorios o más** y **420 mencionan jardín o parque
 propio**. Cada tarjeta enlaza al aviso original, dice de qué portal salió y aclara la distribuidora
 eléctrica: en CABA la concesión se parte entre **Edenor** (franja norte, 95
 avisos) y **Edesur** (centro, sur y oeste, 388).
