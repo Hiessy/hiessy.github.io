@@ -5,14 +5,14 @@ Sitio estático publicado con GitHub Pages en <https://hiessy.github.io>.
 ## Contenido
 
 **Dónde comprar en Argentina con menos de USD 200.000** — una página única
-([`index.html`](index.html)) con 1.605 casas y PH de 3 ambientes o más relevados
-en **Zonaprop** (1.297) y **Argenprop** (308) en agosto de 2026, en seis zonas:
+([`index.html`](index.html)) con 1.609 casas y PH de 3 ambientes o más relevados
+en **Zonaprop** (1.297) y **Argenprop** (312) en agosto de 2026, en seis zonas:
 
 | Zona | Avisos |
 | --- | --- |
 | CABA (29 barrios) | 585 |
 | Tigre (+ sublocalidades) | 342 |
-| San Miguel · Bella Vista | 276 |
+| San Miguel · Bella Vista | 280 |
 | Santa Rosa de Calamuchita | 176 |
 | San Martín de los Andes | 132 |
 | La Cumbre | 94 |

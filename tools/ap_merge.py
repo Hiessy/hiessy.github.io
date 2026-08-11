@@ -39,26 +39,39 @@ def repair(r):
     return r
 
 
+def apply_detail(r, det):
+    """Los datos de la ficha individual mandan sobre los de la tarjeta."""
+    d = det.get(r["id"])
+    if not d:
+        return r
+    for k in ("ban", "amb", "dorm", "cub", "tot"):
+        if d.get(k):
+            r[k] = d[k]
+    return r
+
+
 def main():
     new, old = load(NEW), load(OLD)
+    det = load(os.path.join(D, "ap_detail.json"))
     out, stats = {}, []
     zones = {k for k in list(new) + list(old) if not k.startswith("_")}
     for z in sorted(zones):
         # unión por id: el aviso re-relevado gana, el viejo completa la cobertura
         rows, seen = [], set()
         for r in new.get(z) or []:
-            rows.append(r)
+            rows.append(apply_detail(dict(r), det))
             seen.add(r["id"])
         carried = 0
         for r in old.get(z) or []:
             if r["id"] in seen:
                 continue
-            rows.append(repair(dict(r)))
+            rows.append(apply_detail(repair(dict(r)), det))
             carried += 1
         out[z] = rows
         stats.append(f"{z}: {len(rows)} ({len(seen)} re-relevados + {carried} del anterior)")
     json.dump(out, open(OUT, "w", encoding="utf-8"), ensure_ascii=False)
     print("\n".join(stats))
+    print(f"fichas individuales cacheadas: {len(det)}")
     tot = sum(len(v) for v in out.values())
     amb = sum(1 for v in out.values() for r in v if r.get("amb"))
     ban = sum(1 for v in out.values() for r in v if r.get("ban"))

@@ -73,7 +73,18 @@ python tools/scrape.py --force
   ~1 de cada 4 avisos: no es que el portal no los tenga —la ficha individual los
   trae— es que el listado no siempre los muestra. Los **ambientes** casi nunca
   están en la tarjeta pero sí en el slug de la URL (`-3-ambientes-`), de donde se
-  leen. Traer los baños que faltan exigiría pedir las ~380 fichas individuales.
+  leen.
+- `ap_baths.py` pide la ficha individual para completar los baños que faltan
+  (`<li title="Baños">`), y funciona — pero Argenprop **bloquea las fichas mucho
+  más duro que los listados**: deja pasar ~5 y después corta desde el primer
+  pedido, incluso con 26 s de espera entre uno y otro. No es cuestión de ritmo,
+  es un bloqueo sostenido. Está hecho para correr de a tandas: cachea en
+  `.work/ap_detail.json`, saltea lo resuelto y corta solo tras 6 bloqueos
+  seguidos, así que correrlo cada tanto va completando.
+
+```bash
+python tools/ap_baths.py --limit 40 --delay 20
+```
 - La superficie viene con **coma decimal** (`113,50 m² cubie.`). Un `(\d+)` toma
   los decimales y no el número: daba 50 en vez de 113. Hay que cortar por la coma.
 - `ap_merge.py` combina el relevamiento nuevo con el anterior por id (gana el
