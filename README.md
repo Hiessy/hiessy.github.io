@@ -36,8 +36,10 @@ publican en Argentina. Los precios y la disponibilidad cambian rápido.
 ## Estructura
 
 - `index.html` — página completa: markup, CSS y JS embebidos, sin dependencias
-  ni build. Filtros por zona, dormitorios (2 / 3 / 4+), con jardín, distribuidora
-  eléctrica (Edenor / Edesur), fuente (Zonaprop / Argenprop) y solo picks. Se combinan entre sí y los contadores
+  ni build. Filtros por zona, dormitorios (2 / 3 / 4+), con jardín, 100 m²+,
+  distribuidora eléctrica (Edenor / Edesur), fuente (Zonaprop / Argenprop) y solo
+  picks. El de 100 m²+ usa los mismos metros que muestra la ficha: cubiertos si el
+  aviso los declara, totales si no. Se combinan entre sí y los contadores
   de cada botón se recalculan según lo que esté seleccionado. Las fichas se pintan
   de a 120 con un botón "Ver más".
   Responsive: hasta 1000 px las filas de filtros se deslizan de costado en lugar

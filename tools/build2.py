@@ -3,7 +3,7 @@
 Row shape (unchanged prefix, two new trailing fields):
   0 region  1 img  2 slug  3 priceStr  4 priceNum  5 address
   6 specs   7 note 8 pick  9 caption  10 ambientes  11 dormitorios  12 jardín
-  13 distribuidora eléctrica  14 fuente (Zonaprop / Argenprop)  15 lat  16 lng
+  13 distribuidora eléctrica  14 fuente (Zonaprop / Argenprop)  15 lat  16 lng  17 m²
 """
 import json, os, re
 from collections import Counter
@@ -158,6 +158,21 @@ def spread(rows, n):
     return [rows[int(i * step)] for i in range(n)]
 
 
+def m2_of(r):
+    """Los m² que se muestran en la ficha: cubiertos si están, si no los totales.
+    Filtrar por otra cosa que la que se ve en la tarjeta sería confuso."""
+    return int(r.get("cub") or r.get("tot") or 0)
+
+
+M2_TXT = re.compile(r"([\d.]+)\s*m²")
+
+
+def m2_from_specs(s):
+    """Para las 192 originales, que solo tienen los m² dentro del texto."""
+    m = M2_TXT.search(s or "")
+    return int(m.group(1).replace(".", "")) if m else 0
+
+
 def lid(slug):
     m = re.search(r"-(\d+)\.html$", slug)
     return m.group(1) if m else None
@@ -213,6 +228,7 @@ def main():
         la, lo = geo(s or {})
         row.append(la)
         row.append(lo)
+        row.append(m2_of(s) if s else m2_from_specs(row[6]))
 
     # --- 2. new listings, sampled evenly across each region's price range ---
     have = {lid(r[2]) for r in ex}
@@ -244,7 +260,7 @@ def main():
                         r["price"], r.get("addr") or r.get("loc") or "", specs(r), n, 0,
                         r.get("loc") or "", amb, r.get("dorm", 0), r.get("gar", 0),
                         provider(reg, r.get("loc")), 'Zonaprop',
-                        *geo(r)])
+                        *geo(r), m2_of(r)])
 
     # --- 3. Argenprop, como segunda fuente ---
     ap_rows = []
@@ -278,7 +294,7 @@ def main():
                                     r.get("amb", 0), r.get("dorm", 0),
                                     int(bool(GARDEN.search(r.get("d", "")))),
                                     # Argenprop no publica coordenadas en el listado
-                                    provider(reg, bar), 'Argenprop', 0, 0])
+                                    provider(reg, bar), 'Argenprop', 0, 0, m2_of(r)])
 
     allrows = ex + new + ap_rows
     allrows.sort(key=lambda r: (r[0], r[4]))
@@ -291,6 +307,7 @@ def main():
     print("picks", sum(1 for r in allrows if r[8]))
     print("fuente", Counter(r[14] for r in allrows))
     print("con coordenadas", sum(1 for r in allrows if r[15] and r[16]))
+    print("con m²", sum(1 for r in allrows if r[17]), "| >=100 m²", sum(1 for r in allrows if r[17] >= 100))
     print("CABA distribuidora", Counter(r[13] for r in allrows if r[0] == 3))
 
     far = drop_far_coords(allrows)
