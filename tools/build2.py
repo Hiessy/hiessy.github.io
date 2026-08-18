@@ -3,7 +3,7 @@
 Row shape (unchanged prefix, two new trailing fields):
   0 region  1 img  2 slug  3 priceStr  4 priceNum  5 address
   6 specs   7 note 8 pick  9 caption  10 ambientes  11 dormitorios  12 jardín
-  13 distribuidora eléctrica  14 fuente (Zonaprop / Argenprop)
+  13 distribuidora eléctrica  14 fuente (Zonaprop / Argenprop)  15 lat  16 lng
 """
 import json, os, re
 from collections import Counter
@@ -169,6 +169,8 @@ def main():
         row.append(gar)
         row.append(provider(row[0], (s or {}).get('loc') or row[9]))
         row.append('Zonaprop')
+        row.append((s or {}).get('lat', 0))
+        row.append((s or {}).get('lng', 0))
 
     # --- 2. new listings, sampled evenly across each region's price range ---
     have = {lid(r[2]) for r in ex}
@@ -199,7 +201,8 @@ def main():
             new.append([reg, r["img"], r["url"], f"{r['price']:,}".replace(",", "."),
                         r["price"], r.get("addr") or r.get("loc") or "", specs(r), n, 0,
                         r.get("loc") or "", amb, r.get("dorm", 0), r.get("gar", 0),
-                        provider(reg, r.get("loc")), 'Zonaprop'])
+                        provider(reg, r.get("loc")), 'Zonaprop',
+                        r.get('lat', 0), r.get('lng', 0)])
 
     # --- 3. Argenprop, como segunda fuente ---
     ap_rows = []
@@ -232,7 +235,8 @@ def main():
                                     r.get("addr") or bar, specs(r), n, 0, bar,
                                     r.get("amb", 0), r.get("dorm", 0),
                                     int(bool(GARDEN.search(r.get("d", "")))),
-                                    provider(reg, bar), 'Argenprop'])
+                                    # Argenprop no publica coordenadas en el listado
+                                    provider(reg, bar), 'Argenprop', 0, 0])
 
     allrows = ex + new + ap_rows
     allrows.sort(key=lambda r: (r[0], r[4]))
@@ -244,6 +248,7 @@ def main():
           "| con jardín", sum(1 for r in allrows if r[12]))
     print("picks", sum(1 for r in allrows if r[8]))
     print("fuente", Counter(r[14] for r in allrows))
+    print("con coordenadas", sum(1 for r in allrows if r[15] and r[16]))
     print("CABA distribuidora", Counter(r[13] for r in allrows if r[0] == 3))
 
     js = "const D=" + json.dumps(allrows, ensure_ascii=False, separators=(",", ":")) + ";"

@@ -24,6 +24,16 @@ El recorte por zona lo define `CAP` en `build2.py`: entran **todos** los avisos 
 así no se pierden los grandes, que son los escasos. Los publicados por zona pueden
 superar a los relevados porque incluyen los 192 originales.
 
+## Refrescar avisos vencidos
+
+`scrape.py` solo agrega: un aviso dado de baja queda para siempre en la caché.
+Para sacarlos hay que borrar las filas de esos slugs y volver a pedirlos:
+
+```bash
+python tools/refresh.py --edenor    # los 12 barrios de CABA que son Edenor
+python tools/scrape.py
+```
+
 ## Caché
 
 `.work/scraped.json` es la caché: guarda los avisos **y** un `_fetched` con el
@@ -99,6 +109,9 @@ python tools/ap_baths.py --limit 40 --delay 20
 
 ## Detalles que cuestan caro re-descubrir
 
+- **Coordenadas**: vienen en el listado de Zonaprop
+  (`postingLocation.postingGeolocation.geolocation`), en prácticamente todos los
+  avisos. Argenprop no las publica en el listado, así que sus avisos no tienen pin.
 - **Jardín** no viene como dato estructurado: en los resultados de listado
   `generalFeatures` llega vacío y `mainFeatures` solo trae superficie y ambientes.
   La bandera se deduce del texto completo del aviso, antes de truncarlo.

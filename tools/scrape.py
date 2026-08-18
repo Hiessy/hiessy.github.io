@@ -102,6 +102,7 @@ def parse(r):
         if u:
             img = u.split('?')[0].replace('https://imgar.zonapropcdn.com/avisos/', '')
             break
+    geo = ((loc.get('postingGeolocation') or {}).get('geolocation')) or {}
     return {
         'id': str(r.get('postingId') or ''),
         'url': (r.get('url') or '').replace('/propiedades/clasificado/', ''),
@@ -116,6 +117,9 @@ def parse(r):
         'ban': num(feat(r, 'CFT3')),
         'kind': ((r.get('realEstateType') or {}).get('name') or ''),
         'gar': int(bool(GARDEN.search(full)) or (r.get('triggerPill') or '') == 'Jardín'),
+        # coordenadas para el mapa; vienen en todos los avisos del listado
+        'lat': round(geo['latitude'], 6) if geo.get('latitude') else 0,
+        'lng': round(geo['longitude'], 6) if geo.get('longitude') else 0,
         'd': full[:400],
     }
 
