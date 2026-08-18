@@ -18,6 +18,18 @@ CAP = {}
 NO_CAP = 10 ** 9
 AP_SHARE = 0.45      # cuánto de ese cupo puede aportar Argenprop, además de Zonaprop
 
+# La página publica solo CABA zona norte (área de Edenor). El resto se sigue
+# relevando y queda en `.work/`, pero no entra al HTML: eran 5.600 fichas de las
+# cuales casi ninguna servía para la búsqueda actual.
+# Para volver a publicar todo: ONLY = None
+ONLY = {"reg": 3, "prov": "Edenor"}
+
+
+def wanted(row):
+    if not ONLY:
+        return True
+    return row[0] == ONLY["reg"] and row[13] == ONLY["prov"]
+
 BLOCK = re.compile(r"corredor|matr[ií]cula|\bcpi\b|cucicba|cmcp|contacto\s*:|responsable|"
                    r"inmobiliaria|\bmls\b|ficha\s*brick|@|https?:|www\.", re.I)
 GOOD = re.compile(r"lote|terreno|patio|jard|pileta|quincho|refac|recicl|apto cr|escritur|"
@@ -96,6 +108,26 @@ def provider(reg, loc):
     l = (loc or "").strip().lower()
     # "Palermo Hollywood", "Belgrano R" etc. resolve to their parent barrio
     return "Edenor" if any(l == b or l.startswith(b + " ") for b in EDENOR_CABA) else "Edesur"
+
+
+# Nombre lindo de cada barrio de la franja Edenor. "Palermo Soho" y "Belgrano R"
+# se agrupan con el padre: como filtro, 20 etiquetas para 12 barrios no sirven.
+BARRIO_LABEL = {"belgrano": "Belgrano", "nunez": "Núñez", "núñez": "Núñez",
+                "saavedra": "Saavedra", "coghlan": "Coghlan",
+                "villa urquiza": "Villa Urquiza", "villa pueyrredon": "Villa Pueyrredón",
+                "villa pueyrredón": "Villa Pueyrredón", "colegiales": "Colegiales",
+                "chacarita": "Chacarita", "villa ortuzar": "Villa Ortúzar",
+                "villa ortúzar": "Villa Ortúzar", "palermo": "Palermo",
+                "parque chas": "Parque Chas", "agronomia": "Agronomía",
+                "agronomía": "Agronomía"}
+
+
+def norm_barrio(loc):
+    l = (loc or "").strip().lower()
+    for k, label in BARRIO_LABEL.items():
+        if l == k or l.startswith(k + " "):
+            return label
+    return ""
 
 
 AP_BARRIO = re.compile(r"\ben\s+Venta\s+en\s+([^,]+?)(?:,|\s+en\s+|$)", re.I)
@@ -310,6 +342,15 @@ def main():
     print("con m²", sum(1 for r in allrows if r[17]), "| >=100 m²", sum(1 for r in allrows if r[17] >= 100))
     print("CABA distribuidora", Counter(r[13] for r in allrows if r[0] == 3))
 
+    # etiqueta de barrio homogénea: la del barrido si está, si no la del propio row
+    for r in allrows:
+        b = norm_barrio((by_id.get(lid(r[2])) or {}).get("loc") or "") or norm_barrio(r[9])
+        if b:
+            r[9] = b
+    if ONLY:
+        before = len(allrows)
+        allrows = [r for r in allrows if wanted(r)]
+        print(f"recorte a {ONLY}: {len(allrows)} de {before}")
     far = drop_far_coords(allrows)
     print("coordenadas descartadas por lejanía:", far)
     js = "const D=" + json.dumps(allrows, ensure_ascii=False, separators=(",", ":")) + ";"

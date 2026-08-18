@@ -7,14 +7,16 @@ Requieren solo la stdlib de Python 3.11 (sin dependencias).
 
 ## Estado
 
-Techo de precio: **USD 230.000** (`MAXP` en `scrape.py` y `argenprop.py`). Relevado
-y cacheado en `.work/` (fuera de git): 5.328 avisos de Zonaprop + ~400 de Argenprop.
-**La página los publica a todos**: `CAP` quedó vacío en `build2.py`. El sampleo por
-zona que había antes escondía avisos que cumplían los filtros — por ejemplo un PH de
-Núñez a 229.900 que no aparecía ni con el techo corregido.
+Techo de precio: **USD 260.000** (`MAXP` en `scrape.py` y `argenprop.py`).
 
-Pesa 1,8 MB (462 KB con gzip) y carga en ~350 ms; los filtros tardan menos de 250 ms
-con 5.200 pines en el mapa. Si en algún momento molesta, volver a poner topes en `CAP`.
+La página publica **solo CABA zona norte (área de Edenor)**: 1.258 de los ~5.900
+avisos relevados. El recorte es `ONLY` en `build2.py`; poniéndolo en `None` vuelve
+a salir todo. Lo demás se sigue relevando y queda en `.work/` — no se borró nada,
+solo dejó de entrar al HTML, que pasó de 1,8 MB a 0,42 MB.
+
+Los barrios de la franja Edenor están en `EDENOR_CABA` (y `BARRIO_LABEL`, que además
+agrupa "Palermo Soho" o "Belgrano R" con su barrio padre para que el filtro tenga
+doce botones y no veinte).
 
 ## Refrescar avisos vencidos
 

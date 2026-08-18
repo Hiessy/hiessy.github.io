@@ -21,7 +21,7 @@ JOBS = [('smla', 'san-martin-de-los-andes', 0, 25, 'san mart'),
         ('sanmiguel', 'san-miguel', 5, 35, 'san miguel')]
 JOBS += [('caba', b, 3, 14, 'capital federal') for b in BARRIOS]
 
-MAXP = 230000
+MAXP = 260000
 MINP = 15000
 MAX_AGE_H = 24        # re-sweep a slug only if its cache is older than this
 
