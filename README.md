@@ -43,11 +43,15 @@ publican en Argentina. Los precios y la disponibilidad cambian rápido.
   Responsive: hasta 1000 px las filas de filtros se deslizan de costado en lugar
   de apilarse, así la barra pegada arriba no se come la pantalla; una columna
   abajo de 430 px.
-- **Mapa** con un pin por aviso, sobre el resultado filtrado completo (no solo las
-  120 fichas pintadas). Pasar el mouse por una ficha agranda su pin y al revés
-  también. Usa Leaflet desde CDN y tiles de CARTO/OpenStreetMap — es lo único que
-  la página pide afuera. Los avisos de Argenprop no tienen pin: el portal no
-  publica coordenadas en el listado.
+- **Mapa** fijo a la izquierda (queda quieto mientras el listado scrollea) y las
+  fichas en una sola columna a la derecha. Abajo de 1000 px se apilan.
+  Muestra un pin por aviso sobre el resultado filtrado completo, no solo las 120
+  fichas pintadas. Pasar el mouse por una ficha agranda su pin y al revés también.
+- **Selector por ficha**: el ✓ sobre la foto marca avisos y el mapa pasa a mostrar
+  solo los marcados; sin nada marcado muestra todo. "Limpiar selección" vuelve atrás.
+  El ✓ se ve apagado en los avisos sin coordenadas, que no pueden tener pin.
+- Leaflet desde CDN y tiles de CARTO/OpenStreetMap son lo único que la página pide
+  afuera. Los avisos de Argenprop no tienen pin: el portal no publica coordenadas.
 - `tools/` — scripts del relevamiento y la caché. Ver [tools/README.md](tools/README.md).
 
 ## Desarrollo

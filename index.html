@@ -72,8 +72,21 @@ footer b{color:var(--ink)} a.tx{color:var(--acc)}
  h1{font-size:27px}
  .note{font-size:14px}
 }
-.maprow{max-width:1220px;margin:0 auto;padding:18px 20px 0}
-#map{height:400px;border-radius:12px;border:1px solid var(--line);background:var(--line)}
+.layout{max-width:1220px;margin:0 auto;padding:18px 20px 0;display:grid;
+ grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start}
+.layout main{max-width:none;margin:0;padding:0 0 70px}
+.layout .grid{grid-template-columns:1fr;gap:26px}
+/* el mapa queda quieto mientras el listado scrollea */
+.mapcol{position:sticky;top:112px;align-self:start}
+#map{height:calc(100vh - 168px);min-height:320px;border-radius:12px;border:1px solid var(--line);background:var(--line)}
+.pickbtn{position:absolute;top:9px;right:9px;z-index:3;width:26px;height:26px;border-radius:50%;
+ border:1px solid rgba(255,255,255,.75);background:rgba(0,0,0,.42);color:#fff;font:inherit;
+ font-size:13px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}
+.pickbtn:hover{background:rgba(0,0,0,.68)}
+.pickbtn.on{background:var(--pick);border-color:var(--pick)}
+.pickbtn.nogeo{opacity:.45}
+.thumb{position:relative}
+.card .star{right:44px}
 .maphead{display:flex;align-items:center;gap:10px;margin:0 0 8px}
 .maphead .lbl{margin:0}
 .mapnote{font-size:12.5px;color:var(--mut)}
@@ -82,7 +95,13 @@ footer b{color:var(--ink)} a.tx{color:var(--acc)}
 .leaflet-popup-content b{display:block;font-size:13.5px}
 .leaflet-popup-content a{color:var(--acc)}
 .card.hi .shot{outline:3px solid var(--pick);outline-offset:2px}
-@media(max-width:720px){.maprow{padding:14px 16px 0}#map{height:300px}}
+@media(max-width:1000px){
+ .layout{grid-template-columns:1fr;gap:16px;padding:14px 16px 0}
+ .mapcol{position:static}
+ #map{height:320px}
+ .layout .grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px 14px}
+}
+@media(max-width:430px){.layout .grid{grid-template-columns:1fr;gap:22px}}
 </style></head><body>
 <header>
 <h1>Dónde comprar en Argentina<br>con menos de USD 230.000</h1>
@@ -119,13 +138,16 @@ footer b{color:var(--ink)} a.tx{color:var(--acc)}
 <button class="pill" data-s="Argenprop">Argenprop <em></em></button>
 <span class="cnt" id="cnt"></span>
 </div></div>
-<div class="maprow">
+<div class="layout">
+<aside class="mapcol">
  <div class="maphead"><span class="lbl">Mapa</span>
   <button class="pill" id="mapt">Ocultar</button>
+  <button class="pill" id="clr" hidden>Limpiar selección</button>
   <span class="mapnote" id="mapn"></span></div>
  <div id="map"></div>
-</div>
+</aside>
 <main><div class="grid" id="g"></div></main>
+</div>
 <footer>
 <p><b>Cómo leer esto.</b> Cuando la ficha dice <b>m² cub</b> son metros cubiertos; <b>m² tot</b> es superficie total del lote, que es lo único que declaran algunos avisos. Precios en dólares, como se publican en Argentina. El filtro <b>Con jardín</b> se arma leyendo el texto del aviso (jardín, parque propio, parquizado): sirve para descartar, no para dar por hecho que lo tiene.</p>
 <p><b>Antes de ofertar:</b> confirmá escritura (varios avisos en Córdoba se venden por derechos posesorios, no por título), pedí el plano para verificar los metros cubiertos reales, y chequeá qué servicios llegan a la cuadra. En CABA, una refacción integral de PH está hoy en el orden de USD 600–900/m².</p>
@@ -164,10 +186,11 @@ function tally(){
  document.getElementById('pk').querySelector('em').textContent=n(r=>okR(r)&&okD(r)&&okG(r)&&okP(r)&&okF(r)&&r[8]);
 }
 const abs=s=>/^https?:/.test(s);
-const card=r=>`<article class="card" data-k="${E(r[2])}"><a class="shot" href="${abs(r[2])?r[2]:UP+r[2]}" target="_blank" rel="noopener">
+const card=r=>`<article class="card" data-k="${E(r[2])}"><div class="thumb"><a class="shot" href="${abs(r[2])?r[2]:UP+r[2]}" target="_blank" rel="noopener">
 <img loading="lazy" src="${abs(r[1])?r[1]:IP+r[1]}" alt="${E(r[5])}">
 <span class="tag">${r[3]==='?'?'Consultar':'USD '+r[3]}</span>${r[8]?'<span class="star">★ pick</span>':''}
 <span class="cap"><b>${E(r[5])}</b>${r[6]?' · '+E(r[6]):''}</span></a>
+<button class="pickbtn${picked.has(r[2])?' on':''}${r[15]?'':' nogeo'}" title="${r[15]?'Marcar para ver solo estas en el mapa':'Este aviso no publica ubicación: no tiene pin'}" aria-pressed="${picked.has(r[2])}">✓</button></div>
 <p class="note">${E(r[7])}</p><p class="src">${E(REG[r[0]])}${r[9]&&r[9]!==REG[r[0]]?' · '+E(r[9]):''}${r[13]?' · '+E(r[13]):''}${r[14]?' · '+E(r[14]):''}</p></article>`;
 function more(){
  const next=view.slice(shown,shown+STEP);
@@ -192,6 +215,16 @@ function draw(){
  const b=document.getElementById('mo');if(b)b.remove();
  if(!view.length)g.innerHTML='<p class="empty">Ningún aviso coincide con esa combinación de filtros.</p>';
  else more();
+ g.onclick=e=>{
+  const b=e.target.closest('.pickbtn');
+  if(!b)return;
+  e.preventDefault();
+  const k=b.closest('.card').dataset.k;
+  picked.has(k)?picked.delete(k):picked.add(k);
+  b.classList.toggle('on',picked.has(k));
+  b.setAttribute('aria-pressed',picked.has(k));
+  drawPins();
+ };
  g.onmouseover=e=>{const c=e.target.closest('.card');if(c&&c.dataset.k!==hi){hi&&focusPin(hi,false);hi=c.dataset.k;focusPin(hi,true)}};
  g.onmouseleave=()=>{hi&&focusPin(hi,false);hi=null};
  drawPins();
@@ -201,6 +234,7 @@ function draw(){
 // r[15] lat, r[16] lng. Se dibuja el resultado filtrado completo (no solo las
 // fichas pintadas) con canvas, que aguanta miles de puntos sin trabarse.
 let map=null,layer=null,pins=new Map(),hi=null;
+const picked=new Set();
 const hasGeo=r=>r[15]&&r[16];
 function initMap(){
  if(map||typeof L==='undefined')return;
@@ -213,7 +247,8 @@ function drawPins(){
  if(!map)return;
  if(layer)layer.remove();
  pins.clear();
- const pts=view.filter(hasGeo);
+ const sel=picked.size?view.filter(r=>picked.has(r[2])):view;
+ const pts=sel.filter(hasGeo);
  const marks=pts.map(r=>{
   const m=L.circleMarker([r[15],r[16]],
    {radius:5,weight:1,color:'#fff',fillColor:r[8]?'#b8862f':'#8a5a2b',fillOpacity:.85});
@@ -225,8 +260,15 @@ function drawPins(){
   return m;
  });
  layer=L.layerGroup(marks).addTo(map);
- document.getElementById('mapn').textContent=
-  pts.length===view.length?`${pts.length} en el mapa`:`${pts.length} de ${view.length} con ubicación`;
+ const cl=document.getElementById('clr');
+ cl.hidden=!picked.size;
+ cl.textContent=`Limpiar selección (${picked.size})`;
+ // no todos los avisos traen coordenadas (Argenprop no las publica), así que
+ // conviene decir cuántas de las marcadas se pueden mostrar
+ document.getElementById('mapn').textContent=picked.size
+  ?(pts.length===sel.length?`${pts.length} seleccionada${pts.length===1?'':'s'} en el mapa`
+                           :`${pts.length} de ${sel.length} seleccionadas tienen ubicación`)
+  :(pts.length===view.length?`${pts.length} en el mapa`:`${pts.length} de ${view.length} con ubicación`);
  if(pts.length)map.fitBounds(L.latLngBounds(pts.map(r=>[r[15],r[16]])),{padding:[24,24],maxZoom:15});
 }
 function markCard(r,on){
@@ -239,6 +281,11 @@ function focusPin(k,on){
  m.setStyle(on?{radius:10,fillColor:'#e0b05a',weight:2}:{radius:5,fillColor:'#8a5a2b',weight:1});
  if(on)m.bringToFront();
 }
+document.getElementById('clr').onclick=()=>{
+ picked.clear();
+ document.querySelectorAll('.pickbtn.on').forEach(b=>{b.classList.remove('on');b.setAttribute('aria-pressed','false')});
+ drawPins();
+};
 document.getElementById('mapt').onclick=e=>{
  const box=document.querySelector('.maprow'),on=box.dataset.off!=='1';
  box.dataset.off=on?'1':'0';
