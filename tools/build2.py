@@ -112,6 +112,44 @@ def dedupe_key(price, dorm, addr):
     return (price, dorm, a)
 
 
+# Hay avisos geocodificados por el *nombre* de la calle en vez de la dirección:
+# "MEXICO al 3200" cae en México, "Suiza 1237" en Suiza, "AV. RIVADAVIA 8686" en
+# Rivadavia (Chubut) y "LA PAMPA 5100" en La Pampa. Uno trae lat == lng.
+AR_BOX = (-56.0, -21.0, -74.0, -53.0)
+OUTLIER_KM = 60          # ninguna de estas zonas es más grande que esto
+
+
+def geo(r):
+    lat, lng = r.get("lat") or 0, r.get("lng") or 0
+    if not lat or not lng or lat == lng:
+        return 0, 0
+    s, n, w, e = AR_BOX
+    return (lat, lng) if (s <= lat <= n and w <= lng <= e) else (0, 0)
+
+
+def drop_far_coords(rows):
+    """Saca las coordenadas que caen lejos del centro de su zona.
+
+    La caja de Argentina no alcanza: un aviso de Floresta geocodificado en Chubut
+    sigue estando en el país, pero rompe el encuadre del mapa de CABA. Se compara
+    contra la *mediana* de la zona, que no se mueve por unos pocos outliers.
+    """
+    from statistics import median
+    dropped = 0
+    for reg in {r[0] for r in rows}:
+        pts = [r for r in rows if r[0] == reg and r[15] and r[16]]
+        if len(pts) < 5:
+            continue
+        clat, clng = median(r[15] for r in pts), median(r[16] for r in pts)
+        for r in pts:
+            dy = (r[15] - clat) * 111.0
+            dx = (r[16] - clng) * 111.0 * 0.82      # cos(lat) a estas latitudes
+            if (dx * dx + dy * dy) ** 0.5 > OUTLIER_KM:
+                r[15] = r[16] = 0
+                dropped += 1
+    return dropped
+
+
 def spread(rows, n):
     rows = sorted(rows, key=lambda r: r["price"])
     if len(rows) <= n:
@@ -172,8 +210,9 @@ def main():
         row.append(gar)
         row.append(provider(row[0], (s or {}).get('loc') or row[9]))
         row.append('Zonaprop')
-        row.append((s or {}).get('lat', 0))
-        row.append((s or {}).get('lng', 0))
+        la, lo = geo(s or {})
+        row.append(la)
+        row.append(lo)
 
     # --- 2. new listings, sampled evenly across each region's price range ---
     have = {lid(r[2]) for r in ex}
@@ -205,7 +244,7 @@ def main():
                         r["price"], r.get("addr") or r.get("loc") or "", specs(r), n, 0,
                         r.get("loc") or "", amb, r.get("dorm", 0), r.get("gar", 0),
                         provider(reg, r.get("loc")), 'Zonaprop',
-                        r.get('lat', 0), r.get('lng', 0)])
+                        *geo(r)])
 
     # --- 3. Argenprop, como segunda fuente ---
     ap_rows = []
@@ -254,6 +293,8 @@ def main():
     print("con coordenadas", sum(1 for r in allrows if r[15] and r[16]))
     print("CABA distribuidora", Counter(r[13] for r in allrows if r[0] == 3))
 
+    far = drop_far_coords(allrows)
+    print("coordenadas descartadas por lejanía:", far)
     js = "const D=" + json.dumps(allrows, ensure_ascii=False, separators=(",", ":")) + ";"
     open(os.path.join(D, "D.js"), "w", encoding="utf-8").write(js)
     print("data bytes", len(js.encode("utf-8")))

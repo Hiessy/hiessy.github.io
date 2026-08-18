@@ -50,6 +50,9 @@ publican en Argentina. Los precios y la disponibilidad cambian rápido.
 - **Selector por ficha**: el ✓ sobre la foto marca avisos y el mapa pasa a mostrar
   solo los marcados; sin nada marcado muestra todo. "Limpiar selección" vuelve atrás.
   El ✓ se ve apagado en los avisos sin coordenadas, que no pueden tener pin.
+- **Clic en la ficha** (en cualquier lado menos la foto, que abre el aviso, y el ✓)
+  centra el mapa en esa propiedad y abre su globo. En pantallas apiladas además
+  scrollea hasta el mapa.
 - Leaflet desde CDN y tiles de CARTO/OpenStreetMap son lo único que la página pide
   afuera. Los avisos de Argenprop no tienen pin: el portal no publica coordenadas.
 - `tools/` — scripts del relevamiento y la caché. Ver [tools/README.md](tools/README.md).

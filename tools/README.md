@@ -101,6 +101,14 @@ python tools/ap_baths.py --limit 40 --delay 20
 
 ## Detalles que cuestan caro re-descubrir
 
+- **Coordenadas mal geocodificadas**: algunos avisos se ubican por el *nombre* de
+  la calle y no por la dirección. "MEXICO al 3200" cae en México, "Suiza 1237" en
+  Suiza, "AV. RIVADAVIA 8686" (Floresta) en Rivadavia, Chubut, y "LA PAMPA 5100"
+  (Parque Chas) en La Pampa; uno trae `lat == lng`. Con 5 de esos el mapa arrancaba
+  en zoom 1 sobre el Atlántico. `build2.py` filtra dos veces: caja de Argentina y
+  después distancia a la **mediana de la zona** (`OUTLIER_KM`, 60 km) — la mediana
+  no se corre por unos pocos outliers. Descarta 14 coordenadas; esos avisos quedan
+  sin pin, no se les inventa una ubicación.
 - **Coordenadas**: vienen en el listado de Zonaprop
   (`postingLocation.postingGeolocation.geolocation`), en prácticamente todos los
   avisos. Argenprop no las publica en el listado, así que sus avisos no tienen pin.
