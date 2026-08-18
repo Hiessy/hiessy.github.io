@@ -19,7 +19,7 @@ UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
 HDR = {"User-Agent": UA, "Accept-Language": "es-AR,es;q=0.9",
        "Accept": "text/html,application/xhtml+xml"}
 
-MAXP, MINP = 200000, 15000
+MAXP, MINP = 230000, 15000
 MAX_AGE_H = 24
 DELAY = (7.0, 11.0)          # segundos entre pedidos
 PAGES = 12                   # 20 avisos por página

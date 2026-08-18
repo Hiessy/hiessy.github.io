@@ -7,22 +7,14 @@ Requieren solo la stdlib de Python 3.11 (sin dependencias).
 
 ## Estado
 
-Relevado y cacheado en `.work/scraped.json` (fuera de git): **4.537 avisos** de
-casas y PH hasta USD 200.000, 3+ ambientes. La página publica 1.297 de ellos.
+Techo de precio: **USD 230.000** (`MAXP` en `scrape.py` y `argenprop.py`). Relevado
+y cacheado en `.work/` (fuera de git): 5.328 avisos de Zonaprop + ~400 de Argenprop.
+**La página los publica a todos**: `CAP` quedó vacío en `build2.py`. El sampleo por
+zona que había antes escondía avisos que cumplían los filtros — por ejemplo un PH de
+Núñez a 229.900 que no aparecía ni con el techo corregido.
 
-| Zona | Relevados | Publicados |
-| --- | --- | --- |
-| CABA (29 barrios) | 2.975 | 483 |
-| Tigre (+ sublocalidades) | 849 | 265 |
-| San Miguel · Bella Vista | 390 | 208 |
-| Santa Rosa de Calamuchita | 141 | 149 |
-| San Martín de los Andes | 111 | 113 |
-| La Cumbre | 71 | 79 |
-
-El recorte por zona lo define `CAP` en `build2.py`: entran **todos** los avisos de
-4+ dormitorios (hasta el 60% del cupo) y el resto se samplea parejo por precio,
-así no se pierden los grandes, que son los escasos. Los publicados por zona pueden
-superar a los relevados porque incluyen los 192 originales.
+Pesa 1,8 MB (462 KB con gzip) y carga en ~350 ms; los filtros tardan menos de 250 ms
+con 5.200 pines en el mapa. Si en algún momento molesta, volver a poner topes en `CAP`.
 
 ## Refrescar avisos vencidos
 

@@ -12,7 +12,10 @@ D = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".
 REPO = r"C:\Users\Tincho\Documents\Proyects\hiessy.github.io"
 
 # how many scraped listings to publish per region (the sweep found far more)
-CAP = {3: 460, 4: 240, 5: 180, 2: 125, 0: 105, 1: 78}
+# Sin recorte: si un aviso cumple los filtros, va. El sampleo por zona escondía
+# avisos que sí calificaban (p. ej. un PH de Núñez a 229.900).
+CAP = {}
+NO_CAP = 10 ** 9
 AP_SHARE = 0.45      # cuánto de ese cupo puede aportar Argenprop, además de Zonaprop
 
 BLOCK = re.compile(r"corredor|matr[ií]cula|\bcpi\b|cucicba|cmcp|contacto\s*:|responsable|"
@@ -183,7 +186,7 @@ def main():
 
     new = []
     for reg, d in per.items():
-        cap = CAP.get(reg, 100)
+        cap = CAP.get(reg, NO_CAP)
         rows = list(d.values())
         # keep every 4+ bedroom listing (up to 60% of the region) — these are the
         # scarce ones and the whole point of the second sweep
@@ -218,7 +221,7 @@ def main():
             for r in rows:
                 byreg.setdefault(r["reg"], []).append(r)
             for reg, rr in byreg.items():
-                cap = int(CAP.get(reg, 100) * AP_SHARE)
+                cap = int(CAP.get(reg, NO_CAP) * AP_SHARE)
                 big = spread([x for x in rr if x["dorm"] >= 4], int(cap * 0.6))
                 small = spread([x for x in rr if x["dorm"] < 4], max(cap - len(big), 0))
                 for r in big + small:
