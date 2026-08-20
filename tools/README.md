@@ -39,6 +39,18 @@ El umbral de outliers de coordenadas se pasa por parámetro: 60 km sirve para lo
 barrios de CABA, pero estas localidades miden ~6 km y con ese número se colaba un
 aviso a 35 km que estiraba el mapa. Ahí va `km=8`.
 
+### Argenprop en la zona norte (`gba_ap.py`)
+
+154 avisos, y con una limitación que conviene tener presente: **en estas localidades
+las tarjetas de Argenprop no declaran superficie total**, solo cubierta (0 de 40 en la
+muestra). Las fichas individuales sí la traen, pero están bloqueadas. Sin lote no pasan
+el filtro de terreno libre — se los deja entrar igual, marcados, y el contador de la
+página dice cuántos quedaron afuera por eso.
+
+Mismo cuidado con los slugs: `bella-vista` es la de Corrientes y
+`bella-vista-buenos-aires` devuelve 91.000 avisos de todo el país. La buena es
+`bella-vista-san-miguel`. Cada aviso se valida contra el partido en el título.
+
 ## Refrescar avisos vencidos
 
 `scrape.py` solo agrega: un aviso dado de baja queda para siempre en la caché.

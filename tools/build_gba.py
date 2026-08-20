@@ -17,6 +17,7 @@ from build2 import note, geo, drop_far_coords, m2_of
 
 D = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".work")
 SRC = os.path.join(D, "gba_norte.json")
+AP = os.path.join(D, "gba_ap.json")
 OUT = os.path.join(D, "DG.js")
 
 ZONES = ["Bella Vista", "San Miguel", "Olivos", "La Lucila", "Martínez"]
@@ -59,6 +60,30 @@ def main():
                          r.get("addr") or zona, specs_gba(r), n, 0, zona,
                          r.get("amb", 0), r.get("dorm", 0), r.get("gar", 0), "",
                          "Zonaprop", *geo(r), m2_of(r), patio(r)])
+    # --- Argenprop. Sin superficie total no hay dato de lote: entran con terreno 0,
+    # que es "no declarado", no "sin patio". La página lo aclara en el contador.
+    ap_n = 0
+    if os.path.exists(AP):
+        for key, bucket in json.load(open(AP, encoding="utf-8")).items():
+            if key.startswith("_"):
+                continue
+            for r in bucket:
+                if r["id"] in seen:
+                    continue
+                seen.add(r["id"])
+                n = note(r.get("d", ""))
+                if not n:
+                    continue
+                zona = r.get("zona") or ""
+                rows.append([ZONES.index(zona) if zona in ZONES else 0,
+                             r["img"], r["url"], f"{r['price']:,}".replace(",", "."), r["price"],
+                             r.get("addr") or zona, specs_gba(r), n, 0, zona,
+                             r.get("amb", 0), r.get("dorm", 0), r.get("gar", 0), "",
+                             "Argenprop", 0, 0, m2_of(r), patio(r)])
+                ap_n += 1
+    print("Argenprop:", ap_n, "(sin dato de lote:",
+          sum(1 for r in rows if r[14] == "Argenprop" and not r[18]), ")")
+
     rows.sort(key=lambda r: (r[0], r[4]))
     # estas localidades miden ~6 km: 60 km dejaba pasar un aviso a 35
     far = drop_far_coords(rows, km=8)

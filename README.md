@@ -16,9 +16,10 @@ Chacarita (47), Agronomía (39), Núñez (38) y Coghlan (25). 118 con 4+ dormito
 
 ### 2. Zona norte con patio — [`gba-norte.html`](gba-norte.html)
 
-**1.403** casas y PH hasta USD 260.000 en Olivos (469), Martínez (326), San Miguel
-(299), Bella Vista (283) y La Lucila (26). Acá lo que manda es el **terreno libre**
-—superficie total menos cubierta, o sea el patio— y el filtro arranca en 100 m²:
+**1.557** casas y PH hasta USD 260.000 en Olivos (507), Martínez (344), Bella Vista
+(338), San Miguel (327) y La Lucila (41), de Zonaprop (1.403) y Argenprop (154). Acá
+lo que manda es el **terreno libre** —superficie total menos cubierta, o sea el patio—
+y el filtro arranca en 100 m²:
 
 | Terreno libre | Avisos |
 | --- | --- |
@@ -28,6 +29,11 @@ Chacarita (47), Agronomía (39), Núñez (38) y Coghlan (25). 118 con 4+ dormito
 
 Se mide con los metros del aviso y no con la palabra "jardín": 193 avisos con más de
 100 m² libres nunca la usan, y 315 que la usan tienen menos de 100.
+
+**Los 154 avisos de Argenprop no declaran lote** en estas localidades (solo superficie
+cubierta) ni traen coordenadas, así que no pasan el filtro de terreno ni aparecen en el
+mapa. Se ven poniendo "Sin mínimo", y el contador dice cuántos quedaron afuera por eso
+—350 en total, contando los de Zonaprop que tampoco lo declaran.
 
 La segunda página **se genera desde la primera** (`tools/make_gba.py`), así comparten
 CSS y JS y no se van separando. Si se toca `index.html`, correr el generador de nuevo.

@@ -297,7 +297,11 @@ function draw(){
  g.onmouseover=e=>{const c=e.target.closest('.card');if(c&&c.dataset.k!==hi){hi&&focusPin(hi,false);hi=c.dataset.k;focusPin(hi,true)}};
  g.onmouseleave=()=>{hi&&focusPin(hi,false);hi=null};
  drawPins();
- cnt.textContent=view.length===D.length?`${D.length} propiedades`:`${view.length} de ${D.length} propiedades`;
+ // con un mínimo de terreno activo, los avisos sin lote declarado quedan afuera.
+ // Decirlo: si no, parecen no existir (son casi todos los de Argenprop).
+ const base=view.length===D.length?`${D.length} propiedades`:`${view.length} de ${D.length} propiedades`;
+ const mudos=ter?D.filter(r=>okR(r)&&okD(r)&&okG(r)&&okF(r)&&okM(r)&&okPr(r)&&(!pk||r[8])&&!(r[18]||0)).length:0;
+ cnt.textContent=base+(mudos?` · ${mudos} sin lote declarado`:'');
 }
 // --- mapa ---
 // r[15] lat, r[16] lng. Se dibuja el resultado filtrado completo (no solo las
