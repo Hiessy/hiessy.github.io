@@ -18,6 +18,27 @@ Los barrios de la franja Edenor están en `EDENOR_CABA` (y `BARRIO_LABEL`, que a
 agrupa "Palermo Soho" o "Belgrano R" con su barrio padre para que el filtro tenga
 doce botones y no veinte).
 
+## La segunda página
+
+`gba-norte.html` (Bella Vista, San Miguel, Olivos, La Lucila, Martínez) no es un
+archivo a mano: se genera desde `index.html`, así las dos comparten CSS y JS.
+
+```bash
+python tools/gba_norte.py --max 260000   # relevar
+python tools/build_gba.py                # armar .work/DG.js
+python tools/make_gba.py                 # escribir gba-norte.html
+```
+
+Ojo con los slugs: `bella-vista` es Bella Vista de **Corrientes** y `la-lucila`, La
+Lucila de **Santa Fe**. Los del conurbano son `bella-vista-san-miguel` y
+`la-lucila-vicente-lopez`. Y agregarle `-gba-norte` a un slug que no existe no falla:
+devuelve la provincia entera, 37.000 avisos. Por eso cada aviso se valida contra el
+partido esperado.
+
+El umbral de outliers de coordenadas se pasa por parámetro: 60 km sirve para los
+barrios de CABA, pero estas localidades miden ~6 km y con ese número se colaba un
+aviso a 35 km que estiraba el mapa. Ahí va `km=8`.
+
 ## Refrescar avisos vencidos
 
 `scrape.py` solo agrega: un aviso dado de baja queda para siempre en la caché.

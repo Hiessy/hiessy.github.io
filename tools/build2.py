@@ -159,13 +159,18 @@ def geo(r):
     return (lat, lng) if (s <= lat <= n and w <= lng <= e) else (0, 0)
 
 
-def drop_far_coords(rows):
+def drop_far_coords(rows, km=None):
     """Saca las coordenadas que caen lejos del centro de su zona.
 
     La caja de Argentina no alcanza: un aviso de Floresta geocodificado en Chubut
     sigue estando en el país, pero rompe el encuadre del mapa de CABA. Se compara
     contra la *mediana* de la zona, que no se mueve por unos pocos outliers.
+
+    `km` se ajusta al tamaño de la zona: los barrios de CABA entran en 60 km, pero
+    localidades como Olivos o Martínez miden 6 km de punta a punta y con ese umbral
+    se cuelan avisos a 35 km que estiran el mapa.
     """
+    km = km or OUTLIER_KM
     from statistics import median
     dropped = 0
     for reg in {r[0] for r in rows}:
@@ -176,7 +181,7 @@ def drop_far_coords(rows):
         for r in pts:
             dy = (r[15] - clat) * 111.0
             dx = (r[16] - clng) * 111.0 * 0.82      # cos(lat) a estas latitudes
-            if (dx * dx + dy * dy) ** 0.5 > OUTLIER_KM:
+            if (dx * dx + dy * dy) ** 0.5 > km:
                 r[15] = r[16] = 0
                 dropped += 1
     return dropped
