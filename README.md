@@ -48,7 +48,10 @@ de CABA se siguen relevando pero no se publican: están en `.work/` y vuelven co
 - `index.html` / `gba-norte.html` — páginas completas: markup, CSS y JS embebidos,
   sin dependencias ni build. Filtros por barrio o localidad, dormitorios (2 / 3 / 4+),
   jardín, superficie y fuente; la de CABA suma "solo picks" y la de zona norte, el
-  terreno libre. Se combinan entre sí y los contadores
+  terreno libre.
+- **Slider de precio** de dos manijas, en su propia fila. Los topes salen de los datos
+  de cada página (73.000–260.000 en CABA, 28.000–260.000 en zona norte), así que no hay
+  números hardcodeados. Si se cruzan las manijas, la menor manda como piso. Se combinan entre sí y los contadores
   de cada botón se recalculan según lo que esté seleccionado. Las fichas se pintan
   de a 120 con un botón "Ver más".
   Responsive: hasta 1000 px las filas de filtros se deslizan de costado en lugar

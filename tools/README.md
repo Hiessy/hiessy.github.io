@@ -124,6 +124,13 @@ python tools/ap_baths.py --limit 40 --delay 20
 
 ## Detalles que cuestan caro re-descubrir
 
+- El **slider de precio** va en una fila propia (`.row3`) que **no** se desliza de
+  costado. Las otras filas de filtros sí lo hacen en pantallas chicas, y adentro de un
+  contenedor con `overflow-x:auto` arrastrar el thumb en touch es imposible: el gesto
+  se lo lleva el scroll. Son dos `<input type="range">` superpuestos con
+  `pointer-events:none` en el input y `auto` en el thumb — sin eso, el de arriba tapa
+  al de abajo y solo se puede mover uno.
+
 - **Coordenadas mal geocodificadas**: algunos avisos se ubican por el *nombre* de
   la calle y no por la dirección. "MEXICO al 3200" cae en México, "Suiza 1237" en
   Suiza, "AV. RIVADAVIA 8686" (Floresta) en Rivadavia, Chubut, y "LA PAMPA 5100"
