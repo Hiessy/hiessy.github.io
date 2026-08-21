@@ -39,6 +39,24 @@ El umbral de outliers de coordenadas se pasa por parámetro: 60 km sirve para lo
 barrios de CABA, pero estas localidades miden ~6 km y con ese número se colaba un
 aviso a 35 km que estiraba el mapa. Ahí va `km=8`.
 
+### Argenprop en CABA, barrio por barrio (`caba_ap.py`)
+
+El barrido viejo pedía `capital-federal` en una sola consulta y Argenprop corta a las
+pocas páginas: de toda la ciudad entraban ~100 avisos y, después del recorte a la
+franja Edenor, quedaban **17**. Pidiendo barrio por barrio cada uno tiene su cupo:
+383 relevados, **256 publicados**.
+
+Quedó `parque-chas` en 0 y `palermo` en 4 — bloqueos. No están sellados, así que
+volver a correrlo los reintenta.
+
+> **PENDIENTE — se colaron monoambientes.** El slug de Argenprop escribe
+> `-1-ambiente-` en **singular**, y el regex que saca los ambientes de la URL pide
+> `-(\d+)-ambientes` en plural. Resultado: los monoambientes quedan con "ambientes
+> desconocidos" y pasan el filtro de 3+. Son ~13 en CABA (ej. "Ceretti 3100, 26 m²,
+> 1 ambiente"). El arreglo es `-(\d+)-ambientes?-` en `argenprop.py`, más re-derivar
+> `amb` desde la URL en los JSON ya bajados y descartar en el build los que queden
+> con `0 < amb < 3`. **No aplicado todavía.**
+
 ### Argenprop en la zona norte (`gba_ap.py`)
 
 154 avisos, y con una limitación que conviene tener presente: **en estas localidades

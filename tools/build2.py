@@ -333,6 +333,34 @@ def main():
                                     # Argenprop no publica coordenadas en el listado
                                     provider(reg, bar), 'Argenprop', 0, 0, m2_of(r)])
 
+    # --- Argenprop pedido barrio por barrio (caba_ap.py). El barrido general de
+    # `capital-federal` traía ~100 avisos de toda la ciudad; por barrio entran muchos más.
+    cap = os.path.join(D, "caba_ap.json")
+    if os.path.exists(cap):
+        n_before = len(ap_rows)
+        have_ap = {r[2] for r in ap_rows}
+        for key, bucket in json.load(open(cap, encoding="utf-8")).items():
+            if key.startswith("_"):
+                continue
+            for r in bucket:
+                if r["url"] in have_ap:
+                    continue
+                k = dedupe_key(r["price"], r.get("dorm", 0), r.get("addr", ""))
+                if k in seen_key:
+                    continue
+                seen_key.add(k)
+                have_ap.add(r["url"])
+                n = note(r.get("d", ""), 3)
+                if not n:
+                    continue
+                bar = r.get("barrio") or ""
+                ap_rows.append([3, r["img"], r["url"], f"{r['price']:,}".replace(",", "."),
+                                r["price"], r.get("addr") or bar, specs(r), n, 0, bar,
+                                r.get("amb", 0), r.get("dorm", 0),
+                                int(bool(GARDEN.search(r.get("d", "")))),
+                                provider(3, bar), "Argenprop", 0, 0, m2_of(r)])
+        print("Argenprop por barrio: +", len(ap_rows) - n_before)
+
     allrows = ex + new + ap_rows
     allrows.sort(key=lambda r: (r[0], r[4]))
     print("existing", len(ex), "unresolved amb", len(unresolved))
