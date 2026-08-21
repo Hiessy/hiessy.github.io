@@ -100,7 +100,9 @@ def parse(page_html):
         href = m.group("href")
         amb = int(ATTR(a, "ambientes") or 0)
         if not amb:
-            ma = re.search(r"-(\d+)-ambientes", href)
+            # el slug escribe "-1-ambiente-" en SINGULAR: sin la "s?" los
+            # monoambientes quedaban con ambientes=0 y pasaban un filtro de 3+
+            ma = re.search(r"-(\d+)-ambientes?-", href)
             amb = int(ma.group(1)) if ma else 0
         out.append({
             "id": m.group("id"),

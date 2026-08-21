@@ -84,9 +84,10 @@ la usan, y 315 que la usan tienen menos de 100.</p>
 <p class="sub">Pasá el mouse por una ficha y se resalta su pin; hacé clic y el mapa se
 centra ahí. El ✓ sobre la foto marca avisos para verlos solos en el mapa.</p>
 <p class="sub"><b>Los avisos de Argenprop no declaran el lote</b> en estas localidades
-—solo la superficie cubierta— así que no pasan el filtro de terreno y tampoco tienen pin:
-el portal no publica coordenadas. Para verlos hay que poner <b>Sin mínimo</b>. El contador
-avisa cuántos quedaron afuera por no declarar lote.</p>
+—solo la superficie cubierta— así que no pasan el filtro de terreno: para verlos hay que
+poner <b>Sin mínimo</b>. El contador avisa cuántos quedaron afuera por eso. Sí tienen pin:
+Argenprop no publica coordenadas, pero sus direcciones se geocodifican contra
+OpenStreetMap.</p>
 ''' + t[j:]
 
     # el pie es de la página de CABA

@@ -49,13 +49,10 @@ franja Edenor, quedaban **17**. Pidiendo barrio por barrio cada uno tiene su cup
 Quedó `parque-chas` en 0 y `palermo` en 4 — bloqueos. No están sellados, así que
 volver a correrlo los reintenta.
 
-> **PENDIENTE — se colaron monoambientes.** El slug de Argenprop escribe
-> `-1-ambiente-` en **singular**, y el regex que saca los ambientes de la URL pide
-> `-(\d+)-ambientes` en plural. Resultado: los monoambientes quedan con "ambientes
-> desconocidos" y pasan el filtro de 3+. Son ~13 en CABA (ej. "Ceretti 3100, 26 m²,
-> 1 ambiente"). El arreglo es `-(\d+)-ambientes?-` en `argenprop.py`, más re-derivar
-> `amb` desde la URL en los JSON ya bajados y descartar en el build los que queden
-> con `0 < amb < 3`. **No aplicado todavía.**
+Los **monoambientes** se colaban: el slug escribe `-1-ambiente-` en **singular** y el
+regex pedía `-ambientes` en plural, así que quedaban con "ambientes desconocidos" y
+pasaban el filtro de 3+. Arreglado con `-(\d+)-ambientes?-`, y los JSON ya bajados se
+repararon releyendo la URL. Son ~24 en CABA (ej. "Ceretti 3100, 26 m², 1 ambiente").
 
 ### Argenprop en la zona norte (`gba_ap.py`)
 
@@ -151,6 +148,33 @@ python tools/ap_baths.py --limit 40 --delay 20
   (`api.mercadolibre.com/sites/MLA/search`) devuelve **403** sin token OAuth. La vía
   legítima es registrar una app de desarrollador y usar un access token; saltear la
   verificación no es una opción.
+
+## Geocodificar direcciones (`geocode.py`)
+
+Argenprop no publica coordenadas en el listado (sí en la ficha, que está bloqueada),
+pero sí la dirección. Se resuelve contra **Nominatim** (OpenStreetMap): gratis, sin
+API key y sin cuenta, a cambio de **1 pedido por segundo** y un User-Agent que
+identifique la app. Google Geocoding haría lo mismo pero pide key y facturación.
+
+```bash
+python tools/geocode.py
+```
+
+La caché (`.work/geocode.json`) es **permanente**: una dirección no cambia de lugar,
+así que se pide una sola vez. 545 de 788 resueltas; los pines caen a 0–0,6 km de la
+mediana de Zonaprop del mismo barrio, o sea que la calle y la altura pegan.
+
+Dos cosas que hay que hacerle a la dirección antes de preguntar:
+
+- `"Cabildo al 3000, Piso PB"` → `"Cabildo 3000"`. Nominatim no entiende el "al" de
+  altura aproximada, ni los sufijos de piso o entrecalles.
+- Las abreviaturas de calle no resuelven: `"Int. Arricau"` no, `"Intendente Arricau"`
+  sí. La expansión se hace **palabra por palabra y no con regex** — un `` mal
+  escapado se guarda como un backspace literal (0x08) y el patrón deja de matchear
+  sin avisar. Ya pasó una vez.
+
+Cada respuesta se valida contra la caja de su zona: si la dirección cae en otra
+ciudad, se descarta en vez de poner un pin en cualquier lado.
 
 ## Detalles que cuestan caro re-descubrir
 

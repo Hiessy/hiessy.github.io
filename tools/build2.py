@@ -187,6 +187,13 @@ def drop_far_coords(rows, km=None):
     return dropped
 
 
+# Argenprop no publica coordenadas: se sacan geocodificando la dirección.
+try:
+    from geocode import load_cache, coords_for
+except Exception:                       # el geocodificador es opcional
+    load_cache, coords_for = (lambda: {}), (lambda a, l, c: (0, 0))
+
+
 def spread(rows, n):
     rows = sorted(rows, key=lambda r: r["price"])
     if len(rows) <= n:
@@ -300,6 +307,7 @@ def main():
                         *geo(r), m2_of(r)])
 
     # --- 3. Argenprop, como segunda fuente ---
+    geo_cache = load_cache()
     ap_rows = []
     app = os.path.join(D, "argenprop_merged.json")
     if os.path.exists(app):
@@ -331,7 +339,9 @@ def main():
                                     r.get("amb", 0), r.get("dorm", 0),
                                     int(bool(GARDEN.search(r.get("d", "")))),
                                     # Argenprop no publica coordenadas en el listado
-                                    provider(reg, bar), 'Argenprop', 0, 0, m2_of(r)])
+                                    provider(reg, bar), 'Argenprop',
+                                    *coords_for(r.get("addr"), r.get("loc"), geo_cache),
+                                    m2_of(r)])
 
     # --- Argenprop pedido barrio por barrio (caba_ap.py). El barrido general de
     # `capital-federal` traía ~100 avisos de toda la ciudad; por barrio entran muchos más.
@@ -358,7 +368,9 @@ def main():
                                 r["price"], r.get("addr") or bar, specs(r), n, 0, bar,
                                 r.get("amb", 0), r.get("dorm", 0),
                                 int(bool(GARDEN.search(r.get("d", "")))),
-                                provider(3, bar), "Argenprop", 0, 0, m2_of(r)])
+                                provider(3, bar), "Argenprop",
+                                *coords_for(r.get("addr"), r.get("loc"), geo_cache),
+                                m2_of(r)])
         print("Argenprop por barrio: +", len(ap_rows) - n_before)
 
     allrows = ex + new + ap_rows
@@ -384,6 +396,13 @@ def main():
         before = len(allrows)
         allrows = [r for r in allrows if wanted(r)]
         print(f"recorte a {ONLY}: {len(allrows)} de {before}")
+    # La búsqueda es de 3 ambientes para arriba. Un aviso con ambientes
+    # *declarados* por debajo de eso no entra; con 0 es "no declarado" y se deja
+    # pasar, porque el filtro de la página es por dormitorios.
+    small = [r for r in allrows if 0 < r[10] < 3]
+    if small:
+        allrows = [r for r in allrows if not (0 < r[10] < 3)]
+        print("descartados por tener 1-2 ambientes:", len(small))
     far = drop_far_coords(allrows)
     print("coordenadas descartadas por lejanía:", far)
     js = "const D=" + json.dumps(allrows, ensure_ascii=False, separators=(",", ":")) + ";"

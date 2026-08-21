@@ -8,16 +8,15 @@ Dos búsquedas, una pestaña cada una:
 
 ### 1. CABA norte — [`index.html`](index.html)
 
-**1.258** PH y casas de 3 ambientes o más hasta USD 260.000, en los doce barrios de
-la franja **Edenor**: Villa Urquiza (277), Villa Pueyrredón (206), Palermo (199),
-Saavedra (162), Parque Chas (84), Colegiales (70), Belgrano (58), Villa Ortúzar (53),
-Chacarita (47), Agronomía (39), Núñez (38) y Coghlan (25). 118 con 4+ dormitorios,
-394 arriba de 100 m².
+**1.476** PH y casas de 3 ambientes o más hasta USD 260.000, en los doce barrios de
+la franja **Edenor**: Villa Urquiza, Villa Pueyrredón, Palermo, Saavedra, Parque Chas,
+Colegiales, Belgrano, Villa Ortúzar, Chacarita, Agronomía, Núñez y Coghlan. De Zonaprop
+(1.241) y Argenprop (235).
 
 ### 2. Zona norte con patio — [`gba-norte.html`](gba-norte.html)
 
-**1.557** casas y PH hasta USD 260.000 en Olivos (507), Martínez (344), Bella Vista
-(338), San Miguel (327) y La Lucila (41), de Zonaprop (1.403) y Argenprop (154). Acá
+**1.553** casas y PH hasta USD 260.000 en Olivos (507), Martínez (344), Bella Vista
+(338), San Miguel (327) y La Lucila (41), de Zonaprop (1.403) y Argenprop (150). Acá
 lo que manda es el **terreno libre** —superficie total menos cubierta, o sea el patio—
 y el filtro arranca en 100 m²:
 
@@ -30,10 +29,10 @@ y el filtro arranca en 100 m²:
 Se mide con los metros del aviso y no con la palabra "jardín": 193 avisos con más de
 100 m² libres nunca la usan, y 315 que la usan tienen menos de 100.
 
-**Los 154 avisos de Argenprop no declaran lote** en estas localidades (solo superficie
-cubierta) ni traen coordenadas, así que no pasan el filtro de terreno ni aparecen en el
-mapa. Se ven poniendo "Sin mínimo", y el contador dice cuántos quedaron afuera por eso
-—350 en total, contando los de Zonaprop que tampoco lo declaran.
+**Los 150 avisos de Argenprop no declaran lote** en estas localidades (solo superficie
+cubierta), así que no pasan el filtro de terreno: se ven poniendo "Sin mínimo", y el
+contador dice cuántos quedaron afuera por eso —350 en total, contando los de Zonaprop que
+tampoco lo declaran. Pin sí tienen: 130 de 150, geocodificando la dirección.
 
 La segunda página **se genera desde la primera** (`tools/make_gba.py`), así comparten
 CSS y JS y no se van separando. Si se toca `index.html`, correr el generador de nuevo.
@@ -55,6 +54,10 @@ de CABA se siguen relevando pero no se publican: están en `.work/` y vuelven co
   sin dependencias ni build. Filtros por barrio o localidad, dormitorios (2 / 3 / 4+),
   jardín, superficie y fuente; la de CABA suma "solo picks" y la de zona norte, el
   terreno libre.
+- **Pines de Argenprop por geocodificación**: el portal no publica coordenadas en el
+  listado, pero sí la dirección. `tools/geocode.py` la resuelve contra **Nominatim**
+  (OpenStreetMap): gratis, sin API key y sin cuenta. 545 de 788 direcciones resueltas;
+  los pines caen a 0–0,6 km de la mediana de Zonaprop del mismo barrio.
 - **Slider de precio** de dos manijas, en su propia fila. Los topes salen de los datos
   de cada página (73.000–260.000 en CABA, 28.000–260.000 en zona norte), así que no hay
   números hardcodeados. Si se cruzan las manijas, la menor manda como piso. Se combinan entre sí y los contadores
@@ -74,7 +77,7 @@ de CABA se siguen relevando pero no se publican: están en `.work/` y vuelven co
   centra el mapa en esa propiedad y abre su globo. En pantallas apiladas además
   scrollea hasta el mapa.
 - Leaflet desde CDN y tiles de CARTO/OpenStreetMap son lo único que la página pide
-  afuera. Los avisos de Argenprop no tienen pin: el portal no publica coordenadas.
+  afuera, y no consumen ninguna cuota: son tiles públicos que baja el navegador.
 - `tools/` — scripts del relevamiento y la caché. Ver [tools/README.md](tools/README.md).
 
 ## Desarrollo

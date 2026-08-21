@@ -14,6 +14,7 @@ import json, os
 from collections import Counter
 
 from build2 import note, geo, drop_far_coords, m2_of
+from geocode import load_cache, coords_for
 
 D = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".work")
 SRC = os.path.join(D, "gba_norte.json")
@@ -62,6 +63,7 @@ def main():
                          "Zonaprop", *geo(r), m2_of(r), patio(r)])
     # --- Argenprop. Sin superficie total no hay dato de lote: entran con terreno 0,
     # que es "no declarado", no "sin patio". La página lo aclara en el contador.
+    geo_cache = load_cache()
     ap_n = 0
     if os.path.exists(AP):
         for key, bucket in json.load(open(AP, encoding="utf-8")).items():
@@ -79,12 +81,18 @@ def main():
                              r["img"], r["url"], f"{r['price']:,}".replace(",", "."), r["price"],
                              r.get("addr") or zona, specs_gba(r), n, 0, zona,
                              r.get("amb", 0), r.get("dorm", 0), r.get("gar", 0), "",
-                             "Argenprop", 0, 0, m2_of(r), patio(r)])
+                             "Argenprop",
+                             *coords_for(r.get("addr"), r.get("loc"), geo_cache),
+                             m2_of(r), patio(r)])
                 ap_n += 1
     print("Argenprop:", ap_n, "(sin dato de lote:",
           sum(1 for r in rows if r[14] == "Argenprop" and not r[18]), ")")
 
     rows.sort(key=lambda r: (r[0], r[4]))
+    small = [r for r in rows if 0 < r[10] < 3]
+    if small:
+        rows = [r for r in rows if not (0 < r[10] < 3)]
+        print("descartados por tener 1-2 ambientes:", len(small))
     # estas localidades miden ~6 km: 60 km dejaba pasar un aviso a 35
     far = drop_far_coords(rows, km=8)
 
