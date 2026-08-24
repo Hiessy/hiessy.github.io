@@ -58,6 +58,11 @@ de CABA se siguen relevando pero no se publican: están en `.work/` y vuelven co
   listado, pero sí la dirección. `tools/geocode.py` la resuelve contra **Nominatim**
   (OpenStreetMap): gratis, sin API key y sin cuenta. 545 de 788 direcciones resueltas;
   los pines caen a 0–0,6 km de la mediana de Zonaprop del mismo barrio.
+- **Rasgos del aviso al pasar el mouse**: sobre la foto aparecen terraza, balcón,
+  patio, jardín, cochera y pileta. **Lleno = lo menciona el aviso; punteado = no lo
+  menciona, que no es lo mismo que no tenerlo.** Se detectan en el texto publicado, y
+  la mitad de las descripciones vienen cortadas por el propio portal, así que la
+  ausencia no prueba nada. En celular se muestran siempre, porque no hay hover.
 - **Slider de precio** de dos manijas, en su propia fila. Los topes salen de los datos
   de cada página (73.000–260.000 en CABA, 28.000–260.000 en zona norte), así que no hay
   números hardcodeados. Si se cruzan las manijas, la menor manda como piso. Se combinan entre sí y los contadores

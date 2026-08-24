@@ -176,6 +176,23 @@ Dos cosas que hay que hacerle a la dirección antes de preguntar:
 Cada respuesta se valida contra la caja de su zona: si la dirección cae en otra
 ciudad, se descarta en vez de poner un pin en cualquier lado.
 
+## Rasgos del aviso (terraza, patio, cochera…)
+
+Salen de buscar palabras en la descripción (`FEATS` en `build2.py`), porque el listado
+de Zonaprop **no trae amenities**: `generalFeatures` viene vacío y `mainFeatures` solo
+tiene superficie y ambientes.
+
+Por eso la descripción se guarda hasta **1.600 caracteres y no 400**. Con 400, el 95%
+quedaba cortada y "no menciona terraza" solo significaba "la cortamos antes": subir el
+tope llevó la detección de terraza del 39% al 64% y la de balcón del 14% al 26%. Aun
+así ~50% sigue tocando el tope, así que **la ausencia de una palabra no prueba nada** y
+la página lo dice con todas las letras.
+
+> Cuidado con los `` en estos regex. Escribirlos desde un heredoc de shell los
+> convierte en un **backspace literal (0x08)** y el patrón deja de matchear sin avisar
+> — pasó tres veces en este proyecto. Editar el archivo directamente, o construir la
+> barra con `chr(92)`.
+
 ## Detalles que cuestan caro re-descubrir
 
 - El **slider de precio** va en una fila propia (`.row3`) que **no** se desliza de

@@ -13,7 +13,7 @@ La bandera `jardín` sale del texto del aviso y no alcanza: 193 avisos con más 
 import json, os
 from collections import Counter
 
-from build2 import note, geo, drop_far_coords, m2_of
+from build2 import note, geo, drop_far_coords, m2_of, feats_of
 from geocode import load_cache, coords_for
 
 D = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".work")
@@ -60,7 +60,8 @@ def main():
                          r["img"], r["url"], f"{r['price']:,}".replace(",", "."), r["price"],
                          r.get("addr") or zona, specs_gba(r), n, 0, zona,
                          r.get("amb", 0), r.get("dorm", 0), r.get("gar", 0), "",
-                         "Zonaprop", *geo(r), m2_of(r), patio(r)])
+                         "Zonaprop", *geo(r), m2_of(r), patio(r),
+                         feats_of(r.get("d", ""))])
     # --- Argenprop. Sin superficie total no hay dato de lote: entran con terreno 0,
     # que es "no declarado", no "sin patio". La página lo aclara en el contador.
     geo_cache = load_cache()
@@ -83,7 +84,7 @@ def main():
                              r.get("amb", 0), r.get("dorm", 0), r.get("gar", 0), "",
                              "Argenprop",
                              *coords_for(r.get("addr"), r.get("loc"), geo_cache),
-                             m2_of(r), patio(r)])
+                             m2_of(r), patio(r), feats_of(r.get("d", ""))])
                 ap_n += 1
     print("Argenprop:", ap_n, "(sin dato de lote:",
           sum(1 for r in rows if r[14] == "Argenprop" and not r[18]), ")")

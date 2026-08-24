@@ -120,7 +120,9 @@ def parse(r):
         # coordenadas para el mapa; vienen en todos los avisos del listado
         'lat': round(geo['latitude'], 6) if geo.get('latitude') else 0,
         'lng': round(geo['longitude'], 6) if geo.get('longitude') else 0,
-        'd': full[:400],
+        # 1.600 y no 400: con 400 el 95% de las descripciones quedaba cortada y
+        # 'no menciona terraza' solo quería decir 'la cortamos antes'
+        'd': full[:1600],
     }
 
 

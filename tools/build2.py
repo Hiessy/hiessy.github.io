@@ -4,6 +4,7 @@ Row shape (unchanged prefix, two new trailing fields):
   0 region  1 img  2 slug  3 priceStr  4 priceNum  5 address
   6 specs   7 note 8 pick  9 caption  10 ambientes  11 dormitorios  12 jardín
   13 distribuidora eléctrica  14 fuente (Zonaprop / Argenprop)  15 lat  16 lng  17 m²
+  18 terreno libre  19 rasgos mencionados (índices de FEATS)
 """
 import json, os, re
 from collections import Counter
@@ -75,6 +76,36 @@ def note(d, reg=None):
     if not out:
         return ""
     return out[0].upper() + out[1:] + ("" if out[-1] in ".!…" else ".")
+
+
+# Rasgos que mueven la decisión. Se detectan en el texto del aviso, así que
+# "mencionado" es un dato y "no mencionado" NO es lo mismo que "no lo tiene":
+# el vendedor pudo no escribirlo. La página lo dice con esas palabras.
+FEATS = [
+    ("terraza",  r"terraza"),
+    ("balcón",   r"balc[oó]n"),
+    ("patio",    r"\bpatio"),
+    ("jardín",   r"jard[ií]n|parquizad"),
+    ("cochera",  r"cochera|garage|garaje"),
+    ("parrilla", r"parrilla|quincho"),
+    ("pileta",   r"pileta|piscina"),
+    ("crédito",  r"apto\s+cr[eé]dito"),
+    ("a refaccionar", r"\b(a|para)\s+(refaccionar|reciclar|remodelar|reformar)"),
+]
+FEAT_RX = [(name, re.compile(pat, re.I)) for name, pat in FEATS]
+
+
+def patio_of(r):
+    """Terreno libre: total menos cubierto. En CABA casi nunca hay, pero cuando el
+    aviso declara las dos superficies el dato sirve igual."""
+    return max((r.get("tot") or 0) - (r.get("cub") or 0), 0)
+
+
+def feats_of(text):
+    """Índices de FEATS mencionados en el aviso. Se guardan como números para no
+    repetir las mismas nueve palabras en 1.500 filas del HTML."""
+    t = text or ""
+    return [i for i, (_, rx) in enumerate(FEAT_RX) if rx.search(t)]
 
 
 def specs(r):
@@ -273,6 +304,8 @@ def main():
         row.append(la)
         row.append(lo)
         row.append(m2_of(s) if s else m2_from_specs(row[6]))
+        row.append(patio_of(s or {}))
+        row.append(feats_of((s or {}).get('d', '') or row[7]))
 
     # --- 2. new listings, sampled evenly across each region's price range ---
     have = {lid(r[2]) for r in ex}
@@ -304,7 +337,7 @@ def main():
                         r["price"], r.get("addr") or r.get("loc") or "", specs(r), n, 0,
                         r.get("loc") or "", amb, r.get("dorm", 0), r.get("gar", 0),
                         provider(reg, r.get("loc")), 'Zonaprop',
-                        *geo(r), m2_of(r)])
+                        *geo(r), m2_of(r), patio_of(r), feats_of(r.get('d', ''))])
 
     # --- 3. Argenprop, como segunda fuente ---
     geo_cache = load_cache()
@@ -341,7 +374,7 @@ def main():
                                     # Argenprop no publica coordenadas en el listado
                                     provider(reg, bar), 'Argenprop',
                                     *coords_for(r.get("addr"), r.get("loc"), geo_cache),
-                                    m2_of(r)])
+                                    m2_of(r), patio_of(r), feats_of(r.get("d", ""))])
 
     # --- Argenprop pedido barrio por barrio (caba_ap.py). El barrido general de
     # `capital-federal` traía ~100 avisos de toda la ciudad; por barrio entran muchos más.
@@ -370,7 +403,7 @@ def main():
                                 int(bool(GARDEN.search(r.get("d", "")))),
                                 provider(3, bar), "Argenprop",
                                 *coords_for(r.get("addr"), r.get("loc"), geo_cache),
-                                m2_of(r)])
+                                m2_of(r), patio_of(r), feats_of(r.get("d", ""))])
         print("Argenprop por barrio: +", len(ap_rows) - n_before)
 
     allrows = ex + new + ap_rows
@@ -385,6 +418,9 @@ def main():
     print("fuente", Counter(r[14] for r in allrows))
     print("con coordenadas", sum(1 for r in allrows if r[15] and r[16]))
     print("con m²", sum(1 for r in allrows if r[17]), "| >=100 m²", sum(1 for r in allrows if r[17] >= 100))
+    from collections import Counter as _C
+    fc = _C(FEATS[i][0] for r in allrows for i in r[19])
+    print("rasgos:", dict(fc.most_common()))
     print("CABA distribuidora", Counter(r[13] for r in allrows if r[0] == 3))
 
     # etiqueta de barrio homogénea: la del barrido si está, si no la del propio row
