@@ -61,8 +61,8 @@ def main():
 <button class="pill" id="m2" hidden>100 m²+ <em></em></button>''')
 
     # arranca pidiendo patio: es el requisito de esta búsqueda
-    t = rep(t, 'let bar="",pk=false,gd=false,mq=false,fu="",ter=0,shown=0,view=[];',
-               'let bar="",pk=false,gd=false,mq=false,fu="",ter=100,shown=0,view=[];')
+    t = rep(t, 'let bar="",pk=false,mq=false,fu="",ter=0,shown=0,view=[];',
+               'let bar="",pk=false,mq=false,fu="",ter=100,shown=0,view=[];')
 
     # textos
     t = rep(t, "<title>Búsqueda de propiedades · Argentina</title>",

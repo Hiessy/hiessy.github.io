@@ -66,6 +66,11 @@ de CABA se siguen relevando pero no se publican: están en `.work/` y vuelven co
 - **Dormitorios con multiselección**: los botones se acumulan (2 + 4+ muestra las dos
   cosas), "Todos" limpia. Cada contador sigue mostrando su propio grupo, así que se ve
   cuánto suma cada uno antes de tildarlo.
+- **Exterior**: Terraza, Balcón y Jardín, también multiselección. Tildar varios muestra
+  los avisos que tienen **alguna** de las tres, no las tres juntas — la intersección da
+  12 avisos en CABA y 27 en zona norte, así que como filtro no serviría. Sale de los
+  mismos rasgos del texto que las chapitas de la ficha, con la misma advertencia: que
+  no lo mencione no prueba que no lo tenga.
 - **Slider de precio** de dos manijas, en su propia fila. Los topes salen de los datos
   de cada página (73.000–260.000 en CABA, 28.000–260.000 en zona norte), así que no hay
   números hardcodeados. Si se cruzan las manijas, la menor manda como piso. Se combinan entre sí y los contadores
