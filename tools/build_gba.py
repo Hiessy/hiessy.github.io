@@ -90,6 +90,11 @@ def main():
           sum(1 for r in rows if r[14] == "Argenprop" and not r[18]), ")")
 
     rows.sort(key=lambda r: (r[0], r[4]))
+    # sin ambientes, ni dormitorios, ni superficie no hay nada que evaluar
+    empty = [r for r in rows if not r[6].strip()]
+    if empty:
+        rows = [r for r in rows if r[6].strip()]
+        print("descartados sin datos:", len(empty))
     small = [r for r in rows if 0 < r[10] < 3]
     if small:
         rows = [r for r in rows if not (0 < r[10] < 3)]

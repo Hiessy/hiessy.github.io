@@ -435,6 +435,11 @@ def main():
     # La búsqueda es de 3 ambientes para arriba. Un aviso con ambientes
     # *declarados* por debajo de eso no entra; con 0 es "no declarado" y se deja
     # pasar, porque el filtro de la página es por dormitorios.
+    # sin ambientes, ni dormitorios, ni superficie no hay nada que evaluar
+    empty = [r for r in allrows if not r[6].strip()]
+    if empty:
+        allrows = [r for r in allrows if r[6].strip()]
+        print("descartados sin datos:", len(empty))
     small = [r for r in allrows if 0 < r[10] < 3]
     if small:
         allrows = [r for r in allrows if not (0 < r[10] < 3)]
