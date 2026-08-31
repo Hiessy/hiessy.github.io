@@ -160,9 +160,21 @@ python tools/ap_baths.py --limit 40 --delay 20
 
   Los que solo piden auth lo dicen con `PolicyAgent`. La búsqueda contesta un
   "forbidden" pelado, que es lo que reportan otros proyectos desde que Mercado Libre
-  cerró la búsqueda general a terceros. O sea: el token seguramente abra las fichas
-  individuales pero no la búsqueda, que es la que haría falta para relevar. `--probe`
-  lo confirma en una llamada.
+  cerró la búsqueda general a terceros.
+
+  **DESCARTADO — no hace falta seguir probando.** El formulario de alta de la app
+  (agosto 2026) lo deja claro: los permisos que se pueden pedir son todos de
+  **vendedor sobre su propia cuenta** — Usuarios ("consultar y actualizar la cuenta
+  registrada"), Publicación y sincronización ("las publicaciones de la tienda"),
+  Publicidad, Facturación, Métricas, Promociones, Ventas y envíos. Los "Tópicos"
+  (Orders, Items, Prices, Catalog…) son avisos webhook sobre *tus* publicaciones.
+  **No existe un permiso de lectura del marketplace ajeno.** No es que falte
+  configurar algo: la API es de integración para vendedores, no de consulta pública.
+  Ni siquiera aparecen los scopes `read` / `offline_access` que documentaba la versión
+  vieja.
+
+  `meli.py` queda en el repo por si algún día reabren la búsqueda: tiene el flujo
+  OAuth entero y `--probe` para confirmarlo en una llamada.
 
 ## Geocodificar direcciones (`geocode.py`)
 
