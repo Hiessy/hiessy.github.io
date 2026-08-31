@@ -143,11 +143,26 @@ python tools/ap_baths.py --limit 40 --delay 20
   nuevo) y repara lo que puede sin volver a pedir: ambientes desde la URL, y deja
   en 0 la superficie absurda para la cantidad de dormitorios.
 
-- **Mercado Libre**: no se puede sin credenciales. El scraping redirige a
-  `gz/account-verification` (su frontend de "suspicious traffic"), y la API pública
-  (`api.mercadolibre.com/sites/MLA/search`) devuelve **403** sin token OAuth. La vía
-  legítima es registrar una app de desarrollador y usar un access token; saltear la
-  verificación no es una opción.
+- **Mercado Libre** (`meli.py`): el scraping redirige a `gz/account-verification`
+  (su frontend de "suspicious traffic"), así que la única vía es la API con OAuth.
+  `meli.py` implementa el flujo completo —authorization code, refresh automático,
+  credenciales en `.work/meli_secrets.json` (fuera de git)— y un `--probe` que dice
+  qué endpoints contesta el token.
+
+  **Pero probablemente no alcance.** Sin token hay dos 403 distintos, y la diferencia
+  importa:
+
+  | Endpoint | Respuesta sin token |
+  | --- | --- |
+  | `/categories/MLA1459` | 200, abierto |
+  | `/sites/MLA`, `/items/{id}` | 403 `PolicyAgent: UNAUTHORIZED` — falta token |
+  | `/sites/MLA/search` | 403 `{"message":"forbidden"}` — bloqueo de política |
+
+  Los que solo piden auth lo dicen con `PolicyAgent`. La búsqueda contesta un
+  "forbidden" pelado, que es lo que reportan otros proyectos desde que Mercado Libre
+  cerró la búsqueda general a terceros. O sea: el token seguramente abra las fichas
+  individuales pero no la búsqueda, que es la que haría falta para relevar. `--probe`
+  lo confirma en una llamada.
 
 ## Geocodificar direcciones (`geocode.py`)
 
