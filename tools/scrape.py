@@ -158,7 +158,16 @@ def fresh(data, slug):
 def main():
     data = load()
     force = '--force' in sys.argv
+    # --only acota el barrido a ciertos slugs. Sin esto, scrape.py recorre las 29
+    # comunas de CABA más Tigre, Córdoba y Patagonia cada vez que vence la caché:
+    # una corrida "para refrescar 12 barrios" tardó 172 minutos.
+    only = None
+    if '--only' in sys.argv:
+        only = set(sys.argv[sys.argv.index('--only') + 1].split(','))
+        print('solo:', sorted(only), flush=True)
     for key, slug, reg, maxp, require in JOBS:
+        if only and slug not in only:
+            continue
         if not force and fresh(data, slug):
             age = (time.time() - data['_fetched'][slug]) / 3600
             print(f"{key}/{slug}: cache ({age:.1f} h) — skip", flush=True)

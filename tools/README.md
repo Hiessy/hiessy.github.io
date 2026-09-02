@@ -73,8 +73,15 @@ Para sacarlos hay que borrar las filas de esos slugs y volver a pedirlos:
 
 ```bash
 python tools/refresh.py --edenor    # los 12 barrios de CABA que son Edenor
-python tools/scrape.py
+python tools/scrape.py --only belgrano,saavedra,coghlan,colegiales,nunez
 ```
+
+**Siempre pasar `--only` con los mismos slugs que se purgaron.** `refresh.py`
+limpia unos pocos, pero `scrape.py` sin `--only` recorre igual sus 34 jobs: las 29
+comunas de CABA más Tigre, San Miguel, Córdoba y Patagonia. Refrescar 12 barrios
+así tardó 172 minutos, casi todos gastados en zonas que ni siquiera se publican.
+Con `--only` los mismos 5 barrios se relevaron en 30 segundos. `caba_ap.py` y
+`gba_ap.py` aceptan el mismo flag.
 
 ## Caché
 
@@ -219,6 +226,33 @@ la página lo dice con todas las letras.
 > convierte en un **backspace literal (0x08)** y el patrón deja de matchear sin avisar
 > — pasó tres veces en este proyecto. Editar el archivo directamente, o construir la
 > barra con `chr(92)`.
+
+## Avisos repetidos (`dedupe.py`)
+
+El mismo inmueble aparece dos veces por dos motivos distintos: se publica en
+Zonaprop **y** en Argenprop, y además la misma inmobiliaria lo repite dentro de un
+mismo portal con otro `postingId` y otra foto. Ningún barrido puede ver al otro,
+así que la única pasada que los ve juntos corre al final de `build2.py` y
+`build_gba.py`, sobre las filas ya fusionadas.
+
+Se agrupa por **precio + dirección normalizada**: sin acentos, cortando en
+`, Piso/PB/UF/Depto`, cortando en `entre`, y sacando el "al" de `Quesada al 3500`.
+El `dedupe_key` anterior — precio, dormitorios y `addr[:14]` en crudo — dejaba
+pasar **192 repetidos en CABA y 216 en zona norte**, porque truncaba a 14
+caracteres sin normalizar nada: `Quesada al 350` y `Quesada 3548` no se parecían.
+
+Dos salvaguardas contra borrar propiedades reales:
+
+- Direcciones de menos de 6 caracteres útiles (`Belgrano`, `s/d`) **no** agrupan.
+- Si dos filas del mismo grupo declaran superficies que difieren en más de 40 m²,
+  se quedan las dos: son dos unidades del mismo edificio al mismo precio, no un
+  repetido. Sobre los datos actuales esto rescató 1 de 161 grupos.
+
+La fila perdedora no se descarta entera: primero le cede a la ganadora lo que a
+esta le falta — coordenadas, m², terreno, ambientes, dormitorios — y los rasgos se
+unen. Un aviso de Argenprop sin geocodificar se queda con las coordenadas que
+Zonaprop sí publica, y cada portal recorta la descripción en distinto lugar, así
+que la unión de rasgos detecta más que cualquiera de los dos por separado.
 
 ## Detalles que cuestan caro re-descubrir
 

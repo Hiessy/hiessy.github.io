@@ -170,6 +170,9 @@ def ap_barrio(title):
     return m.group(1).strip() if m else ""
 
 
+from dedupe import dedupe        # pasada final: ver tools/dedupe.py
+
+
 def dedupe_key(price, dorm, addr):
     a = re.sub(r"[^a-z0-9]", "", (addr or "").lower())[:14]
     return (price, dorm, a)
@@ -407,6 +410,8 @@ def main():
         print("Argenprop por barrio: +", len(ap_rows) - n_before)
 
     allrows = ex + new + ap_rows
+    allrows, dups = dedupe(allrows)
+    print("repetidos sacados", dups)
     allrows.sort(key=lambda r: (r[0], r[4]))
     print("existing", len(ex), "unresolved amb", len(unresolved))
     print("new", len(new), "total", len(allrows))

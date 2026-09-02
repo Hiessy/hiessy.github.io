@@ -14,6 +14,7 @@ import json, os
 from collections import Counter
 
 from build2 import note, geo, drop_far_coords, m2_of, feats_of
+from dedupe import dedupe        # pasada final: ver tools/dedupe.py
 from geocode import load_cache, coords_for
 
 D = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".work")
@@ -89,6 +90,8 @@ def main():
     print("Argenprop:", ap_n, "(sin dato de lote:",
           sum(1 for r in rows if r[14] == "Argenprop" and not r[18]), ")")
 
+    rows, dups = dedupe(rows)
+    print("repetidos sacados", dups)
     rows.sort(key=lambda r: (r[0], r[4]))
     # sin ambientes, ni dormitorios, ni superficie no hay nada que evaluar
     empty = [r for r in rows if not r[6].strip()]

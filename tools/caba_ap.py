@@ -54,8 +54,14 @@ def main():
     data = json.load(open(OUT, encoding="utf-8")) if os.path.exists(OUT) else {}
     stamp = data.setdefault("_fetched", {})
     order = sorted(BARRIOS, key=lambda b: len(data.get(b[0], [])))
+    only = None
+    if "--only" in sys.argv:
+        only = set(sys.argv[sys.argv.index("--only") + 1].split(","))
+        print("solo:", sorted(only), flush=True)
 
     for slug, label in order:
+        if only and slug not in only:
+            continue
         if time.time() - stamp.get(slug, 0) < 24 * 3600:
             print(f"{slug}: cache — skip", flush=True); continue
         bucket = data.setdefault(slug, [])
