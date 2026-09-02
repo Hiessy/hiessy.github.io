@@ -9,7 +9,7 @@ Requieren solo la stdlib de Python 3.11 (sin dependencias).
 
 Techo de precio: **USD 260.000** (`MAXP` en `scrape.py` y `argenprop.py`).
 
-La página publica **solo CABA zona norte (área de Edenor)**: 1.258 de los ~5.900
+La página publica **solo CABA zona norte (área de Edenor)**: 1.365 de los ~6.500
 avisos relevados. El recorte es `ONLY` en `build2.py`; poniéndolo en `None` vuelve
 a salir todo. Lo demás se sigue relevando y queda en `.work/` — no se borró nada,
 solo dejó de entrar al HTML, que pasó de 1,8 MB a 0,42 MB.
@@ -44,10 +44,10 @@ aviso a 35 km que estiraba el mapa. Ahí va `km=8`.
 El barrido viejo pedía `capital-federal` en una sola consulta y Argenprop corta a las
 pocas páginas: de toda la ciudad entraban ~100 avisos y, después del recorte a la
 franja Edenor, quedaban **17**. Pidiendo barrio por barrio cada uno tiene su cupo:
-383 relevados, **256 publicados**.
+470 relevados, **199 publicados** (bajaron de 302 al sacar los repetidos que ya
+estaban por Zonaprop — ver `dedupe.py`).
 
-Quedó `parque-chas` en 0 y `palermo` en 4 — bloqueos. No están sellados, así que
-volver a correrlo los reintenta.
+Los barrios bloqueados no quedan sellados, así que volver a correrlo los reintenta.
 
 Los **monoambientes** se colaban: el slug escribe `-1-ambiente-` en **singular** y el
 regex pedía `-ambientes` en plural, así que quedaban con "ambientes desconocidos" y
@@ -56,7 +56,7 @@ repararon releyendo la URL. Son ~24 en CABA (ej. "Ceretti 3100, 26 m², 1 ambien
 
 ### Argenprop en la zona norte (`gba_ap.py`)
 
-154 avisos, y con una limitación que conviene tener presente: **en estas localidades
+263 avisos relevados (117 publicados tras el dedupe), y con una limitación que conviene tener presente: **en estas localidades
 las tarjetas de Argenprop no declaran superficie total**, solo cubierta (0 de 40 en la
 muestra). Las fichas individuales sí la traen, pero están bloqueadas. Sin lote no pasan
 el filtro de terreno libre — se los deja entrar igual, marcados, y el contador de la
@@ -115,6 +115,10 @@ python tools/scrape.py --force
    de texto y devolvía números equivocados.
 4. `build2.py` — mergea los 192 originales con el barrido, samplea por zona según
    `CAP` y escribe `.work/D.js`.
+5. `inject.py` — mete `D.js` en `index.html` **y recalcula los números del texto**.
+   Este paso se hacía a mano: el encabezado decía "1.258 casas y PH" con 1.365
+   publicadas y el pie seguía diciendo "agosto" en septiembre. Todo número o fecha
+   que aparezca en la prosa sale del dataset. `make_gba.py` hace lo mismo del otro lado.
 
 ## Otras fuentes
 
@@ -226,6 +230,24 @@ la página lo dice con todas las letras.
 > convierte en un **backspace literal (0x08)** y el patrón deja de matchear sin avisar
 > — pasó tres veces en este proyecto. Editar el archivo directamente, o construir la
 > barra con `chr(92)`.
+
+## Nunca vaciar un bucket de Argenprop antes de pedirlo
+
+Con Zonaprop, `refresh.py` borra los avisos de un slug y después los vuelve a pedir,
+porque Zonaprop contesta siempre. Argenprop no: bloquea. Al purgar los cinco barrios
+a mano y correr `caba_ap.py`, **Belgrano y Núñez se bloquearon en el primer pedido de
+las dos categorías** y quedaron en cero — 54 avisos que solo se recuperaron de
+`caba_ap_bak.json`, con cinco días de atraso.
+
+Por eso el purgado ahora es un flag y sucede **después** de que llegó la primera
+página buena:
+
+```bash
+python tools/caba_ap.py --only belgrano,nunez --purge
+```
+
+Sin `--purge` el barrido solo agrega, que es lo seguro. Y como el sello se pone solo
+si el bucket creció, un barrio bloqueado se reintenta en la corrida siguiente.
 
 ## Avisos repetidos (`dedupe.py`)
 

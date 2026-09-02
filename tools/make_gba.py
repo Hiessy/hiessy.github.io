@@ -126,7 +126,7 @@ mensual más que la hipoteca.</p>
 <p><b>Electricidad:</b> Vicente López, San Isidro y San Miguel son área de <b>Edenor</b>,
 igual que la franja de CABA de la otra pestaña.</p>
 <p style="margin-top:18px">Relevado en {s["fecha"]} · datos de <a class="tx"
-href="https://www.zonaprop.com.ar" target="_blank" rel="noopener">Zonaprop</a> · los precios
+href="https://www.zonaprop.com.ar" target="_blank" rel="noopener">Zonaprop</a> y <a class="tx" href="https://www.argenprop.com" target="_blank" rel="noopener">Argenprop</a> · los precios
 y la disponibilidad cambian rápido, confirmá con la inmobiliaria antes de viajar.</p>
 ''' + t[j:]
 

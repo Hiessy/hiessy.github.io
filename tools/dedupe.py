@@ -78,24 +78,32 @@ def dedupe(rows):
         if len(g) == 1:
             out.append(g[0])
             continue
-        g.sort(key=score, reverse=True)
-        best, rest = g[0], g[1:]
-        for r in rest:
-            # Misma dirección y mismo precio pero 40 m² de diferencia no es un
-            # repetido: son dos unidades del mismo edificio publicadas al mismo
-            # valor. Solo se descarta la fila si su superficie es compatible.
-            if r[M2] and best[M2] and abs(r[M2] - best[M2]) > 40:
-                out.append(r)
-                continue
-            if not (best[LAT] and best[LNG]) and r[LAT] and r[LNG]:
-                best[LAT], best[LNG] = r[LAT], r[LNG]
-            for i in (M2, TER, AMB, DORM):
-                if not best[i] and r[i]:
-                    best[i] = r[i]
-            if r[GAR]:
-                best[GAR] = 1
-            if r[FEAT]:
-                best[FEAT] = sorted(set(best[FEAT] or []) | set(r[FEAT]))
-        out.append(best)
-        dropped += len(rest)
+        # Misma dirección y mismo precio pero 40 m² de diferencia no es un
+        # repetido: son dos unidades del mismo edificio publicadas al mismo valor.
+        # Por eso el grupo se subdivide en cúmulos por superficie en vez de
+        # comparar todo contra una sola fila: en Arias 3200 había dos avisos de
+        # 64 m² y uno de 114, y midiendo solo contra el de 114 los dos de 64
+        # quedaban sueltos, repetidos entre sí.
+        clusters = []
+        for r in sorted(g, key=score, reverse=True):
+            for c in clusters:
+                if not (r[M2] and c[0][M2] and abs(r[M2] - c[0][M2]) > 40):
+                    c.append(r)
+                    break
+            else:
+                clusters.append([r])
+        for c in clusters:
+            best, rest = c[0], c[1:]
+            for r in rest:
+                if not (best[LAT] and best[LNG]) and r[LAT] and r[LNG]:
+                    best[LAT], best[LNG] = r[LAT], r[LNG]
+                for i in (M2, TER, AMB, DORM):
+                    if not best[i] and r[i]:
+                        best[i] = r[i]
+                if r[GAR]:
+                    best[GAR] = 1
+                if r[FEAT]:
+                    best[FEAT] = sorted(set(best[FEAT] or []) | set(r[FEAT]))
+            out.append(best)
+            dropped += len(rest)
     return out, dropped

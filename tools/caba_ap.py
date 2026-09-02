@@ -68,6 +68,11 @@ def main():
         before = len(bucket)
         seen = {x["id"] for x in bucket}
         want = plain(label)
+        # `--purge` saca los avisos viejos del barrio, pero recién cuando llega la
+        # primera página buena. Vaciar el bucket *antes* de pedir es lo que hizo
+        # perder 54 avisos de Belgrano y Núñez: Argenprop bloqueó el primer pedido
+        # de los dos y quedaron en cero, sin nada que restaurar salvo un backup.
+        purge = "--purge" in sys.argv
         for tipo in TIPOS:
             for p in range(1, PAGES + 1):
                 h = get(url_for(tipo, slug, p, mx))
@@ -76,6 +81,10 @@ def main():
                 rows = parse(h)
                 if not rows:
                     print(f"{slug}/{tipo} p{p}: sin avisos", flush=True); break
+                if purge:
+                    print(f"{slug}: purgo {len(bucket)} viejos", flush=True)
+                    bucket.clear(); seen.clear(); before = 0
+                    purge = False
                 added = wrong = 0
                 for r in rows:
                     # el título trae "PH en Venta en Villa Urquiza, CABA"
