@@ -41,24 +41,42 @@ def url_for(tipo, loc, page):
     return u if page == 1 else f"{u}/pagina-{page}"
 
 
-def get(u, tries=4):
-    """Devuelve el HTML, o None. Un 202 vacío = bloqueo silencioso -> espera larga."""
+def get(u, tries=4, deadline=None):
+    """Devuelve el HTML, o None. Un 202 vacío = bloqueo silencioso -> espera larga.
+
+    `deadline` es un timestamp absoluto: pasado ese momento no se espera más y se
+    devuelve None. Sin él, un solo URL bloqueado duerme 45+90+135+180 = 450 s, así
+    que dos barrios pueden tardar media hora — y desde afuera parece colgado.
+    """
+    def wait(s):
+        """Duerme s segundos, salvo que eso cruce el deadline. False = dejar de reintentar."""
+        if deadline is None:
+            time.sleep(s); return True
+        if time.time() + s > deadline:
+            return False
+        time.sleep(s); return True
+
     for i in range(tries):
+        if deadline and time.time() > deadline:
+            return None
         try:
             r = urllib.request.urlopen(urllib.request.Request(u, headers=HDR), timeout=35)
             t = r.read().decode("utf-8", "ignore")
             if r.status == 202 or len(t) < 2000:
-                time.sleep(45 * (i + 1))
+                if not wait(45 * (i + 1)):
+                    return None
                 continue
             return t
         except urllib.error.HTTPError as e:
             if e.code in (403, 429):
-                time.sleep(45 * (i + 1)); continue
+                if not wait(45 * (i + 1)):
+                    return None
+                continue
             if e.code == 404:
                 return None
-            time.sleep(5)
+            wait(5)
         except Exception:
-            time.sleep(6)
+            wait(6)
     return None
 
 

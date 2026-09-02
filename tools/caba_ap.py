@@ -51,6 +51,12 @@ def main():
     mx = 260000
     if "--max" in sys.argv:
         mx = int(sys.argv[sys.argv.index("--max") + 1])
+    # Tope duro de tiempo. Cuando Argenprop bloquea, `get()` espera 45 s por
+    # reintento y una corrida de dos barrios puede quedarse colgada muchísimo más
+    # de lo que tarda cuando anda. Con esto corta sola y guarda lo que juntó.
+    deadline = None
+    if "--deadline" in sys.argv:
+        deadline = time.time() + float(sys.argv[sys.argv.index("--deadline") + 1])
     data = json.load(open(OUT, encoding="utf-8")) if os.path.exists(OUT) else {}
     stamp = data.setdefault("_fetched", {})
     order = sorted(BARRIOS, key=lambda b: len(data.get(b[0], [])))
@@ -68,23 +74,29 @@ def main():
         before = len(bucket)
         seen = {x["id"] for x in bucket}
         want = plain(label)
-        # `--purge` saca los avisos viejos del barrio, pero recién cuando llega la
-        # primera página buena. Vaciar el bucket *antes* de pedir es lo que hizo
-        # perder 54 avisos de Belgrano y Núñez: Argenprop bloqueó el primer pedido
-        # de los dos y quedaron en cero, sin nada que restaurar salvo un backup.
+        # `--purge` reemplaza los avisos viejos del barrio, pero recién al final y
+        # solo si el barrio se relevó **entero**. Vaciar el bucket antes de pedir
+        # hizo perder 54 avisos de Belgrano y Núñez: Argenprop bloqueó el primer
+        # pedido de los dos y quedaron en cero. Purgar en la primera página buena
+        # tampoco alcanza: en Núñez entró `casas` y después se bloqueó `ph`, así que
+        # se borraron los PH viejos sin nada con qué reemplazarlos. El bucket viejo
+        # solo se tira cuando las dos categorías llegaron sin bloqueo.
         purge = "--purge" in sys.argv
+        fresh, blocked = [], False
         for tipo in TIPOS:
             for p in range(1, PAGES + 1):
-                h = get(url_for(tipo, slug, p, mx))
+                if deadline and time.time() > deadline:
+                    print(f"{slug}/{tipo} p{p}: se acabó el tiempo, corto", flush=True)
+                    blocked = True
+                    break
+                h = get(url_for(tipo, slug, p, mx), deadline=deadline)
                 if not h:
-                    print(f"{slug}/{tipo} p{p}: BLOQUEADO", flush=True); break
+                    print(f"{slug}/{tipo} p{p}: BLOQUEADO", flush=True)
+                    blocked = True
+                    break
                 rows = parse(h)
                 if not rows:
                     print(f"{slug}/{tipo} p{p}: sin avisos", flush=True); break
-                if purge:
-                    print(f"{slug}: purgo {len(bucket)} viejos", flush=True)
-                    bucket.clear(); seen.clear(); before = 0
-                    purge = False
                 added = wrong = 0
                 for r in rows:
                     # el título trae "PH en Venta en Villa Urquiza, CABA"
@@ -100,13 +112,21 @@ def main():
                     r["barrio"] = label
                     seen.add(r["id"])
                     bucket.append(r)
+                    fresh.append(r)
                     added += 1
                 print(f"{slug}/{tipo} p{p}: +{added} (tot {len(bucket)}) offzone={wrong}", flush=True)
                 json.dump(data, open(OUT, "w", encoding="utf-8"), ensure_ascii=False)
                 if wrong >= 15:
                     print(f"{slug}/{tipo}: fuera de barrio, corto", flush=True); break
+                if deadline and time.time() > deadline:
+                    break
                 time.sleep(random.uniform(*DELAY))
-        if len(bucket) > before:
+        if purge and not blocked:
+            print(f"{slug}: purgo {len(bucket) - len(fresh)} viejos", flush=True)
+            data[slug] = fresh
+        elif purge:
+            print(f"{slug}: bloqueado a mitad, no purgo (quedan {len(bucket)})", flush=True)
+        if len(data[slug]) > before or (purge and not blocked):
             stamp[slug] = time.time()
         json.dump(data, open(OUT, "w", encoding="utf-8"), ensure_ascii=False)
 
