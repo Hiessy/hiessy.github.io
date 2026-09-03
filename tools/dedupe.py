@@ -62,6 +62,52 @@ def score(r):
             len(r[6] or ""))
 
 
+# --- Segunda pasada: el mismo aviso en los dos portales ----------------------
+# La comparación exacta de arriba no los junta porque **escriben la dirección
+# distinto**. Argenprop redondea la altura a la centena y le pone el tipo de
+# calle completo; Zonaprop da la altura exacta y abrevia:
+#
+#   "Argelia 2760"        vs  "Argelia 2700"
+#   "Alvarez Thomas 1071" vs  "Avenida Álvarez Thomas 1000"
+#   "Av. Crámer 2800"     vs  "Crámer 2800"
+#
+# Así que acá se compara **calle + centena de altura**, que es mucho más flojo, y
+# para no fusionar dos casas distintas de la misma cuadra se exige además que
+# coincidan precio (±5%), superficie (±10 m²) y dormitorios. Con eso quedan 77
+# pares en CABA, y los más divergentes siguen siendo claramente el mismo aviso.
+FUENTES = {"Zonaprop", "Argenprop"}
+TIPO_CALLE = re.compile(
+    r"\b(av|avda|avenida|calle|pasaje|psje|pje|diag|diagonal|bv|boulevard)\b\.?\s*")
+
+
+def block(addr):
+    """(calle, centena de altura) o None si la dirección no alcanza."""
+    a = unicodedata.normalize("NFD", addr or "")
+    a = "".join(c for c in a if unicodedata.category(c) != "Mn").lower()
+    a = re.split(r",\s*(?:piso|pb|uf|depto|dto)", a)[0]
+    a = re.split(r"\bentre\b", a)[0]
+    a = TIPO_CALLE.sub("", a)
+    a = re.sub(r"\bal\s+(\d)", r"\1", a)
+    nums = re.findall(r"\d{2,5}", a)
+    calle = re.sub(r"[^a-z]", "", re.split(r"\d", a)[0])
+    if len(calle) < 5 or not nums:
+        return None
+    return (calle, int(nums[0]) // 100)
+
+
+def same_place(x, y):
+    """¿Son el mismo inmueble publicado en los dos portales?"""
+    if x[14] == y[14] or x[14] not in FUENTES or y[14] not in FUENTES:
+        return False                      # solo cruces Zonaprop/Argenprop
+    if abs(x[PRICE] - y[PRICE]) / max(x[PRICE], y[PRICE]) > 0.05:
+        return False
+    if x[M2] and y[M2] and abs(x[M2] - y[M2]) > 10:
+        return False
+    if x[DORM] and y[DORM] and x[DORM] != y[DORM]:
+        return False
+    return True
+
+
 def dedupe(rows):
     """Devuelve (filas_sin_repetidos, cuántas se sacaron)."""
     groups, order = {}, []
@@ -101,15 +147,43 @@ def dedupe(rows):
         for c in clusters:
             best, rest = c[0], c[1:]
             for r in rest:
-                if not (best[LAT] and best[LNG]) and r[LAT] and r[LNG]:
-                    best[LAT], best[LNG] = r[LAT], r[LNG]
-                for i in (M2, TER, AMB, DORM):
-                    if not best[i] and r[i]:
-                        best[i] = r[i]
-                if r[GAR]:
-                    best[GAR] = 1
-                if r[FEAT]:
-                    best[FEAT] = sorted(set(best[FEAT] or []) | set(r[FEAT]))
+                absorb(best, r)
             out.append(best)
             dropped += len(rest)
+
+    # --- segunda pasada: cruces Zonaprop/Argenprop por cuadra ---
+    porcuadra = {}
+    for r in out:
+        k = block(r[ADDR])
+        if k:
+            porcuadra.setdefault(k, []).append(r)
+    muertas = set()
+    for grupo in porcuadra.values():
+        if len(grupo) < 2:
+            continue
+        grupo = sorted(grupo, key=score, reverse=True)
+        for a, x in enumerate(grupo):
+            if id(x) in muertas:
+                continue
+            for y in grupo[a + 1:]:
+                if id(y) in muertas or not same_place(x, y):
+                    continue
+                absorb(x, y)
+                muertas.add(id(y))
+                dropped += 1
+    if muertas:
+        out = [r for r in out if id(r) not in muertas]
     return out, dropped
+
+
+def absorb(best, r):
+    """Le pasa a `best` los datos que le faltan y están en la fila descartada."""
+    if not (best[LAT] and best[LNG]) and r[LAT] and r[LNG]:
+        best[LAT], best[LNG] = r[LAT], r[LNG]
+    for i in (M2, TER, AMB, DORM):
+        if not best[i] and r[i]:
+            best[i] = r[i]
+    if r[GAR]:
+        best[GAR] = 1
+    if r[FEAT]:
+        best[FEAT] = sorted(set(best[FEAT] or []) | set(r[FEAT]))

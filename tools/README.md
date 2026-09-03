@@ -133,6 +133,60 @@ signos de exclamación, o solo al principio del título seguido de guión o dos 
 —`*RESERVADO*`, `Reservado!!`, `- Vendido - excelente ph`—. Uno de los avisos se
 delata solo: "por inconveniente con la plataforma no deja ponerla como reservada!".
 
+## Correr todo de una (`run_all.py`)
+
+```bash
+python tools/run_all.py            # relevar todo y rearmar las tres páginas
+python tools/run_all.py --pages    # solo rearmar las páginas, sin tocar la red
+python tools/run_all.py --list     # ver las etapas
+python tools/run_all.py --only caba-zp,build,deadlinks,build-final
+python tools/run_all.py --skip sierras-zp
+```
+
+Reemplaza a `sweep_all.sh`, que había quedado viejo. Cada etapa corre como
+subproceso **con timeout**, así que ninguna cuelga la corrida: si se pasa del tope
+se la mata, queda marcada como fallida y sigue la siguiente. Al final imprime el
+resumen y la línea de `--only` para reintentar justo lo que falló.
+
+El orden no es arbitrario:
+
+- **Argenprop nunca en paralelo** — dos instancias escriben el mismo JSON y se
+  pisan. Las dos etapas van en serie, y un lock en `.work/run_all.lock` impide
+  que se corran dos `run_all.py` a la vez. El lock solo aplica a las etapas de
+  red: `--pages` se puede correr aunque haya un barrido en curso.
+- **`build` corre dos veces** — `deadlinks.py` necesita `index.html` armado para
+  saber qué verificar, y `build2.py` necesita el resultado de `deadlinks.py` para
+  descartar las bajas. Armar, verificar, armar de nuevo.
+- **`gba` y `sierras` van al final**, porque las dos páginas se generan desde
+  `index.html`.
+
+## Links muertos (`deadlinks.py`)
+
+`scraped.json` solo acumula: un aviso dado de baja se queda en la caché y la página
+lo sigue mostrando con un link que no abre nada.
+
+**Zonaprop contesta `410 Gone`** cuando el aviso se dio de baja (y 404 si el slug
+nunca existió). Con el código de estado alcanza, y es lo único confiable.
+
+> **No buscar textos en el HTML.** La primera versión de este script buscaba
+> "este aviso ya no está publicado" en el cuerpo y dio **30 de 30 avisos dados de
+> baja, todos vivos**: esa frase está en la **tabla de traducciones** que la página
+> trae siempre, viva o no (`avisoOffline: {title: '...'}`). Las fichas pesan ~500 KB
+> de HTML y JS, así que cualquier palabra que se busque ahí va a aparecer por otro
+> motivo.
+
+El resultado se cachea en `.work/alive.json` y `build2.py` descarta lo que esté en
+`false`. Lo que no se verificó se publica igual: no haber mirado un aviso no es
+motivo para esconderlo.
+
+Para Argenprop no sirve —bloquea las fichas mucho más duro que los listados— y el
+camino barato es `caba_ap.py --purge`, que se queda solo con lo que el portal sigue
+listando.
+
+**Lo más efectivo no es este script sino purgar y volver a relevar**: en la última
+corrida, `refresh.py --edenor` + `scrape.py --only` sacó 1.273 avisos viejos y
+después `deadlinks.py` encontró solo 2 bajas más en 1.143 fichas.
+
 ## Refrescar avisos vencidos
 
 `scrape.py` solo agrega: un aviso dado de baja queda para siempre en la caché.

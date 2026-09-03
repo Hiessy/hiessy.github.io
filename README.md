@@ -9,15 +9,15 @@ septiembre de 2026 y cambian en cada barrido.
 
 ### 1. CABA norte — [`index.html`](index.html)
 
-**1.353** PH y casas de 3 ambientes o más hasta USD 260.000, en los doce barrios de
+**1.292** PH y casas de 3 ambientes o más hasta USD 260.000, en los doce barrios de
 la franja **Edenor**: Villa Urquiza, Villa Pueyrredón, Palermo, Saavedra, Parque Chas,
 Colegiales, Belgrano, Villa Ortúzar, Chacarita, Agronomía, Núñez y Coghlan. De Zonaprop
-(1.157) y Argenprop (196); 1.307 con pin.
+(1.164) y Argenprop (128); 1.252 con pin.
 
 ### 2. Zona norte con patio — [`gba-norte.html`](gba-norte.html)
 
-**1.431** casas y PH hasta USD 260.000 en Olivos (444), San Miguel (346), Martínez
-(310), Bella Vista (305) y La Lucila (26), de Zonaprop (1.315) y Argenprop (116). Acá
+**1.392** casas y PH hasta USD 260.000 en Olivos, San Miguel, Martínez, Bella Vista
+y La Lucila, de Zonaprop y Argenprop. Acá
 lo que manda es el **terreno libre** —superficie total menos cubierta, o sea el patio—
 y el filtro arranca en 100 m²:
 
@@ -123,7 +123,18 @@ de CABA se siguen relevando pero no se publican: están en `.work/` y vuelven co
 
 ## Desarrollo
 
-No hay build ni dependencias. Alcanza con abrir el archivo en el navegador:
+Todo el relevamiento y la reconstrucción de las tres páginas se corre con un solo
+comando:
+
+```bash
+python tools/run_all.py          # todo
+python tools/run_all.py --pages  # solo rearmar las páginas, sin tocar la red
+```
+
+Cada etapa tiene timeout, así que ninguna cuelga la corrida, y al final dice qué
+falló y cómo reintentarlo. Detalles en [tools/README.md](tools/README.md).
+
+La página en sí no tiene build ni dependencias. Alcanza con abrir el archivo en el navegador:
 
 ```bash
 start index.html

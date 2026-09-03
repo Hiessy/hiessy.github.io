@@ -31,6 +31,26 @@ def wanted(row):
         return True
     return row[0] == ONLY["reg"] and row[13] == ONLY["prov"]
 
+
+# Avisos verificados como dados de baja por `deadlinks.py` (Zonaprop contesta 410
+# cuando el aviso se dio de baja). Lo que no está en el archivo se publica igual:
+# no haber verificado un aviso no es motivo para esconderlo.
+ZP_BASE = "https://www.zonaprop.com.ar/propiedades/clasificado/"
+
+
+def load_dead():
+    p = os.path.join(D, "alive.json")
+    if not os.path.exists(p):
+        return set()
+    d = json.load(open(p, encoding="utf-8"))
+    return {u for u, v in d.items() if not v.get("ok")}
+
+
+def is_dead(url, dead):
+    if not dead:
+        return False
+    return (url in dead) or (ZP_BASE + url in dead)
+
 BLOCK = re.compile(r"corredor|matr[ií]cula|\bcpi\b|cucicba|cmcp|contacto\s*:|responsable|"
                    r"inmobiliaria|\bmls\b|ficha\s*brick|@|https?:|www\.", re.I)
 GOOD = re.compile(r"lote|terreno|patio|jard|pileta|quincho|refac|recicl|apto cr|escritur|"
@@ -291,6 +311,9 @@ def lid(slug):
 
 def main():
     vendidos = 0
+    dead = load_dead()
+    bajas = 0
+    print("avisos verificados dados de baja:", len(dead))
     ex = json.load(open(os.path.join(D, "existing.json"), encoding="utf-8"))
     sc = json.load(open(os.path.join(D, "scraped.json"), encoding="utf-8"))
     sc = {k: v for k, v in sc.items() if not k.startswith("_")}   # drop cache bookkeeping
@@ -364,6 +387,9 @@ def main():
         big = spread(big, int(cap * 0.6))
         picked = big + spread(small, max(cap - len(big), 0))
         for r in picked:
+            if is_dead(r.get("url", ""), dead):
+                bajas += 1
+                continue
             if sold(r.get("d"), r.get("addr")):
                 vendidos += 1
                 continue
@@ -403,6 +429,9 @@ def main():
                     if k in seen_key:
                         continue
                     seen_key.add(k)
+                    if is_dead(r.get("url", ""), dead):
+                        bajas += 1
+                        continue
                     if sold(r.get("d"), r.get("addr")):
                         vendidos += 1
                         continue
@@ -436,6 +465,9 @@ def main():
                     continue
                 seen_key.add(k)
                 have_ap.add(r["url"])
+                if is_dead(r.get("url", ""), dead):
+                    bajas += 1
+                    continue
                 if sold(r.get("d"), r.get("addr")):
                     vendidos += 1
                     continue
@@ -453,6 +485,7 @@ def main():
         print("Argenprop por barrio: +", len(ap_rows) - n_before)
 
     print("vendidos/reservados descartados:", vendidos)
+    print("dados de baja descartados:", bajas)
     allrows = ex + new + ap_rows
     allrows, dups = dedupe(allrows)
     print("repetidos sacados", dups)
