@@ -44,6 +44,12 @@ def key(r):
     a = plain(r[ADDR])
     if len(a) < 6:          # "Belgrano", "s/d": no alcanza para afirmar que es el mismo
         return None
+    if not any(c.isdigit() for c in a):
+        # Sin altura no se puede afirmar que sean el mismo inmueble. Importa en
+        # las sierras, donde 253 avisos traen el título del aviso en el campo de
+        # dirección y se los reemplaza por el nombre del pueblo: sin esta
+        # condición, dos casas distintas de Cosquín al mismo precio se fusionaban.
+        return None
     return (r[PRICE], a)
 
 

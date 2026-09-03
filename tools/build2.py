@@ -38,6 +38,34 @@ GOOD = re.compile(r"lote|terreno|patio|jard|pileta|quincho|refac|recicl|apto cr|
                   r"terraza|suite|gas natural|permuta|vista", re.I)
 GARDEN = re.compile(r"jard[ií]n|jardines", re.I)
 
+# --- Avisos ya vendidos o reservados -----------------------------------------
+# Siguen publicados con un cartel al principio del título: "Reservado!! ph en 2
+# plantas", "- Vendido - excelente ph en pb", "*RESERVADO*".
+#
+# Buscar la palabra suelta no sirve, casi todo lo que aparece es otra cosa:
+#
+#   "Todos los derechos reservados. Coldwell Banker"   <- pie de página legal
+#   "un entorno mucho más reservado y silencioso"      <- adjetivo, es un elogio
+#   "Naturaleza Preservada: el lote está atravesado"   <- ni siquiera es la palabra
+#   "antigua chacra con lotes... Todos vendidos"       <- habla de otros lotes
+#   "Complejo cerrado (90% vendido)"                   <- habla del complejo
+#
+# De 2.266 avisos de sierra, el patrón ingenuo marcaba 9 y los 9 eran falsos. Lo
+# que distingue al cartel de verdad es la puntuación: va entre asteriscos, con
+# signos de exclamación, o solo al principio y seguido de guión o dos puntos.
+SOLD_MARK = re.compile(r"[*¡!]\s*(vendid|reservad)[oa]s?\b"
+                       r"|\b(vendid|reservad)[oa]s?\s*[*!]", re.I)
+SOLD_HEAD = re.compile(r"^[\s\-–*·]{0,4}(vendid|reservad)[oa]s?\b\s*[\-–:,*!]", re.I)
+
+
+def sold(*textos):
+    """True si algún texto del aviso lo declara vendido o reservado."""
+    for t in textos:
+        t = (t or "").strip()
+        if t and (SOLD_MARK.search(t) or SOLD_HEAD.search(t)):
+            return True
+    return False
+
 # ambientes is publisher-entered and sometimes wrong (one listing claims 40).
 # Anything below the bedroom count or above this is treated as unknown, not guessed.
 AMB_MAX = 12
@@ -193,7 +221,7 @@ def geo(r):
     return (lat, lng) if (s <= lat <= n and w <= lng <= e) else (0, 0)
 
 
-def drop_far_coords(rows, km=None):
+def drop_far_coords(rows, km=None, key=lambda r: r[0]):
     """Saca las coordenadas que caen lejos del centro de su zona.
 
     La caja de Argentina no alcanza: un aviso de Floresta geocodificado en Chubut
@@ -203,12 +231,17 @@ def drop_far_coords(rows, km=None):
     `km` se ajusta al tamaño de la zona: los barrios de CABA entran en 60 km, pero
     localidades como Olivos o Martínez miden 6 km de punta a punta y con ese umbral
     se cuelan avisos a 35 km que estiran el mapa.
+
+    `key` define qué es "la zona". Por defecto la región (columna 0), que sirve
+    cuando todas las filas de una región están juntas. En las sierras no: el valle
+    de Punilla mide ~100 km de norte a sur, así que agrupar por valle tiraba 999
+    coordenadas buenas. Ahí se agrupa por pueblo.
     """
     km = km or OUTLIER_KM
     from statistics import median
     dropped = 0
-    for reg in {r[0] for r in rows}:
-        pts = [r for r in rows if r[0] == reg and r[15] and r[16]]
+    for reg in {key(r) for r in rows}:
+        pts = [r for r in rows if key(r) == reg and r[15] and r[16]]
         if len(pts) < 5:
             continue
         clat, clng = median(r[15] for r in pts), median(r[16] for r in pts)
@@ -257,6 +290,7 @@ def lid(slug):
 
 
 def main():
+    vendidos = 0
     ex = json.load(open(os.path.join(D, "existing.json"), encoding="utf-8"))
     sc = json.load(open(os.path.join(D, "scraped.json"), encoding="utf-8"))
     sc = {k: v for k, v in sc.items() if not k.startswith("_")}   # drop cache bookkeeping
@@ -330,6 +364,9 @@ def main():
         big = spread(big, int(cap * 0.6))
         picked = big + spread(small, max(cap - len(big), 0))
         for r in picked:
+            if sold(r.get("d"), r.get("addr")):
+                vendidos += 1
+                continue
             n = note(r.get("d", ""), reg)
             if not n:
                 continue
@@ -366,6 +403,9 @@ def main():
                     if k in seen_key:
                         continue
                     seen_key.add(k)
+                    if sold(r.get("d"), r.get("addr")):
+                        vendidos += 1
+                        continue
                     n = note(r.get("d", ""), reg)
                     if not n:
                         continue
@@ -396,6 +436,9 @@ def main():
                     continue
                 seen_key.add(k)
                 have_ap.add(r["url"])
+                if sold(r.get("d"), r.get("addr")):
+                    vendidos += 1
+                    continue
                 n = note(r.get("d", ""), 3)
                 if not n:
                     continue
@@ -409,6 +452,7 @@ def main():
                                 m2_of(r), patio_of(r), feats_of(r.get("d", ""))])
         print("Argenprop por barrio: +", len(ap_rows) - n_before)
 
+    print("vendidos/reservados descartados:", vendidos)
     allrows = ex + new + ap_rows
     allrows, dups = dedupe(allrows)
     print("repetidos sacados", dups)

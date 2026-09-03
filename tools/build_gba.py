@@ -13,7 +13,7 @@ La bandera `jardín` sale del texto del aviso y no alcanza: 193 avisos con más 
 import json, os
 from collections import Counter
 
-from build2 import note, geo, drop_far_coords, m2_of, feats_of
+from build2 import note, geo, drop_far_coords, m2_of, feats_of, sold
 from dedupe import dedupe        # pasada final: ver tools/dedupe.py
 from geocode import load_cache, coords_for
 
@@ -48,11 +48,15 @@ def patio(r):
 def main():
     src = json.load(open(SRC, encoding="utf-8"))
     rows, seen = [], set()
+    vendidos = 0
     for bucket in src.values():
         for r in bucket:
             if r["id"] in seen:
                 continue
             seen.add(r["id"])
+            if sold(r.get("d"), r.get("addr")):
+                vendidos += 1
+                continue
             n = note(r.get("d", ""))
             if not n:
                 continue
@@ -75,6 +79,9 @@ def main():
                 if r["id"] in seen:
                     continue
                 seen.add(r["id"])
+                if sold(r.get("d"), r.get("addr")):
+                    vendidos += 1
+                    continue
                 n = note(r.get("d", ""))
                 if not n:
                     continue
@@ -90,6 +97,7 @@ def main():
     print("Argenprop:", ap_n, "(sin dato de lote:",
           sum(1 for r in rows if r[14] == "Argenprop" and not r[18]), ")")
 
+    print("vendidos/reservados descartados:", vendidos)
     rows, dups = dedupe(rows)
     print("repetidos sacados", dups)
     rows.sort(key=lambda r: (r[0], r[4]))

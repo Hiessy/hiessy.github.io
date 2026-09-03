@@ -4,39 +4,66 @@ Sitio estático publicado con GitHub Pages en <https://hiessy.github.io>.
 
 ## Contenido
 
-Dos búsquedas, una pestaña cada una:
+Tres búsquedas, una pestaña cada una. Los números son del relevamiento de
+septiembre de 2026 y cambian en cada barrido.
 
 ### 1. CABA norte — [`index.html`](index.html)
 
-**1.579** PH y casas de 3 ambientes o más hasta USD 260.000, en los doce barrios de
+**1.353** PH y casas de 3 ambientes o más hasta USD 260.000, en los doce barrios de
 la franja **Edenor**: Villa Urquiza, Villa Pueyrredón, Palermo, Saavedra, Parque Chas,
 Colegiales, Belgrano, Villa Ortúzar, Chacarita, Agronomía, Núñez y Coghlan. De Zonaprop
-(1.268) y Argenprop (311).
+(1.157) y Argenprop (196); 1.307 con pin.
 
 ### 2. Zona norte con patio — [`gba-norte.html`](gba-norte.html)
 
-**1.591** casas y PH hasta USD 260.000 en Olivos (507), Martínez (344), Bella Vista
-(338), San Miguel (327) y La Lucila (41), de Zonaprop (1.401) y Argenprop (190). Acá
+**1.431** casas y PH hasta USD 260.000 en Olivos (444), San Miguel (346), Martínez
+(310), Bella Vista (305) y La Lucila (26), de Zonaprop (1.315) y Argenprop (116). Acá
 lo que manda es el **terreno libre** —superficie total menos cubierta, o sea el patio—
 y el filtro arranca en 100 m²:
 
 | Terreno libre | Avisos |
 | --- | --- |
-| 100 m²+ | 399 |
-| 150 m²+ | 247 |
-| 200 m²+ | 157 |
+| 100 m²+ | 384 |
+| 150 m²+ | 237 |
+| 200 m²+ | 151 |
 
-Se mide con los metros del aviso y no con la palabra "jardín": 193 avisos con más de
-100 m² libres nunca la usan, y 315 que la usan tienen menos de 100.
+Se mide con los metros del aviso y no con la palabra "jardín": 167 avisos con más de
+100 m² libres nunca la usan, y 279 que la usan tienen menos de 100.
 
-**Los 150 avisos de Argenprop no declaran lote** en estas localidades (solo superficie
+**Los avisos de Argenprop no declaran lote** en estas localidades (solo superficie
 cubierta), así que no pasan el filtro de terreno: se ven poniendo "Sin mínimo", y el
-contador dice cuántos quedaron afuera por eso —350 en total, contando los de Zonaprop que
-tampoco lo declaran. Pin sí tienen: 130 de 150, geocodificando la dirección.
+contador dice cuántos quedaron afuera por eso —293 en total, contando los de Zonaprop
+que tampoco lo declaran—. Pin sí tienen: se geocodifica la dirección.
 
-La segunda página **se genera desde la primera** (`tools/make_gba.py`), así comparten
-CSS y JS y no se van separando. Si se toca `index.html`, correr el generador de nuevo.
+### 3. Sierras de Córdoba — [`sierras.html`](sierras.html)
 
+**2.212 casas** —acá no hay PH— de 3 ambientes o más hasta USD 260.000, en los valles
+de **Punilla** (1.735) y **Calamuchita** (477), repartidas en 35 pueblos. Sin la ciudad
+de Córdoba y sin las Sierras Chicas. 1.861 con pin.
+
+Los pueblos con más avisos son Villa Carlos Paz (367), Santa Rosa de Calamuchita (150),
+La Falda (131), Santa María de Punilla (119) y Villa Parque Síquiman (119). El filtro
+grande de esta página es el **valle**, y el de terreno usa umbrales de sierra:
+
+| Terreno libre | Avisos |
+| --- | --- |
+| 300 m²+ | 1.475 |
+| 600 m²+ | 873 |
+| 1.000 m²+ | 404 |
+
+Al contrario de la zona norte, acá el lote casi siempre está declarado: solo 195 avisos
+no lo traen. **Villa Carlos Paz es el único pueblo recortado**, porque Zonaprop corta la
+paginación anónima en 270 avisos por consulta; se completó pidiendo la lista al revés y
+sumando el barrio Villa del Lago, que tiene búsqueda propia.
+
+Las páginas 2 y 3 **se generan desde la primera** (`tools/make_gba.py` y
+`tools/make_sierras.py`), así las tres comparten CSS y JS y no se van separando. Si se
+toca `index.html`, correr los dos generadores de nuevo.
+
+**Los avisos vendidos o reservados se descartan** en las tres. Siguen publicados con un
+cartel al principio del título (`*RESERVADO*`, `Reservado!!`, `- Vendido -`), y se
+reconocen por la puntuación y no por la palabra: "todos los derechos reservados" y "un
+entorno más reservado y silencioso" no son eso. Ver [tools/README.md](tools/README.md).
 
 Las marcadas **★ pick** son las elegidas a mano; el resto sale del relevamiento
 automático y la nota resume el texto del aviso.
@@ -50,7 +77,8 @@ de CABA se siguen relevando pero no se publican: están en `.work/` y vuelven co
 
 ## Estructura
 
-- `index.html` / `gba-norte.html` — páginas completas: markup, CSS y JS embebidos,
+- `index.html` / `gba-norte.html` / `sierras.html` — páginas completas: markup, CSS
+  y JS embebidos,
   sin dependencias ni build. Filtros por barrio o localidad, dormitorios (2 / 3 / 4+),
   jardín, superficie y fuente; la de CABA suma "solo picks" y la de zona norte, el
   terreno libre.

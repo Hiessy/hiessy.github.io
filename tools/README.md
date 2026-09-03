@@ -9,7 +9,7 @@ Requieren solo la stdlib de Python 3.11 (sin dependencias).
 
 Techo de precio: **USD 260.000** (`MAXP` en `scrape.py` y `argenprop.py`).
 
-La página publica **solo CABA zona norte (área de Edenor)**: 1.365 de los ~6.500
+La página publica **solo CABA zona norte (área de Edenor)**: 1.353 de los ~6.500
 avisos relevados. El recorte es `ONLY` en `build2.py`; poniéndolo en `None` vuelve
 a salir todo. Lo demás se sigue relevando y queda en `.work/` — no se borró nada,
 solo dejó de entrar al HTML, que pasó de 1,8 MB a 0,42 MB.
@@ -65,6 +65,73 @@ página dice cuántos quedaron afuera por eso.
 Mismo cuidado con los slugs: `bella-vista` es la de Corrientes y
 `bella-vista-buenos-aires` devuelve 91.000 avisos de todo el país. La buena es
 `bella-vista-san-miguel`. Cada aviso se valida contra el partido en el título.
+
+## La tercera página: sierras de Córdoba
+
+`sierras.html` — **casas** (no PH) de 3 ambientes o más, hasta USD 260.000, en los
+valles de **Punilla** y **Calamuchita**. Sin la ciudad de Córdoba y sin las Sierras
+Chicas.
+
+```bash
+python tools/sierras.py                  # relevar los 35 pueblos
+python tools/build_sierras.py            # armar .work/DS.js
+python tools/make_sierras.py             # escribir sierras.html
+```
+
+**No existe un slug del valle.** `casas-venta-punilla` y `casas-venta-calamuchita`
+no fallan: devuelven una búsqueda nacional con avisos de Mendoza y Mar del Plata.
+Hay que pedir pueblo por pueblo. Los slugs que parecen de la zona y no lo son están
+listados en el encabezado de `sierras.py`; el peor es **`yacanto`**, que existe, es
+de Córdoba y queda en el departamento San Javier, del otro lado de la provincia — el
+del valle es `villa-yacanto`.
+
+**Comparar sin tildes.** El `locpath` de Zonaprop viene sin acentos: dice "villa
+parque siquiman" y la etiqueta es "Villa Parque Síquiman". Comparando en crudo el
+pueblo entero quedaba en **0 avisos teniendo 120**.
+
+**El tope de 9 páginas.** Villa Carlos Paz es el único pueblo que lo toca: se cortaba
+en 267 avisos y en USD 139.000. Se resuelve pidiendo la lista **al revés**
+(`orden-precio-descendente`) y sumando `villa-del-lago`, un barrio suyo con búsqueda
+propia; entre las dos cosas quedó en 414 y el hueco más grande bajó de USD 106.000 a
+13.000. **No hay filtro de precio usable** para partir la consulta:
+`-mas-de-130000-dolares` se ignora, y `-130000-260000-dolares` es peor porque no
+falla — cae a la búsqueda nacional. De los barrios de Carlos Paz, solo `villa-del-lago`
+existe como slug: `sol-y-rio`, `playas-de-oro`, `miguel-munoz`, `villa-suiza`,
+`colinas-del-golf`, `el-canal` y `villa-del-rio` caen todos al fallback.
+
+**El filtro de fuente es el de valle.** Acá todo sale de Zonaprop, así que filtrar
+por fuente no filtraría nada. `build_sierras.py` guarda el valle en la columna 14 —la
+que las otras dos páginas usan para la fuente— y así los dos botones de valle y el
+"Pueblo · Valle" de cada ficha salen sin tocar el JS.
+
+**Outliers de coordenadas por pueblo, no por valle.** Punilla mide ~100 km de norte a
+sur: comparando contra la mediana del valle se descartaban **999 coordenadas buenas**.
+`drop_far_coords` ahora acepta `key=`, y acá se agrupa por pueblo con `km=12`.
+
+**El campo de dirección a veces trae el título.** 253 de 2.266 avisos ponen cosas como
+"Casa en La Cumbre!!!! 2 Dormitorios con 5000 Metros de Terreno Propio!!! -gn-" donde
+va la calle. Se reemplazan por el nombre del pueblo. Se descarta solo lo que tiene
+lenguaje de venta o signos de exclamación: "Tucumán al 300, Barrio Villa Gloria" es
+larga y es una dirección de verdad.
+
+## Avisos vendidos o reservados
+
+Se descartan en las tres páginas (`sold()` en `build2.py`): 21 en CABA, 6 en zona norte,
+0 en sierras.
+
+Buscar la palabra no sirve — de los 9 avisos de sierra que marcaba el patrón ingenuo,
+**los 9 eran falsos**:
+
+    "Todos los derechos reservados. Coldwell Banker"   pie de página legal
+    "un entorno mucho más reservado y silencioso"      adjetivo, es un elogio
+    "Naturaleza Preservada: el lote está atravesado"   ni siquiera es la palabra
+    "antigua chacra con lotes... Todos vendidos"       habla de otros lotes
+    "Complejo cerrado (90% vendido)"                   habla del complejo
+
+Lo que distingue al cartel de verdad es la **puntuación**: va entre asteriscos, con
+signos de exclamación, o solo al principio del título seguido de guión o dos puntos
+—`*RESERVADO*`, `Reservado!!`, `- Vendido - excelente ph`—. Uno de los avisos se
+delata solo: "por inconveniente con la plataforma no deja ponerla como reservada!".
 
 ## Refrescar avisos vencidos
 
