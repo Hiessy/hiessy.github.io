@@ -86,6 +86,72 @@ def sold(*textos):
             return True
     return False
 
+
+# --- Expensas -----------------------------------------------------------------
+# La idea es no comprar algo con cuota mensual. Pero **buscar la palabra saca lo
+# contrario de lo que se quiere**: de 2.485 avisos que la mencionan, 1.654 dicen
+# "sin expensas", "no se pagan expensas", "¡no pagás expensas!" o "sin gastos de
+# expensas" — es justamente el argumento de venta. Y otros 91 solo traen el
+# descargo legal ("los valores y/o expensas pueden estar sujetas a cambio"), que
+# no dice nada de esta propiedad.
+#
+# Por eso se descarta solo con **prueba positiva**: un monto, un adjetivo de
+# monto, o algo incluido en ellas. Mencionarlas sin más no alcanza.
+EXP_NO = re.compile(r"(sin|no\s+(se\s+)?(pag[aá]s?|pagan|pagar|abonan?|posee|tiene[ns]?)\s*)"
+                    r"(gastos\s+de\s+)?expensas|cero\s+expensas"
+                    r"|expensas\s*[:=]?\s*\$?\s*0\b", re.I)
+EXP_SI = re.compile(r"expensas\s*[:.]?\s*(aprox\.?\s*)?\$|\$\s*[\d.,]+\s*(de\s+)?expensas"
+                    r"|(baj[ií]sim|baj|m[oó]dic|econ[oó]mic|reducid|alt)[oa]s?\s+expensas"
+                    r"|expensas\s+(baj[ií]sim|baj|m[oó]dic|econ[oó]mic|reducid|alt)[oa]s?"
+                    r"|con\s+expensas|incluid[oa]s?\s+en\s+(las\s+)?expensas", re.I)
+
+# --- Barrio privado, country, club de campo -----------------------------------
+# No alcanza con nombrarlos: media zona norte se vende como "a 5 minutos de los
+# mejores countries". Si el aviso los menciona **una sola vez y en contexto de
+# cercanía**, la propiedad no está adentro.
+PRIV = re.compile(r"barrio\s+(privado|cerrado|semi-?cerrado|n[aá]utico)"
+                  r"|club\s+de\s+campo|\bcountry\b|\bcountries\b", re.I)
+#   `min` no matchea "minutos" y `country` **no** está adentro de "countries"
+#   (c-o-u-n-t-r-i-e-s): con esos dos errores, "a 5 minutos de los mejores
+#   countries" y "zona de countries, colegios y comercios" se descartaban como si
+#   la casa estuviera adentro de uno.
+PRIV_CERCA = re.compile(
+    r"(cerca|cercan[oa]s?|pr[oó]xim[oa]s?|frente|junto|rodead[oa]|zona"
+    r"|a\s+\d+\s*(min\w*|cuadras?|km|metros?|mts))\s+(de\s+|a\s+|al\s+|del\s+|los\s+)?"
+    r"[^.]{0,24}(barrio\s+(privado|cerrado)|countr(y|ies)|club\s+de\s+campo)", re.I)
+
+
+def con_expensas(texto):
+    """True solo si el aviso muestra que la propiedad **paga** expensas."""
+    t = texto or ""
+    if EXP_NO.search(t):
+        return False
+    return bool(EXP_SI.search(t))
+
+
+def es_privado(texto):
+    """True si la propiedad está dentro de un barrio privado o country."""
+    t = texto or ""
+    if not PRIV.search(t):
+        return False
+    return not (PRIV_CERCA.search(t) and len(PRIV.findall(t)) == 1)
+
+
+def descartar(d, addr=None):
+    """Motivo por el que el aviso no se publica, o None si se publica.
+
+    Un solo lugar para las tres exclusiones, así las tres páginas coinciden y el
+    build puede informar cuántos salieron por cada motivo.
+    """
+    texto = (d or "") + " " + (addr or "")
+    if sold(d, addr):
+        return "vendido"
+    if con_expensas(d):
+        return "expensas"
+    if es_privado(texto):
+        return "privado"
+    return None
+
 # ambientes is publisher-entered and sometimes wrong (one listing claims 40).
 # Anything below the bedroom count or above this is treated as unknown, not guessed.
 AMB_MAX = 12
@@ -310,7 +376,7 @@ def lid(slug):
 
 
 def main():
-    vendidos = 0
+    fuera = {}
     dead = load_dead()
     bajas = 0
     print("avisos verificados dados de baja:", len(dead))
@@ -390,8 +456,9 @@ def main():
             if is_dead(r.get("url", ""), dead):
                 bajas += 1
                 continue
-            if sold(r.get("d"), r.get("addr")):
-                vendidos += 1
+            motivo = descartar(r.get("d"), r.get("addr"))
+            if motivo:
+                fuera[motivo] = fuera.get(motivo, 0) + 1
                 continue
             n = note(r.get("d", ""), reg)
             if not n:
@@ -432,8 +499,9 @@ def main():
                     if is_dead(r.get("url", ""), dead):
                         bajas += 1
                         continue
-                    if sold(r.get("d"), r.get("addr")):
-                        vendidos += 1
+                    motivo = descartar(r.get("d"), r.get("addr"))
+                    if motivo:
+                        fuera[motivo] = fuera.get(motivo, 0) + 1
                         continue
                     n = note(r.get("d", ""), reg)
                     if not n:
@@ -468,8 +536,9 @@ def main():
                 if is_dead(r.get("url", ""), dead):
                     bajas += 1
                     continue
-                if sold(r.get("d"), r.get("addr")):
-                    vendidos += 1
+                motivo = descartar(r.get("d"), r.get("addr"))
+                if motivo:
+                    fuera[motivo] = fuera.get(motivo, 0) + 1
                     continue
                 n = note(r.get("d", ""), 3)
                 if not n:
@@ -484,7 +553,7 @@ def main():
                                 m2_of(r), patio_of(r), feats_of(r.get("d", ""))])
         print("Argenprop por barrio: +", len(ap_rows) - n_before)
 
-    print("vendidos/reservados descartados:", vendidos)
+    print("descartados:", fuera or "ninguno")
     print("dados de baja descartados:", bajas)
     allrows = ex + new + ap_rows
     allrows, dups = dedupe(allrows)

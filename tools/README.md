@@ -126,6 +126,38 @@ va la calle. Se reemplazan por el nombre del pueblo. Se descarta solo lo que tie
 lenguaje de venta o signos de exclamación: "Tucumán al 300, Barrio Villa Gloria" es
 larga y es una dirección de verdad.
 
+## Qué se descarta y por qué (`descartar()` en `build2.py`)
+
+Un solo lugar decide las tres exclusiones, así las tres páginas coinciden y cada
+build informa cuántos avisos salieron por cada motivo.
+
+### Expensas
+
+La idea es no comprar algo con cuota mensual — pero **buscar la palabra saca justo
+lo contrario**. De 2.485 avisos que la mencionan, **1.654 dicen que NO tienen**:
+"sin expensas", "no se pagan expensas", "¡no pagás expensas!", "sin gastos de
+expensas". Es el argumento de venta, no el problema. Otros 91 solo traen el
+descargo legal ("los valores y/o expensas pueden estar sujetas a cambio"), que no
+dice nada de esa propiedad.
+
+Por eso se descarta con **prueba positiva** y no por mención: un monto
+("Expensas: $ 20.000"), un adjetivo de monto ("bajas expensas", "bajísimas") o
+algo incluido en ellas ("jardinero incluido en expensas").
+
+### Barrio privado, country, club de campo
+
+Tampoco alcanza con nombrarlos: media zona norte se vende como "a 5 minutos de los
+mejores countries". Si el aviso los menciona **una sola vez y en contexto de
+cercanía**, la casa no está adentro y se queda.
+
+> Dos errores que costaron falsos positivos: `min` **no** matchea "minutos", y
+> `country` **no** está adentro de "countries" (c-o-u-n-t-r-i-e-s). Con esos dos,
+> "a 5 minutos de los mejores countries" y "zona de countries, colegios y
+> comercios" se descartaban como si la casa estuviera dentro de uno.
+
+En la última corrida salieron 186 + 68 en CABA, 48 + 107 en zona norte y 8 + 74 en
+sierras (expensas + privado).
+
 ## Avisos vendidos o reservados
 
 Se descartan en las tres páginas (`sold()` en `build2.py`): 21 en CABA, 6 en zona norte,

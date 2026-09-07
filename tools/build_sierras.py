@@ -18,7 +18,7 @@ donde Argenprop no lo publicaba nunca.
 import json, os, re
 from collections import Counter
 
-from build2 import note, geo, drop_far_coords, m2_of, feats_of, sold
+from build2 import note, geo, drop_far_coords, m2_of, feats_of, descartar
 from dedupe import dedupe
 from sierras import LOCS, PUNILLA, CALAMUCHITA
 
@@ -70,7 +70,7 @@ def es_titulo(a):
 def main():
     src = json.load(open(SRC, encoding="utf-8"))
     rows, seen = [], set()
-    vendidos = 0
+    fuera = {}
     for key, bucket in src.items():
         if key.startswith("_"):
             continue
@@ -78,8 +78,9 @@ def main():
             if r["id"] in seen:
                 continue
             seen.add(r["id"])
-            if sold(r.get("d"), r.get("addr")):
-                vendidos += 1
+            motivo = descartar(r.get("d"), r.get("addr"))
+            if motivo:
+                fuera[motivo] = fuera.get(motivo, 0) + 1
                 continue
             n = note(r.get("d", ""))
             if not n:
@@ -99,7 +100,7 @@ def main():
                          valle, *geo(r), m2_of(r), patio(r),
                          feats_of(r.get("d", ""))])
 
-    print("vendidos/reservados descartados:", vendidos)
+    print("descartados:", fuera or "ninguno")
     rows, dups = dedupe(rows)
     print("repetidos sacados", dups)
     rows.sort(key=lambda r: (r[0], r[4]))
