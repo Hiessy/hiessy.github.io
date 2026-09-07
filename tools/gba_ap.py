@@ -31,6 +31,10 @@ ZONES = [
     ("olivos",     "Olivos",      "olivos",      "vicente lopez"),
     ("lalucila",   "La Lucila",   "la-lucila",   "vicente lopez"),
     ("martinez",   "Martínez",    "martinez",    "san isidro"),
+    # `maschwitz` a secas cae en Fisherton (Rosario) y San Bernardo, y
+    # `ingeniero-maschwitz-escobar` devuelve todo Belén de Escobar: el bueno
+    # es `ingeniero-maschwitz`, que resuelve a "ingeniero maschwitz > escobar".
+    ("maschwitz",  "Ingeniero Maschwitz", "ingeniero-maschwitz", "escobar"),
 ]
 
 
@@ -48,11 +52,22 @@ def main():
     mx = 260000
     if "--max" in sys.argv:
         mx = int(sys.argv[sys.argv.index("--max") + 1])
+    # Tope duro de tiempo: cuando Argenprop bloquea, `get()` espera 45 s por
+    # reintento y desde afuera el barrido parece colgado. Mismo flag que caba_ap.
+    deadline = None
+    if "--deadline" in sys.argv:
+        deadline = time.time() + float(sys.argv[sys.argv.index("--deadline") + 1])
+    only = None
+    if "--only" in sys.argv:
+        only = set(sys.argv[sys.argv.index("--only") + 1].split(","))
+        print("solo:", sorted(only), flush=True)
     data = json.load(open(OUT, encoding="utf-8")) if os.path.exists(OUT) else {}
     stamp = data.setdefault("_fetched", {})
     order = sorted(ZONES, key=lambda z: len(data.get(z[0], [])))
 
     for key, label, slug, partido in order:
+        if only and key not in only:
+            continue
         if time.time() - stamp.get(key, 0) < 24 * 3600:
             print(f"{key}: cache — skip", flush=True); continue
         bucket = data.setdefault(key, [])
@@ -60,7 +75,9 @@ def main():
         seen = {x["id"] for x in bucket}
         for tipo in TIPOS:
             for p in range(1, PAGES + 1):
-                h = get(url_for(tipo, slug, p, mx))
+                if deadline and time.time() > deadline:
+                    print(f"{key}/{tipo} p{p}: se acabó el tiempo, corto", flush=True); break
+                h = get(url_for(tipo, slug, p, mx), deadline=deadline)
                 if not h:
                     print(f"{key}/{tipo} p{p}: BLOQUEADO", flush=True); break
                 rows = parse(h)

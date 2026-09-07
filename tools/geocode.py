@@ -30,6 +30,10 @@ BOXES = {
     "vicente":   (-34.55, -34.47, -58.55, -58.45),
     "sanisidro": (-34.53, -34.44, -58.58, -58.47),
     "sanmiguel": (-34.62, -34.48, -58.79, -58.63),
+    # Ingeniero Maschwitz, partido de Escobar. Sin esta caja caía en la de CABA
+    # —el default de `zone_of`— y se descartaban todas sus direcciones por
+    # "fuera de zona", estando bien resueltas.
+    "escobar":   (-34.45, -34.28, -58.90, -58.60),
 }
 
 
@@ -76,6 +80,8 @@ def zone_of(loc):
         return "sanisidro"
     if "san miguel" in l or "bella vista" in l:
         return "sanmiguel"
+    if "maschwitz" in l or "escobar" in l:
+        return "escobar"
     return "caba"
 
 

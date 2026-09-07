@@ -22,7 +22,8 @@ SRC = os.path.join(D, "gba_norte.json")
 AP = os.path.join(D, "gba_ap.json")
 OUT = os.path.join(D, "DG.js")
 
-ZONES = ["Bella Vista", "San Miguel", "Olivos", "La Lucila", "Martínez"]
+ZONES = ["Bella Vista", "San Miguel", "Olivos", "La Lucila", "Martínez",
+         "Ingeniero Maschwitz"]
 
 
 def specs_gba(r):

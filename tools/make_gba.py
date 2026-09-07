@@ -14,7 +14,8 @@ SRC = os.path.join(ROOT, "index.html")
 DST = os.path.join(ROOT, "gba-norte.html")
 DATA = os.path.join(ROOT, ".work", "DG.js")
 
-ZONES = ["Bella Vista", "San Miguel", "Olivos", "La Lucila", "Martínez"]
+ZONES = ["Bella Vista", "San Miguel", "Olivos", "La Lucila", "Martínez",
+         "Ingeniero Maschwitz"]
 
 MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
          "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
@@ -91,14 +92,18 @@ def main():
                "<title>Zona norte con patio · Argentina</title>")
     t = rep(t, '<h1>PH y casas en la zona norte de CABA<br>con menos de USD 260.000</h1>',
                '<h1>Casas y PH con patio<br>en la zona norte del conurbano</h1>')
+    # la lista de localidades sale de ZONES y no escrita a mano: al sumar
+    # Ingeniero Maschwitz, el encabezado y el meta se olvidaban de nombrarlo
+    llano = ", ".join(ZONES[:-1]) + " y " + ZONES[-1]
+    negrita = ", ".join(f"<b>{z}</b>" for z in ZONES[:-1]) + f" y <b>{ZONES[-1]}</b>"
     t = re.sub(r'<meta name="description" content="[^"]*">',
-               '<meta name="description" content="Casas y PH con patio hasta USD 260.000 en '
-               'Bella Vista, San Miguel, Olivos, La Lucila y Martínez.">', t, count=1)
+               f'<meta name="description" content="Casas y PH con patio hasta USD 260.000 en '
+               f'{llano}.">', t, count=1)
 
     s = stats(data)
     i, j = t.index('<p class="sub">'), t.index("</header>")
     t = t[:i] + f'''<p class="sub">{s["n"]} casas y PH de 3 ambientes o más, hasta USD 260.000, en
-<b>Bella Vista</b>, <b>San Miguel</b>, <b>Olivos</b>, <b>La Lucila</b> y <b>Martínez</b>.
+{negrita}.
 Tocá cualquier foto para abrir el aviso original.</p>
 <p class="sub"><b>El filtro que importa acá es el terreno libre</b>: superficie total menos
 cubierta, o sea el patio que queda. Arranca en 100 m² o más. Se mide con los metros del

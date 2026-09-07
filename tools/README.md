@@ -35,6 +35,18 @@ Lucila de **Santa Fe**. Los del conurbano son `bella-vista-san-miguel` y
 devuelve la provincia entera, 37.000 avisos. Por eso cada aviso se valida contra el
 partido esperado.
 
+**Ingeniero Maschwitz** (partido de Escobar) se sumó después. Tres cosas hubo que
+tocar además de la tabla de zonas: `maschwitz` a secas cae en Fisherton (Rosario) e
+`ingeniero-maschwitz-escobar` devuelve todo Belén de Escobar —el bueno es
+`ingeniero-maschwitz`—; `geocode.py` no tenía caja para Escobar y todas sus
+direcciones se descartaban contra la de CABA, que es el default de `zone_of`; y el
+texto de la página nombraba las cinco localidades a mano, así que ahora sale de
+`ZONES`.
+
+Maschwitz llenó las 9 páginas con `over=0` —tope de paginación, no techo de
+precio—, así que `gba_norte.py` ahora hace también la pasada **descendente** cuando
+una consulta toca el tope, igual que `sierras.py`: 274 → 359 avisos.
+
 El umbral de outliers de coordenadas se pasa por parámetro: 60 km sirve para los
 barrios de CABA, pero estas localidades miden ~6 km y con ese número se colaba un
 aviso a 35 km que estiraba el mapa. Ahí va `km=8`.

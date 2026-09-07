@@ -35,6 +35,10 @@ ZONES = [
     ("olivos",     "Olivos",      "olivos",                 "vicente lopez"),
     ("lalucila",   "La Lucila",   "la-lucila-vicente-lopez", "vicente lopez"),
     ("martinez",   "Martínez",    "martinez",               "san isidro"),
+    # `maschwitz` a secas cae en Fisherton (Rosario) y San Bernardo, y
+    # `ingeniero-maschwitz-escobar` devuelve todo Belén de Escobar: el bueno
+    # es `ingeniero-maschwitz`, que resuelve a "ingeniero maschwitz > escobar".
+    ("maschwitz",  "Ingeniero Maschwitz", "ingeniero-maschwitz", "escobar"),
 ]
 
 
@@ -44,8 +48,8 @@ def plain(s):
     return "".join(c for c in s if unicodedata.category(c) != "Mn").lower()
 
 
-def url_for(tipo, slug, p):
-    base = f"{tipo}-venta-{slug}-mas-de-3-ambientes-orden-precio-ascendente"
+def url_for(tipo, slug, p, orden="ascendente"):
+    base = f"{tipo}-venta-{slug}-mas-de-3-ambientes-orden-precio-{orden}"
     return (f"https://www.zonaprop.com.ar/{base}.html" if p == 1
             else f"https://www.zonaprop.com.ar/{base}-pagina-{p}.html")
 
@@ -56,12 +60,12 @@ def main():
         mx = int(sys.argv[sys.argv.index("--max") + 1])
     data = json.load(open(OUT, encoding="utf-8")) if os.path.exists(OUT) else {}
 
-    for key, label, slug, partido in ZONES:
-        bucket = data.setdefault(key, [])
-        seen = {x["id"] for x in bucket}
-        for tipo in TIPOS:
-            for p in range(1, PAGES + 1):
-                html = get(url_for(tipo, slug, p))
+    def barrer(key, label, slug, partido, tipo, bucket, seen, orden):
+        """Una pasada. Devuelve cuántas páginas caminó, para detectar el tope."""
+        pages = 0
+        for p in range(1, PAGES + 1):
+                html = get(url_for(tipo, slug, p, orden))
+                pages = p
                 if not html:
                     print(f"{key}/{tipo} p{p}: FAIL", flush=True); break
                 raws = postings(html)
@@ -93,9 +97,24 @@ def main():
                 json.dump(data, open(OUT, "w", encoding="utf-8"), ensure_ascii=False)
                 if wrong >= 25:
                     print(f"{key}/{tipo}: slug fuera de zona, corto", flush=True); break
-                if over >= 8:
+                # ascendente corta al cruzar el techo de precio; descendente
+                # arranca por arriba, así que ahí `over` no dice nada
+                if orden == "ascendente" and over >= 8:
                     break
                 time.sleep(1.1 + random.random() * 0.6)
+        return pages
+
+    for key, label, slug, partido in ZONES:
+        bucket = data.setdefault(key, [])
+        seen = {x["id"] for x in bucket}
+        for tipo in TIPOS:
+            pages = barrer(key, label, slug, partido, tipo, bucket, seen, "ascendente")
+            # Zonaprop corta en 9 páginas por consulta. Ingeniero Maschwitz llenó
+            # las 9 con `over=0`: no llegó al techo de precio, se quedó sin páginas.
+            # Pidiendo la lista al revés entra la otra punta del rango.
+            if pages >= PAGES:
+                print(f"{key}/{tipo}: tope de páginas, voy por el otro extremo", flush=True)
+                barrer(key, label, slug, partido, tipo, bucket, seen, "descendente")
     json.dump(data, open(OUT, "w", encoding="utf-8"), ensure_ascii=False)
     tot = sum(len(v) for v in data.values())
     print("DONE", {k: len(v) for k, v in data.items()}, "TOTAL", tot, flush=True)
