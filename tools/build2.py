@@ -98,25 +98,47 @@ def sold(*textos):
 # Por eso se descarta solo con **prueba positiva**: un monto, un adjetivo de
 # monto, o algo incluido en ellas. Mencionarlas sin más no alcanza.
 EXP_NO = re.compile(r"(sin|no\s+(se\s+)?(pag[aá]s?|pagan|pagar|abonan?|posee|tiene[ns]?)\s*)"
-                    r"(gastos\s+de\s+)?expensas|cero\s+expensas"
+                    r"(gastos\s+de\s+)?(expensas|gastos\s+comunes)|cero\s+expensas"
                     r"|expensas\s*[:=]?\s*\$?\s*0\b", re.I)
-EXP_SI = re.compile(r"expensas\s*[:.]?\s*(aprox\.?\s*)?\$|\$\s*[\d.,]+\s*(de\s+)?expensas"
-                    r"|(baj[ií]sim|baj|m[oó]dic|econ[oó]mic|reducid|alt)[oa]s?\s+expensas"
-                    r"|expensas\s+(baj[ií]sim|baj|m[oó]dic|econ[oó]mic|reducid|alt)[oa]s?"
-                    r"|con\s+expensas|incluid[oa]s?\s+en\s+(las\s+)?expensas", re.I)
+# `expensas ... $` con hasta 26 caracteres en el medio y sin punto: agarra
+# "Expensas: $ 20.000", "Expensas aproximadas: $130.000" y "expensas mensuales
+# $...", sin agarrar el descargo legal ("los valores de las expensas, impuestos y
+# servicios..."), que nombra la palabra pero no trae ningún monto al lado.
+EXP_SI = re.compile(r"expensas[^.$\n]{0,26}\$|\$\s*[\d.,]+\s*(de\s+)?expensas"
+                    r"|(baj[ií]sim|baj|m[oó]dic|econ[oó]mic|reducid|alt|m[ií]nim)[oa]s?"
+                    r"\s+(expensas|gastos\s+comunes)"
+                    r"|(expensas|gastos\s+comunes)\s+"
+                    r"(baj[ií]sim|baj|m[oó]dic|econ[oó]mic|reducid|alt|m[ií]nim)[oa]s?"
+                    r"|con\s+expensas|incluid[oa]s?\s+en\s+(las\s+)?expensas"
+                    # el aviso cita la liquidación: si hay recibo, hay expensas
+                    r"|monto\s+de\s+(las\s+)?expensas|expensas\s+(reales?|actuales?|del\s+mes)"
+                    r"|liquidaci[oó]n\s+(enviada\s+)?(por|del)\s+el?\s*consorcio"
+                    r"|administraci[oó]n\s+del\s+consorcio", re.I)
 
 # --- Barrio privado, country, club de campo -----------------------------------
 # No alcanza con nombrarlos: media zona norte se vende como "a 5 minutos de los
 # mejores countries". Si el aviso los menciona **una sola vez y en contexto de
 # cercanía**, la propiedad no está adentro.
-PRIV = re.compile(r"barrio\s+(privado|cerrado|semi-?cerrado|n[aá]utico)"
-                  r"|club\s+de\s+campo|\bcountry\b|\bcountries\b", re.I)
+PRIV = re.compile(r"barrio\s+(privado|cerrado|semi-?cerrado|semi\s*privado|n[aá]utico)"
+                  r"|club\s+de\s+campo|\bcountry\b|\bcountries\b"
+                  # un "complejo cerrado" es lo mismo con otro nombre, y en la
+                  # sierra es la forma habitual de venderlo
+                  r"|complejo\s+(cerrado|privado)|loteo\s+cerrado"
+                  r"|urbanizaci[oó]n\s+(cerrada|privada)"
+                  r"|acceso\s+controlado|guardia\s+24", re.I)
+# **"condominio" no entra.** En Argentina "PH en condominio de 3 unidades" es un
+# edificio chico en copropiedad, no un barrio cerrado — justo el tipo de PH que se
+# busca. Son 19 avisos y sacarlos sería borrar aciertos.
+# **"seguridad 24" sola tampoco**: 55 avisos la nombran y la mayoría describe la
+# zona ("barrio con seguridad 24hs"), no un acceso privado.
 #   `min` no matchea "minutos" y `country` **no** está adentro de "countries"
 #   (c-o-u-n-t-r-i-e-s): con esos dos errores, "a 5 minutos de los mejores
 #   countries" y "zona de countries, colegios y comercios" se descartaban como si
 #   la casa estuviera adentro de uno.
 PRIV_CERCA = re.compile(
-    r"(cerca|cercan[oa]s?|pr[oó]xim[oa]s?|frente|junto|rodead[oa]|zona"
+    # `próximo` pide el "a": "próximo a un country" es cercanía, pero "descubrí
+    # tu próximo hogar en el Barrio Cerrado San Lucas" es la casa adentro.
+    r"(cerca|cercan[oa]s?|pr[oó]xim[oa]s?\s+a|frente|junto|rodead[oa]|zona"
     r"|a\s+\d+\s*(min\w*|cuadras?|km|metros?|mts))\s+(de\s+|a\s+|al\s+|del\s+|los\s+)?"
     r"[^.]{0,24}(barrio\s+(privado|cerrado)|countr(y|ies)|club\s+de\s+campo)", re.I)
 
@@ -383,6 +405,32 @@ def main():
     ex = json.load(open(os.path.join(D, "existing.json"), encoding="utf-8"))
     sc = json.load(open(os.path.join(D, "scraped.json"), encoding="utf-8"))
     sc = {k: v for k, v in sc.items() if not k.startswith("_")}   # drop cache bookkeeping
+
+    # Los 192 avisos curados a mano venían entrando **sin pasar por `descartar()`**:
+    # ya llegan armados como fila, así que se salteaban los tres filtros. Uno de
+    # Julián Álvarez al 1100 se publicaba con "expensas: $ 37.000" en la ficha.
+    # Como la fila no guarda la descripción, se la busca por URL en el barrido.
+    desc_por_url = {}
+    for bucket in sc.values():
+        for r in bucket:
+            if r.get("url"):
+                desc_por_url[r["url"]] = r.get("d") or ""
+    for extra in ("caba_ap.json", "argenprop_merged.json"):
+        p = os.path.join(D, extra)
+        if not os.path.exists(p):
+            continue
+        for k, bucket in json.load(open(p, encoding="utf-8")).items():
+            if k.startswith("_") or not isinstance(bucket, list):
+                continue
+            for r in bucket:
+                if r.get("url"):
+                    desc_por_url.setdefault(r["url"], r.get("d") or "")
+    antes = len(ex)
+    # sin descripción se evalúa la nota, que es lo único del aviso que quedó
+    ex = [r for r in ex
+          if not descartar(desc_por_url.get(r[2]) or r[7], r[5])]
+    if antes != len(ex):
+        print(f"curados descartados por expensas/privado/vendido: {antes - len(ex)}")
     # amb_lookup2 parses the real CFT1 field; amb_lookup (v1) used a text regex
     # that latched onto the "Ambientes" feature *category* and is not trusted.
     lookup = {}

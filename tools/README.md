@@ -144,6 +144,16 @@ Por eso se descarta con **prueba positiva** y no por mención: un monto
 ("Expensas: $ 20.000"), un adjetivo de monto ("bajas expensas", "bajísimas") o
 algo incluido en ellas ("jardinero incluido en expensas").
 
+Los **192 avisos curados a mano** (`existing.json`) llegan ya armados como fila y
+por eso **se salteaban los tres filtros**. Ahora también pasan por `descartar()`,
+buscando su descripción por URL en el barrido: uno de Julián Álvarez al 1100 se
+estaba publicando con "expensas: $ 37.000" en la ficha.
+
+`expensas ... $` se busca con hasta 26 caracteres en el medio y sin punto, porque
+`Expensas aproximadas: $130.000` no entraba pidiendo solo `aprox.`. Los que dicen
+`Expensas: $0` o `No paga expensas! De abl son $ 30.000` se quedan: el ABL es un
+impuesto, no una expensa.
+
 ### Barrio privado, country, club de campo
 
 Tampoco alcanza con nombrarlos: media zona norte se vende como "a 5 minutos de los
@@ -154,6 +164,16 @@ cercanía**, la casa no está adentro y se queda.
 > `country` **no** está adentro de "countries" (c-o-u-n-t-r-i-e-s). Con esos dos,
 > "a 5 minutos de los mejores countries" y "zona de countries, colegios y
 > comercios" se descartaban como si la casa estuviera dentro de uno.
+
+> Y un tercero al revés: `próximo` suelto daba por cercano a "descubrí tu
+> **próximo** hogar en el Barrio Cerrado San Lucas", que está adentro. Ahora pide
+> el "a": `próximo a`.
+
+También cuenta como cerrado el **"complejo cerrado"**, que es lo mismo con otro
+nombre y en la sierra es la forma habitual de venderlo. **`condominio` no**: en
+Argentina "PH en condominio de 3 unidades" es un edificio chico en copropiedad,
+justo lo que se busca. **`seguridad 24` sola tampoco**: de 55 avisos que la
+nombran, casi todos describen la zona.
 
 En la última corrida salieron 186 + 68 en CABA, 48 + 107 en zona norte y 8 + 74 en
 sierras (expensas + privado).

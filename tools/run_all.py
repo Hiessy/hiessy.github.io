@@ -108,13 +108,18 @@ def main():
         os.makedirs(os.path.dirname(LOCK), exist_ok=True)
         open(LOCK, "w").write(str(os.getpid()))
 
-    resultados, t0 = [], time.time()
+    # monotonic y no time(): el timeout de subprocess cuenta tiempo monótono, así
+    # que si la máquina se suspende a mitad de un barrido de tres horas el reloj de
+    # pared avanza y el otro no. Midiendo con time() una etapa figuraba como
+    # "cortada por tiempo (60 min)" después de 80,5 minutos de reloj, que no era un
+    # timeout tardío sino dos relojes distintos.
+    resultados, t0 = [], time.monotonic()
     try:
         for nombre in pedidas:
             etapa = corr(nombre)
             _, desc, cmds, tope = etapa
             print(f"\n{'=' * 72}\n== {nombre}: {desc}\n{'=' * 72}", flush=True)
-            ini = time.time()
+            ini = time.monotonic()
             estado = "ok"
             for cmd in cmds:
                 try:
@@ -126,13 +131,14 @@ def main():
                 except subprocess.TimeoutExpired:
                     estado = f"cortada por tiempo ({tope // 60} min)"
                     break
-            resultados.append((nombre, estado, time.time() - ini))
-            print(f"-- {nombre}: {estado} en {(time.time() - ini) / 60:.1f} min", flush=True)
+            resultados.append((nombre, estado, time.monotonic() - ini))
+            print(f"-- {nombre}: {estado} en {(time.monotonic() - ini) / 60:.1f} min",
+                  flush=True)
     finally:
         if usa_red and os.path.exists(LOCK):
             os.remove(LOCK)
 
-    print(f"\n{'=' * 72}\nRESUMEN ({(time.time() - t0) / 60:.0f} min en total)\n{'=' * 72}")
+    print(f"\n{'=' * 72}\nRESUMEN ({(time.monotonic() - t0) / 60:.0f} min en total)\n{'=' * 72}")
     for n, e, s in resultados:
         marca = "ok  " if e == "ok" else "FALLO"
         print(f"  {marca} {n:12s} {s / 60:5.1f} min   {'' if e == 'ok' else e}")
