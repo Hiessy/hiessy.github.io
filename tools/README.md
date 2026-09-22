@@ -88,7 +88,7 @@ buenos son los slugs pelados, `san-fernando` y `tigre`.
 lancha y no hay calle. No entran (`EXCLUIR` en `gba_norte.py`); para incluirlas,
 sacar esa entrada.
 
-> El patrón del Delta lleva ``, así que **se escribe con `chr(92)` y nunca desde
+> El patrón del Delta lleva `\b`, así que **se escribe con `chr(92)` y nunca desde
 > un heredoc de shell**. Pasó por cuarta vez en el proyecto: el heredoc se come un
 > nivel de barra, queda un backspace literal (0x08) y `delta > tigre` entraba como
 > si fuera continente.
@@ -435,7 +435,7 @@ Dos cosas que hay que hacerle a la dirección antes de preguntar:
 - `"Cabildo al 3000, Piso PB"` → `"Cabildo 3000"`. Nominatim no entiende el "al" de
   altura aproximada, ni los sufijos de piso o entrecalles.
 - Las abreviaturas de calle no resuelven: `"Int. Arricau"` no, `"Intendente Arricau"`
-  sí. La expansión se hace **palabra por palabra y no con regex** — un `` mal
+  sí. La expansión se hace **palabra por palabra y no con regex** — un `\b` mal
   escapado se guarda como un backspace literal (0x08) y el patrón deja de matchear
   sin avisar. Ya pasó una vez.
 
@@ -454,7 +454,7 @@ tope llevó la detección de terraza del 39% al 64% y la de balcón del 14% al 2
 así ~50% sigue tocando el tope, así que **la ausencia de una palabra no prueba nada** y
 la página lo dice con todas las letras.
 
-> Cuidado con los `` en estos regex. Escribirlos desde un heredoc de shell los
+> Cuidado con los `\b` en estos regex. Escribirlos desde un heredoc de shell los
 > convierte en un **backspace literal (0x08)** y el patrón deja de matchear sin avisar
 > — pasó tres veces en este proyecto. Editar el archivo directamente, o construir la
 > barra con `chr(92)`.

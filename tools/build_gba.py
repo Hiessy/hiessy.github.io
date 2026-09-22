@@ -113,8 +113,11 @@ def main():
     if small:
         rows = [r for r in rows if not (0 < r[10] < 3)]
         print("descartados por tener 1-2 ambientes:", len(small))
-    # estas localidades miden ~6 km: 60 km dejaba pasar un aviso a 35
-    far = drop_far_coords(rows, km=8)
+    # Olivos o Martínez miden ~6 km y 60 km dejaba pasar un aviso a 35. Pero
+    # **Tigre es un partido entero**, de Don Torcuato a Dique Luján: sus pines
+    # llegan a 8,4 km de la mediana y con `km=8` se recortaban los propios. 14 km
+    # cubre Tigre sin dejar entrar los que se van de provincia.
+    far = drop_far_coords(rows, km=14)
 
     print("avisos", len(rows), "| coordenadas descartadas por lejanía:", far)
     print("por zona", Counter(r[9] for r in rows))
