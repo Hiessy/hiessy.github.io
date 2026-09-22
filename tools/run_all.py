@@ -5,6 +5,11 @@
     python tools/run_all.py --only caba-zp,build,deadlinks,build-final
     python tools/run_all.py --skip sierras-zp,gba-zp
     python tools/run_all.py --list          # ver las etapas y salir
+    python tools/run_all.py --no-widget     # sin el widget de escritorio
+
+Mientras corre abre un **widget translúcido** arriba a la derecha con la etapa,
+el avance y lo que falta (`progress_widget.py`). Se puede abrir y cerrar aparte
+cuando uno quiera: lee el log, no depende de esta corrida.
 
 Cada etapa corre como subproceso **con timeout**, así que ninguna puede colgar la
 corrida entera: si se pasa del tope se la mata, queda marcada y sigue la que viene.
@@ -77,6 +82,24 @@ def corr(nombre):
     return next((s for s in STAGES if s[0] == nombre), None)
 
 
+def abrir_widget():
+    """Abre el widget de escritorio con el avance. Nunca rompe la corrida.
+
+    Va con `pythonw.exe` para que no aparezca una consola negra al lado. El
+    widget lee `run_all.log`, así que no hace falta pasarle nada ni esperarlo:
+    se abre, sigue solo y se cierra a los 30 s de que termine el barrido.
+    """
+    try:
+        exe = os.path.join(os.path.dirname(PY), "pythonw.exe")
+        if not os.path.exists(exe):
+            exe = PY
+        subprocess.Popen([exe, os.path.join(TOOLS, "progress_widget.py")],
+                         cwd=TOOLS, stdout=subprocess.DEVNULL,
+                         stderr=subprocess.DEVNULL)
+    except Exception as e:
+        print(f"(sin widget: {e})", flush=True)
+
+
 def main():
     args = sys.argv[1:]
     if "--list" in args:
@@ -107,6 +130,9 @@ def main():
                      f"Si estás seguro de que no, borrá {LOCK}")
         os.makedirs(os.path.dirname(LOCK), exist_ok=True)
         open(LOCK, "w").write(str(os.getpid()))
+
+    if "--no-widget" not in args:
+        abrir_widget()
 
     # monotonic y no time(): el timeout de subprocess cuenta tiempo monótono, así
     # que si la máquina se suspende a mitad de un barrido de tres horas el reloj de

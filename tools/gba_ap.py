@@ -35,6 +35,8 @@ ZONES = [
     # `ingeniero-maschwitz-escobar` devuelve todo Belén de Escobar: el bueno
     # es `ingeniero-maschwitz`, que resuelve a "ingeniero maschwitz > escobar".
     ("maschwitz",  "Ingeniero Maschwitz", "ingeniero-maschwitz", "escobar"),
+    ("sanfernando", "San Fernando", "san-fernando", "san fernando"),
+    ("tigre",       "Tigre",        "tigre",        "tigre"),
 ]
 
 

@@ -78,6 +78,30 @@ Mismo cuidado con los slugs: `bella-vista` es la de Corrientes y
 `bella-vista-buenos-aires` devuelve 91.000 avisos de todo el país. La buena es
 `bella-vista-san-miguel`. Cada aviso se valida contra el partido en el título.
 
+### San Fernando y Tigre (solo casas)
+
+Se sumaron después, **solo casas** (no PH). Otra vez la trampa del sufijo:
+`san-fernando-gba-norte` y `tigre-gba-norte` caen los dos en **José C Paz**. Los
+buenos son los slugs pelados, `san-fernando` y `tigre`.
+
+**El 64% de las casas baratas de Tigre están en el Delta**: son islas, se llega en
+lancha y no hay calle. No entran (`EXCLUIR` en `gba_norte.py`); para incluirlas,
+sacar esa entrada.
+
+> El patrón del Delta lleva ``, así que **se escribe con `chr(92)` y nunca desde
+> un heredoc de shell**. Pasó por cuarta vez en el proyecto: el heredoc se come un
+> nivel de barra, queda un backspace literal (0x08) y `delta > tigre` entraba como
+> si fuera continente.
+
+Las dos consultas madre se topan con las 9 páginas y **se cortan muy abajo del
+presupuesto**: San Fernando en USD 150.000 y Tigre en 100.000, con el techo en
+260.000. Por eso se piden además nueve sublocalidades —Victoria, Virreyes; Don
+Torcuato, General Pacheco, Benavídez, Rincón de Milberg, Troncos del Talar, Dique
+Luján y Ricardo Rojas—, cada una con su propio cupo de 270. Con eso San Fernando
+pasó de 270 a 385 avisos y Tigre de 128 a 939, los dos llegando a 260.000 sin
+huecos de más de USD 10.000. `el-talar` no existe como slug; esos avisos entran
+por la consulta madre.
+
 ## La tercera página: sierras de Córdoba
 
 `sierras.html` — **casas** (no PH) de 3 ambientes o más, hasta USD 260.000, en los
@@ -223,6 +247,25 @@ El orden no es arbitrario:
   descartar las bajas. Armar, verificar, armar de nuevo.
 - **`gba` y `sierras` van al final**, porque las dos páginas se generan desde
   `index.html`.
+
+## Widget de avance (`progress_widget.py`)
+
+Ventanita translúcida, sin bordes y siempre encima, arriba a la derecha: qué etapa
+va, la barra, cuánto falta y la última línea del barrido. `run_all.py` la abre
+sola (`--no-widget` para que no), y se puede abrir aparte cuando uno quiera:
+
+```bash
+pythonw tools/progress_widget.py
+```
+
+**Lee `run_all.log`, no un archivo de estado aparte.** El log ya tiene todo lo que
+hace falta —`== etapa:` al empezar, `-- etapa: estado en X min` al terminar— así
+que no hay dos fuentes de verdad que se desincronicen, y el widget sirve aunque la
+corrida ya vaya por la mitad. Se arrastra con el mouse, se cierra con la ×, y a los
+30 s de terminar se va solo.
+
+Tkinter, o sea stdlib, igual que todo lo demás. Si no hay escritorio (sesión
+remota) no rompe nada: `run_all.py` avisa y sigue.
 
 ## Links muertos (`deadlinks.py`)
 

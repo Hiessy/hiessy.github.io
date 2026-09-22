@@ -17,7 +17,7 @@ dos consultas por localidad duplican el techo de avisos que se pueden traer.
 
     python tools/gba_norte.py [--max 260000]
 """
-import json, os, sys, time, random, unicodedata
+import json, os, re, sys, time, random, unicodedata
 
 from scrape import get, postings, parse, locpath
 
@@ -39,7 +39,40 @@ ZONES = [
     # `ingeniero-maschwitz-escobar` devuelve todo Belén de Escobar: el bueno
     # es `ingeniero-maschwitz`, que resuelve a "ingeniero maschwitz > escobar".
     ("maschwitz",  "Ingeniero Maschwitz", "ingeniero-maschwitz", "escobar"),
+    # `san-fernando-gba-norte` y `tigre-gba-norte` caen los dos en José C Paz:
+    # otra vez la trampa del sufijo. Los buenos son los slugs pelados.
+    ("sanfernando", "San Fernando", "san-fernando", "san fernando"),
+    ("tigre",       "Tigre",        "tigre",        "tigre"),
+    # Sublocalidades. Las dos consultas madre se topan con las 9 páginas y se
+    # cortan muy abajo del presupuesto —San Fernando en USD 150.000 y Tigre en
+    # 100.000—, así que se pide cada sublocalidad por separado: cada una tiene su
+    # propio cupo de 270 y entre todas cubren el rango completo. Se guardan con la
+    # etiqueta del partido, así en la página siguen siendo un solo botón.
+    ("sf-victoria",  "San Fernando", "victoria-san-fernando", "san fernando"),
+    ("sf-virreyes",  "San Fernando", "virreyes",              "san fernando"),
+    ("tg-torcuato",  "Tigre",        "don-torcuato",          "tigre"),
+    ("tg-pacheco",   "Tigre",        "general-pacheco",       "tigre"),
+    ("tg-benavidez", "Tigre",        "benavidez",             "tigre"),
+    ("tg-milberg",   "Tigre",        "rincon-de-milberg",     "tigre"),
+    ("tg-troncos",   "Tigre",        "troncos-del-talar",     "tigre"),
+    ("tg-dique",     "Tigre",        "dique-lujan",           "tigre"),
+    ("tg-rojas",     "Tigre",        "ricardo-rojas",         "tigre"),
 ]
+
+# El pedido para estas dos fue "casa con jardín", así que no se piden PH.
+SOLO_CASAS = {"sanfernando", "tigre", "sf-victoria", "sf-virreyes",
+               "tg-torcuato", "tg-pacheco", "tg-benavidez", "tg-milberg",
+               "tg-troncos", "tg-dique", "tg-rojas"}
+
+# **El 64% de las casas baratas de Tigre están en el Delta**: son islas, se llega
+# en lancha y no hay calle. No es comparable con una casa con jardín en el
+# continente, así que no entran. Para incluirlas, sacar esta entrada.
+#
+# OJO: esta línea se escribe con chr(92) y **nunca** desde un heredoc de
+# shell. Ya pasó cuatro veces en el proyecto: el heredoc se come un nivel de
+# barra, el \b queda como un backspace literal (0x08) y el patrón deja de
+# matchear sin avisar — "delta > tigre" entraba como si fuera continente.
+EXCLUIR = {"tigre": re.compile(r"\bdelta\b|\bisla|islas\s+del\s+paran", re.I)}
 
 
 def plain(s):
@@ -72,10 +105,14 @@ def main():
                 if not raws:
                     print(f"{key}/{tipo} p{p}: vacío", flush=True); break
                 over = added = wrong = 0
+                fuera_zona = EXCLUIR.get(key)
                 for raw in raws:
-                    if partido not in plain(locpath(raw)):
+                    lp = plain(locpath(raw))
+                    if partido not in lp:
                         wrong += 1
                         continue
+                    if fuera_zona and fuera_zona.search(lp):
+                        continue          # Delta: isla, sin calle
                     r = parse(raw)
                     if r["price"] > mx:
                         over += 1
@@ -107,7 +144,7 @@ def main():
     for key, label, slug, partido in ZONES:
         bucket = data.setdefault(key, [])
         seen = {x["id"] for x in bucket}
-        for tipo in TIPOS:
+        for tipo in (["casas"] if key in SOLO_CASAS else TIPOS):
             pages = barrer(key, label, slug, partido, tipo, bucket, seen, "ascendente")
             # Zonaprop corta en 9 páginas por consulta. Ingeniero Maschwitz llenó
             # las 9 con `over=0`: no llegó al techo de precio, se quedó sin páginas.

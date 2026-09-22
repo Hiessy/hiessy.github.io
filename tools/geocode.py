@@ -34,6 +34,10 @@ BOXES = {
     # —el default de `zone_of`— y se descartaban todas sus direcciones por
     # "fuera de zona", estando bien resueltas.
     "escobar":   (-34.45, -34.28, -58.90, -58.60),
+    "sanfdo":    (-34.50, -34.38, -58.64, -58.48),
+    # Tigre continente: Don Torcuato y El Talar al sur, Benavídez al oeste,
+    # Rincón de Milberg al este. El Delta no entra al relevamiento.
+    "tigre":     (-34.52, -34.30, -58.80, -58.48),
 }
 
 
@@ -82,6 +86,10 @@ def zone_of(loc):
         return "sanmiguel"
     if "maschwitz" in l or "escobar" in l:
         return "escobar"
+    if "san fernando" in l or "victoria" in l or "virreyes" in l:
+        return "sanfdo"
+    if "tigre" in l or "torcuato" in l or "pacheco" in l or "benavidez" in l:
+        return "tigre"
     return "caba"
 
 
