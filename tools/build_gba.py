@@ -10,7 +10,7 @@ El **terreno libre** (total − cubierto) es lo que decide si hay patio de verda
 La bandera `jardín` sale del texto del aviso y no alcanza: 193 avisos con más de
 100 m² libres no dicen "jardín", y 315 que sí lo dicen tienen menos de 100.
 """
-import json, os
+import json, math, os
 from collections import Counter
 
 from build2 import note, geo, drop_far_coords, m2_of, feats_of, descartar
@@ -44,6 +44,44 @@ def specs_gba(r):
 
 def patio(r):
     return max((r.get("tot") or 0) - (r.get("cub") or 0), 0)
+
+
+# --- San Fernando: solo la franja costera ------------------------------------
+# El partido es grande y se estira tierra adentro hasta 7,3 km del río, pasando
+# Virreyes y la Panamericana. Lo que interesa es la costa y sus alrededores, así
+# que se mide la distancia a la ribera y se corta en COSTA_KM.
+#
+# La costa va del límite con Tigre, por el puerto de San Fernando, al límite con
+# San Isidro. Tres tramos alcanzan: la ribera es casi recta en este partido.
+COSTA_SF = [(-34.4210, -58.5920), (-34.4380, -58.5560),
+            (-34.4470, -58.5380), (-34.4600, -58.5180)]
+COSTA_KM = 3.0          # la mediana está a 1,3 km; a 3 km entran 271 de 317
+KY = 111.0
+KX = 111.0 * math.cos(math.radians(-34.45))
+
+
+def _dist_segmento(p, a, b):
+    px, py = (p[1] - a[1]) * KX, (p[0] - a[0]) * KY
+    bx, by = (b[1] - a[1]) * KX, (b[0] - a[0]) * KY
+    largo = bx * bx + by * by
+    t = 0.0 if largo == 0 else max(0.0, min(1.0, (px * bx + py * by) / largo))
+    return math.hypot(px - bx * t, py - by * t)
+
+
+def km_a_la_costa(lat, lng):
+    return min(_dist_segmento((lat, lng), COSTA_SF[i], COSTA_SF[i + 1])
+               for i in range(len(COSTA_SF) - 1))
+
+
+def lejos_de_la_costa(row):
+    """True si es de San Fernando y quedó tierra adentro.
+
+    Sin coordenadas devuelve False: no haber podido ubicarlo no prueba que esté
+    lejos, y es el mismo criterio que se usa con los links sin verificar.
+    """
+    if row[9] != "San Fernando" or not (row[15] and row[16]):
+        return False
+    return km_a_la_costa(row[15], row[16]) > COSTA_KM
 
 
 def main():
@@ -101,6 +139,11 @@ def main():
           sum(1 for r in rows if r[14] == "Argenprop" and not r[18]), ")")
 
     print("descartados:", fuera or "ninguno")
+    afuera = [r for r in rows if lejos_de_la_costa(r)]
+    if afuera:
+        rows = [r for r in rows if not lejos_de_la_costa(r)]
+        print(f"San Fernando tierra adentro (>{COSTA_KM:.0f} km de la costa): {len(afuera)}")
+
     rows, dups = dedupe(rows)
     print("repetidos sacados", dups)
     rows.sort(key=lambda r: (r[0], r[4]))

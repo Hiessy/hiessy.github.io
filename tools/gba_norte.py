@@ -92,6 +92,12 @@ def main():
     if "--max" in sys.argv:
         mx = int(sys.argv[sys.argv.index("--max") + 1])
     data = json.load(open(OUT, encoding="utf-8")) if os.path.exists(OUT) else {}
+    # `--only` acota el barrido a unas claves. Este script no tiene caché por
+    # zona: sin el flag vuelve a pedir las diecisiete, que son ~10 minutos.
+    only = None
+    if "--only" in sys.argv:
+        only = set(sys.argv[sys.argv.index("--only") + 1].split(","))
+        print("solo:", sorted(only), flush=True)
 
     def barrer(key, label, slug, partido, tipo, bucket, seen, orden):
         """Una pasada. Devuelve cuántas páginas caminó, para detectar el tope."""
@@ -142,6 +148,8 @@ def main():
         return pages
 
     for key, label, slug, partido in ZONES:
+        if only and key not in only:
+            continue
         bucket = data.setdefault(key, [])
         seen = {x["id"] for x in bucket}
         for tipo in (["casas"] if key in SOLO_CASAS else TIPOS):

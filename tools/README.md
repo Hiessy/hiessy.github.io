@@ -102,6 +102,22 @@ pasó de 270 a 385 avisos y Tigre de 128 a 939, los dos llegando a 260.000 sin
 huecos de más de USD 10.000. `el-talar` no existe como slug; esos avisos entran
 por la consulta madre.
 
+#### San Fernando: solo la franja costera
+
+El partido se estira tierra adentro hasta **7,3 km del río**, pasando Virreyes y
+la Panamericana, y eso no es lo que se busca. `build_gba.py` mide la distancia a
+la ribera —tres tramos, del límite con Tigre por el puerto al de San Isidro— y
+corta en `COSTA_KM = 3`. Quedan 283 avisos con mediana a 1,0 km del agua; salen 86.
+
+Los avisos **sin coordenadas se quedan**: no haber podido ubicarlos no prueba que
+estén tierra adentro, el mismo criterio que con los links sin verificar. Son 8.
+
+Para relevar solo este partido, sin volver a pedir las diecisiete zonas:
+
+```bash
+python tools/gba_norte.py --only sanfernando,sf-victoria,sf-virreyes
+```
+
 ## La tercera página: sierras de Córdoba
 
 `sierras.html` — **casas** (no PH) de 3 ambientes o más, hasta USD 260.000, en los
