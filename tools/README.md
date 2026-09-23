@@ -237,6 +237,29 @@ signos de exclamación, o solo al principio del título seguido de guión o dos 
 —`*RESERVADO*`, `Reservado!!`, `- Vendido - excelente ph`—. Uno de los avisos se
 delata solo: "por inconveniente con la plataforma no deja ponerla como reservada!".
 
+## El mapa: Esri, no CARTO
+
+**CARTO empezó a estampar "API KEY REQUIRED" en diagonal sobre sus basemaps
+gratuitos.** Lo traicionero es que no falla nada: el tile sigue devolviendo `200`
+y un PNG válido de 4,6 KB, así que probarlo con `urlopen` da todo bien — el
+cartel viene dibujado **adentro** de la imagen. Solo se ve mirando la página.
+
+Ahora se usan los de **Esri**, que no piden clave:
+
+    Canvas/World_Light_Gray_Base        el fondo gris, sobrio como el de CARTO
+    Canvas/World_Light_Gray_Reference   los nombres, en capa aparte
+    World_Imagery                       el satélite del botón
+
+> **Esri sirve `{z}/{y}/{x}`**, al revés que OSM y CARTO. Con el orden de
+> siempre se ven tiles de otro lado del mundo sin ningún error.
+
+Las etiquetas van en una capa separada porque el gris solo viene sin nombres.
+`maxNativeZoom` es 16 para el gris y 18 para el satélite: más cerca que eso Esri
+no tiene tiles y Leaflet agranda el último en vez de dejar el hueco gris.
+
+El botón **Satélite** alterna las dos vistas. Para una casa con jardín, ver el
+fondo desde arriba dice bastante más que la foto del aviso.
+
 ## Correr todo de una (`run_all.py`)
 
 ```bash

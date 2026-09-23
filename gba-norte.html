@@ -226,6 +226,7 @@ OpenStreetMap.</p>
 <aside class="mapcol">
  <div class="maphead"><span class="lbl">Mapa</span>
   <button class="pill" id="mapt">Ocultar</button>
+  <button class="pill" id="sat">Satélite</button>
   <button class="pill" id="clr" hidden>Limpiar selección</button>
   <span class="mapnote" id="mapn"></span></div>
  <div id="map"></div>
@@ -362,7 +363,7 @@ function draw(){
 // --- mapa ---
 // r[15] lat, r[16] lng. Se dibuja el resultado filtrado completo (no solo las
 // fichas pintadas) con canvas, que aguanta miles de puntos sin trabarse.
-let map=null,layer=null,pins=new Map(),hi=null;
+let map=null,layer=null,pins=new Map(),hi=null,base=null,rotulos=null,sat=null;
 const picked=new Set();
 const rowByKey=new Map(D.map(r=>[r[2],r]));
 const hasGeo=r=>r[15]&&r[16];
@@ -408,9 +409,29 @@ addEventListener('resize',()=>{fitSticky();if(map)map.invalidateSize()});
 function initMap(){
  if(map||typeof L==='undefined')return;
  map=L.map('map',{scrollWheelZoom:false,preferCanvas:true});
- L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-  {maxZoom:19,attribution:'&copy; OpenStreetMap &copy; CARTO'}).addTo(map);
+ // CARTO empezó a estampar "API KEY REQUIRED" en diagonal sobre sus tiles
+ // gratuitos. Devuelven 200 y un PNG válido, así que no falla nada: el cartel
+ // viene dibujado adentro de la imagen. Esri Light Gray es igual de sobrio,
+ // no pide clave, y así los pines marrones siguen resaltando.
+ // Ojo con el orden: Esri sirve {z}/{y}/{x}, al revés que OSM y CARTO.
+ const ESRI='https://server.arcgisonline.com/ArcGIS/rest/services/';
+ base=L.tileLayer(ESRI+'Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+  {maxZoom:19,maxNativeZoom:16,attribution:'Tiles &copy; Esri'}).addTo(map);
+ // las etiquetas van en una capa aparte, si no el gris queda sin nombres
+ rotulos=L.tileLayer(ESRI+'Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+  {maxZoom:19,maxNativeZoom:16,pane:'shadowPane'}).addTo(map);
+ sat=L.tileLayer(ESRI+'World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  {maxZoom:19,maxNativeZoom:18,attribution:'Tiles &copy; Esri'});
  map.setView([-34.58,-58.45],12);
+}
+// Satélite: para una casa con jardín, ver el fondo desde arriba dice más que
+// cualquier foto del aviso. Es la misma fuente y tampoco pide clave.
+function toggleSat(){
+ const on=map.hasLayer(sat);
+ if(on){map.removeLayer(sat);base.addTo(map);rotulos.addTo(map);}
+ else{base.remove();rotulos.remove();sat.addTo(map);}
+ const b=document.getElementById('sat');
+ if(b){b.textContent=on?'Satélite':'Mapa';b.classList.toggle('on',!on);}
 }
 function drawPins(){
  if(!map)return;
@@ -471,6 +492,7 @@ document.getElementById('clr').onclick=()=>{
  document.querySelectorAll('.pickbtn.on').forEach(b=>{b.classList.remove('on');b.setAttribute('aria-pressed','false')});
  drawPins();
 };
+document.getElementById('sat').onclick=toggleSat;
 document.getElementById('mapt').onclick=e=>{
  const box=document.querySelector('.maprow'),on=box.dataset.off!=='1';
  box.dataset.off=on?'1':'0';
