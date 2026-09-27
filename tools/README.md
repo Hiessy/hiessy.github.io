@@ -321,6 +321,15 @@ nunca existió). Con el código de estado alcanza, y es lo único confiable.
 > de HTML y JS, así que cualquier palabra que se busque ahí va a aparecer por otro
 > motivo.
 
+Para un aviso suelto, cuando uno se cruza con un link que no abre:
+
+```bash
+python tools/deadlinks.py --url https://www.zonaprop.com.ar/propiedades/clasificado/algo.html
+```
+
+Contesta `VIVO`, `DADO DE BAJA (410)` o `NO EXISTE (404)`, y si está muerto lo
+anota en `alive.json` para que el próximo build lo saque.
+
 Se corre por página, y **hay tres**:
 
 ```bash
@@ -349,6 +358,14 @@ motivo para esconderlo.
 Para Argenprop no sirve —bloquea las fichas mucho más duro que los listados— y el
 camino barato es `caba_ap.py --purge`, que se queda solo con lo que el portal sigue
 listando.
+
+La primera pasada sobre las sierras, que nunca se habían verificado, encontró
+**443 avisos dados de baja sobre 2.464: el 18%**. En CABA, que se verifica en cada
+corrida, son 7 sobre ~1.200. Esa diferencia es lo que costó tener `index.html`
+hardcodeado.
+
+Tarda: 1,4 s entre pedidos por cortesía, o sea ~57 min para 2.400 avisos. Conviene
+darle `--deadline` holgado o correrlo en dos tandas; lo ya verificado se saltea.
 
 **Lo más efectivo no es este script sino purgar y volver a relevar**: en la última
 corrida, `refresh.py --edenor` + `scrape.py --only` sacó 1.273 avisos viejos y

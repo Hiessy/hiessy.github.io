@@ -93,6 +93,23 @@ def check(u, deadline=None):
 
 def main():
     arg = lambda k, d: (type(d)(sys.argv[sys.argv.index(k) + 1]) if k in sys.argv else d)
+
+    # `--url`: verificar un aviso suelto, para cuando uno se cruza con un link
+    # que no abre y quiere saber si es él o es la página.
+    if "--url" in sys.argv:
+        u = sys.argv[sys.argv.index("--url") + 1]
+        if not u.startswith("http"):
+            u = ZP + u
+        estado = check(u)
+        print({"ok": "VIVO", "baja": "DADO DE BAJA (410)",
+               "404": "NO EXISTE (404)",
+               "bloqueado": "sin veredicto: bloqueado o error"}[estado])
+        if estado in ("baja", "404"):
+            d = load()
+            d[u] = {"ok": False, "t": int(time.time()), "por": estado}
+            save(d)
+            print("anotado en alive.json; sale en el próximo build")
+        return
     limit = arg("--limit", 250)
     delay = arg("--delay", 1.4)
     # `--page`: deadlinks miraba solo index.html, así que los avisos de la zona
