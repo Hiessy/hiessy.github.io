@@ -13,7 +13,7 @@ La bandera `jardín` sale del texto del aviso y no alcanza: 193 avisos con más 
 import json, math, os
 from collections import Counter
 
-from build2 import note, geo, drop_far_coords, m2_of, feats_of, descartar
+from build2 import note, geo, drop_far_coords, m2_of, feats_of, descartar, load_dead, is_dead
 from dedupe import dedupe        # pasada final: ver tools/dedupe.py
 from geocode import load_cache, coords_for
 
@@ -88,11 +88,17 @@ def main():
     src = json.load(open(SRC, encoding="utf-8"))
     rows, seen = [], set()
     fuera = {}
+    # los dados de baja que encontró deadlinks.py (410 Gone)
+    dead = load_dead()
+    bajas = 0
     for bucket in src.values():
         for r in bucket:
             if r["id"] in seen:
                 continue
             seen.add(r["id"])
+            if is_dead(r.get("url", ""), dead):
+                bajas += 1
+                continue
             motivo = descartar(r.get("d"), r.get("addr"))
             if motivo:
                 fuera[motivo] = fuera.get(motivo, 0) + 1
@@ -119,6 +125,9 @@ def main():
                 if r["id"] in seen:
                     continue
                 seen.add(r["id"])
+                if is_dead(r.get("url", ""), dead):
+                    bajas += 1
+                    continue
                 motivo = descartar(r.get("d"), r.get("addr"))
                 if motivo:
                     fuera[motivo] = fuera.get(motivo, 0) + 1
@@ -138,7 +147,7 @@ def main():
     print("Argenprop:", ap_n, "(sin dato de lote:",
           sum(1 for r in rows if r[14] == "Argenprop" and not r[18]), ")")
 
-    print("descartados:", fuera or "ninguno")
+    print("descartados:", fuera or "ninguno", "| dados de baja:", bajas)
     afuera = [r for r in rows if lejos_de_la_costa(r)]
     if afuera:
         rows = [r for r in rows if not lejos_de_la_costa(r)]

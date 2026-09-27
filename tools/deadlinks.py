@@ -26,7 +26,7 @@ import io, json, os, random, re, sys, time, urllib.error, urllib.request
 
 D = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".work")
 OUT = os.path.join(D, "alive.json")
-PAGE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "index.html")
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
@@ -47,8 +47,8 @@ MUERTO = {404, 410}
 # cualquier palabra que se busque ahí adentro va a aparecer por otro motivo.
 
 
-def rows_publicados():
-    t = io.open(PAGE, encoding="utf-8").read()
+def rows_publicados(pagina):
+    t = io.open(os.path.join(ROOT, pagina), encoding="utf-8").read()
     i = t.index("const D=["); j = t.index("];", i)
     return json.loads(t[i + 8:j + 1])
 
@@ -95,15 +95,23 @@ def main():
     arg = lambda k, d: (type(d)(sys.argv[sys.argv.index(k) + 1]) if k in sys.argv else d)
     limit = arg("--limit", 250)
     delay = arg("--delay", 1.4)
-    fuente = arg("--fuente", "Zonaprop")
+    # `--page`: deadlinks miraba solo index.html, así que los avisos de la zona
+    # norte y de las sierras nunca se verificaban. Son tres páginas.
+    pagina = arg("--page", "index.html")
+    # Sin `--fuente` se revisan todas las filas. Importa en sierras.html, donde la
+    # columna 14 guarda el valle y no el portal: pidiendo "Zonaprop" no
+    # coincidía ninguna y el barrido no hacía nada, sin avisar.
+    fuente = arg("--fuente", "")
     deadline = time.time() + arg("--deadline", 1500.0)
     recheck = "--recheck" in sys.argv
 
     done = load()
-    rows = [r for r in rows_publicados() if r[14] == fuente]
+    rows = [r for r in rows_publicados(pagina) if not fuente or r[14] == fuente]
+    # Argenprop bloquea las fichas: no tiene sentido pedirlas de a cientos
+    rows = [r for r in rows if "argenprop" not in r[2]]
     pend = [r for r in rows if recheck or url_de(r) not in done]
-    print(f"{fuente}: {len(rows)} publicados, {len(pend)} sin verificar, "
-          f"reviso hasta {limit}", flush=True)
+    print(f"{pagina} ({fuente or 'todas las fuentes'}): {len(rows)} publicados, "
+          f"{len(pend)} sin verificar, reviso hasta {limit}", flush=True)
 
     tally = {}
     for n, r in enumerate(pend[:limit], 1):

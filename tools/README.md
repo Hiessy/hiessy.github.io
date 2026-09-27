@@ -321,6 +321,27 @@ nunca existió). Con el código de estado alcanza, y es lo único confiable.
 > de HTML y JS, así que cualquier palabra que se busque ahí va a aparecer por otro
 > motivo.
 
+Se corre por página, y **hay tres**:
+
+```bash
+python tools/deadlinks.py --page sierras.html   --limit 2500
+python tools/deadlinks.py --page gba-norte.html --limit 2500
+python tools/deadlinks.py                       # index.html, el default
+```
+
+> Dos agujeros que estuvieron mucho tiempo: `deadlinks.py` tenía `index.html`
+> **hardcodeado**, así que la zona norte y las sierras nunca se verificaron. Y
+> filtraba por `r[14] == "Zonaprop"`, pero en `sierras.html` esa columna guarda el
+> **valle**: apuntándolo ahí no matcheaba ninguna fila, no revisaba nada e
+> imprimía `DONE` igual. Ahora `--fuente` es opcional y por defecto mira todas.
+>
+> Peor todavía: **solo `build2.py` descartaba los dados de baja**. `build_gba.py`
+> y `build_sierras.py` no leían `alive.json`, así que aunque el chequeo hubiera
+> andado, los muertos se publicaban lo mismo. Las tres páginas filtran ahora.
+
+Los avisos de **Argenprop no se piden**: bloquea las fichas mucho más duro que los
+listados y pedir cientos solo sirve para que nos corte.
+
 El resultado se cachea en `.work/alive.json` y `build2.py` descarta lo que esté en
 `false`. Lo que no se verificó se publica igual: no haber mirado un aviso no es
 motivo para esconderlo.

@@ -18,7 +18,7 @@ donde Argenprop no lo publicaba nunca.
 import json, os, re
 from collections import Counter
 
-from build2 import note, geo, drop_far_coords, m2_of, feats_of, descartar
+from build2 import note, geo, drop_far_coords, m2_of, feats_of, descartar, load_dead, is_dead
 from dedupe import dedupe
 from sierras import LOCS, PUNILLA, CALAMUCHITA
 
@@ -71,6 +71,9 @@ def main():
     src = json.load(open(SRC, encoding="utf-8"))
     rows, seen = [], set()
     fuera = {}
+    # los dados de baja que encontró deadlinks.py (410 Gone)
+    dead = load_dead()
+    bajas = 0
     for key, bucket in src.items():
         if key.startswith("_"):
             continue
@@ -78,6 +81,9 @@ def main():
             if r["id"] in seen:
                 continue
             seen.add(r["id"])
+            if is_dead(r.get("url", ""), dead):
+                bajas += 1
+                continue
             motivo = descartar(r.get("d"), r.get("addr"))
             if motivo:
                 fuera[motivo] = fuera.get(motivo, 0) + 1
@@ -100,7 +106,7 @@ def main():
                          valle, *geo(r), m2_of(r), patio(r),
                          feats_of(r.get("d", ""))])
 
-    print("descartados:", fuera or "ninguno")
+    print("descartados:", fuera or "ninguno", "| dados de baja:", bajas)
     rows, dups = dedupe(rows)
     print("repetidos sacados", dups)
     rows.sort(key=lambda r: (r[0], r[4]))
