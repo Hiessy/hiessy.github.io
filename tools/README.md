@@ -581,6 +581,29 @@ unen. Un aviso de Argenprop sin geocodificar se queda con las coordenadas que
 Zonaprop sí publica, y cada portal recorta la descripción en distinto lugar, así
 que la unión de rasgos detecta más que cualquiera de los dos por separado.
 
+## Los filtros viven en un cajón
+
+La barra pegada arriba medía **~190 px** y se comía media pantalla de avisos
+antes de ver el primero. Ahora hay una tira de **55 px** con lo justo —botón
+**Filtros** con el número de filtros aplicados, el resumen de cuáles son, el
+contador y el orden— y todo lo demás vive en un cajón que se saca, se usa y se
+guarda.
+
+El markup de los filtros **no cambió**: se envolvió la `.bar` entera en el cajón
+y se le apagó el `position:sticky` ahí adentro. Por eso `make_gba.py` y
+`make_sierras.py` siguen funcionando sin tocarse: sus anclas —los pills de zona,
+el botón `id="m2"`, la línea `let bar="",pk=false,…`— están donde estaban.
+
+`--stick` ahora mide la tira y no la barra, así que el mapa pegajoso arranca
+136 px más arriba y se ve más alto sin tocar su CSS.
+
+Se cierra con la ×, con Escape, tocando afuera o con el botón **Ver N avisos**
+del pie. **Limpiar** no repite la lógica de cada filtro: dispara los mismos
+clics que haría una persona sobre los botones "Todos".
+
+En pantallas de menos de 620 px el resumen se esconde —no entraba y quedaba
+aplastado a 0 px— y alcanza con el número que lleva el botón.
+
 ## Detalles que cuestan caro re-descubrir
 
 - El **slider de precio** va en una fila propia (`.row3`) que **no** se desliza de
