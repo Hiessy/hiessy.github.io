@@ -96,38 +96,20 @@ def main():
     hoy = datetime.date.today()
 
     i, j = t.index('<p class="sub">'), t.index("</header>")
-    t = t[:i] + f'''<p class="sub">{n} casas de 3 ambientes o más, hasta USD 260.000, en los dos
-valles serranos: <b>Punilla</b> ({puni}) y <b>Calamuchita</b> ({cala}).
-Sin la ciudad de Córdoba y sin las Sierras Chicas. Tocá cualquier foto para abrir el
-aviso original.</p>
-<p class="sub"><b>Acá son casas, no PH.</b> Y a diferencia de las otras dos pestañas, casi
-todos los avisos declaran el lote, así que el <b>terreno libre</b> —lote menos superficie
-cubierta— sirve de verdad: {lote[300]} superan los 300 m², {lote[600]} los 600 y
-{lote[1000]} pasan los 1.000. Quedan {sinlote} sin dato de lote, que no es lo mismo que
-sin terreno.</p>
-<p class="sub">Pasá el mouse por una ficha y se resalta su pin; hacé clic y el mapa se
-centra ahí. El ✓ sobre la foto marca avisos para verlos solos en el mapa.</p>
-<p class="sub"><b>Villa Carlos Paz es el único pueblo recortado.</b> Zonaprop corta la
-paginación anónima en 270 avisos por consulta y ahí hay más que eso; se completó pidiendo
-la lista al revés y sumando el barrio Villa del Lago, que tiene búsqueda propia. Los demás
-pueblos entran enteros.</p>
+    t = t[:i] + f'''<p class="sub">{n} casas de 3 ambientes o más, hasta USD 260.000,
+en los valles de <b>Punilla</b> ({puni}) y <b>Calamuchita</b> ({cala}). Sin la ciudad de
+Córdoba ni las Sierras Chicas.</p>
 ''' + t[j:]
 
     i = t.index("<footer>"); j = t.index("</footer>")
     t = t[:i] + f'''<footer>
-<p><b>Cómo leer esto.</b> <b>Terreno libre</b> es lote menos superficie cubierta: lo que
-queda de patio, monte o fondo. Si el aviso no declara el lote queda en 0 y no pasa el
-filtro — conviene mirarlo igual. Precios en dólares, como se publican en Argentina.</p>
-<p><b>Antes de viajar a ver una:</b> preguntá por el <b>agua</b> (red, perforación o
-cisterna) y por el <b>gas</b>, que en buena parte de los dos valles es envasado o de zeppelin
-y no de red. Confirmá también si la calle es de tierra y cómo queda después de una lluvia
-fuerte: en la sierra eso cambia el acceso más que la distancia.</p>
-<p><b>Escritura:</b> en los loteos viejos de sierra abunda la posesión sin título perfecto.
-Pedí el estado del dominio antes de señar.</p>
-<p style="margin-top:18px">Relevado en {MESES[hoy.month - 1]} de {hoy.year} · datos de <a
+<p><b>Terreno libre</b> es lote menos superficie cubierta. Antes de viajar preguntá por el
+<b>agua</b> (red, perforación o cisterna), por el <b>gas</b> —en buena parte de los dos valles
+es envasado— y por el estado del dominio: en los loteos viejos de sierra abunda la posesión
+sin título perfecto.</p>
+<p style="margin-top:14px">Relevado en {MESES[hoy.month - 1]} de {hoy.year} · datos de <a
 class="tx" href="https://www.zonaprop.com.ar" target="_blank" rel="noopener">Zonaprop</a> ·
-los precios y la disponibilidad cambian rápido, confirmá con la inmobiliaria antes de
-viajar.</p>
+confirmá con la inmobiliaria antes de viajar.</p>
 ''' + t[j:]
 
     io.open(DST, "w", encoding="utf-8", newline="").write(t)

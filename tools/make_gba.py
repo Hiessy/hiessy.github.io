@@ -102,37 +102,21 @@ def main():
 
     s = stats(data)
     i, j = t.index('<p class="sub">'), t.index("</header>")
-    t = t[:i] + f'''<p class="sub">{s["n"]} casas y PH de 3 ambientes o más, hasta USD 260.000, en
-{negrita}.
-Tocá cualquier foto para abrir el aviso original.</p>
-<p class="sub"><b>El filtro que importa acá es el terreno libre</b>: superficie total menos
-cubierta, o sea el patio que queda. Arranca en 100 m² o más. Se mide con los metros del
-aviso y no con la palabra "jardín", que engaña: {s["muda"]} avisos con más de 100 m² libres
-nunca la usan, y {s["chica"]} que la usan tienen menos de 100.</p>
-<p class="sub">Pasá el mouse por una ficha y se resalta su pin; hacé clic y el mapa se
-centra ahí. El ✓ sobre la foto marca avisos para verlos solos en el mapa.</p>
-<p class="sub"><b>Los avisos de Argenprop no declaran el lote</b> en estas localidades
-—solo la superficie cubierta— así que no pasan el filtro de terreno: para verlos hay que
-poner <b>Sin mínimo</b>. El contador avisa cuántos quedaron afuera por eso. Sí tienen pin:
-Argenprop no publica coordenadas, pero sus direcciones se geocodifican contra
-OpenStreetMap.</p>
+    t = t[:i] + f'''<p class="sub">{s["n"]} casas y PH de 3 ambientes o más, hasta
+USD 260.000, en {negrita}. El filtro que manda es el <b>terreno libre</b>: lote menos
+superficie cubierta.</p>
 ''' + t[j:]
 
     # el pie es de la página de CABA
     i = t.index("<footer>"); j = t.index("</footer>")
     t = t[:i] + f'''<footer>
-<p><b>Cómo leer esto.</b> <b>Terreno libre</b> es superficie total menos cubierta: lo que
-queda de patio, jardín o fondo. Si el aviso no declara la superficie total, el aviso queda
-en 0 y no pasa el filtro — conviene mirarlo igual. `m² cub` son metros cubiertos.
-Precios en dólares, como se publican en Argentina.</p>
-<p><b>Antes de ofertar:</b> pedí el plano para verificar los metros y confirmá escritura.
-En countries y barrios cerrados, preguntá las expensas antes que nada: cambian la cuota
-mensual más que la hipoteca.</p>
-<p><b>Electricidad:</b> Vicente López, San Isidro y San Miguel son área de <b>Edenor</b>,
-igual que la franja de CABA de la otra pestaña.</p>
-<p style="margin-top:18px">Relevado en {s["fecha"]} · datos de <a class="tx"
-href="https://www.zonaprop.com.ar" target="_blank" rel="noopener">Zonaprop</a> y <a class="tx" href="https://www.argenprop.com" target="_blank" rel="noopener">Argenprop</a> · los precios
-y la disponibilidad cambian rápido, confirmá con la inmobiliaria antes de viajar.</p>
+<p><b>Terreno libre</b> es lote menos superficie cubierta. Si el aviso no declara el lote
+queda en 0 y no pasa el filtro — conviene mirarlo igual. Los avisos de <b>Argenprop</b> no
+declaran lote acá: se ven poniendo <b>Sin mínimo</b>.</p>
+<p style="margin-top:14px">Relevado en {s["fecha"]} · datos de <a
+class="tx" href="https://www.zonaprop.com.ar" target="_blank" rel="noopener">Zonaprop</a> y <a
+class="tx" href="https://www.argenprop.com" target="_blank" rel="noopener">Argenprop</a> ·
+confirmá con la inmobiliaria antes de viajar.</p>
 ''' + t[j:]
 
     io.open(DST, "w", encoding="utf-8", newline="").write(t)
