@@ -19,7 +19,7 @@ import json, os, re, sys, time, unicodedata, urllib.parse, urllib.request, urlli
 
 D = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".work")
 CACHE = os.path.join(D, "geocode.json")
-SOURCES = ["caba_ap.json", "gba_ap.json", "argenprop_merged.json"]
+SOURCES = ["caba_ap.json", "gba_ap.json", "argenprop_merged.json", "sierras_ap.json"]
 
 UA = "hiessy.github.io property map (contact via github.com/Hiessy)"
 DELAY = 1.1                      # la política de Nominatim es 1 req/s
@@ -38,6 +38,11 @@ BOXES = {
     # Tigre continente: Don Torcuato y El Talar al sur, Benavídez al oeste,
     # Rincón de Milberg al este. El Delta no entra al relevamiento.
     "tigre":     (-34.52, -34.30, -58.80, -58.48),
+    # Los dos valles de Córdoba. Punilla corre de norte a sur unos 100 km y
+    # Calamuchita queda al sur de la capital: una caja por valle, generosa,
+    # porque acá lo que se descarta es una respuesta que cayó en otra provincia.
+    "punilla":     (-31.30, -30.70, -64.65, -64.35),
+    "calamuchita": (-32.35, -31.75, -64.85, -64.30),
 }
 
 
@@ -86,6 +91,13 @@ def zone_of(loc):
         return "sanmiguel"
     if "maschwitz" in l or "escobar" in l:
         return "escobar"
+    if "cordoba" in l or "cordoba" in plain(loc or ""):
+        # los pueblos de sierra se pasan como "Cosquín, Córdoba"
+        cala = ("calamuchita", "villa general belgrano", "santa rosa", "los reartes",
+                "la cumbrecita", "villa yacanto", "embalse", "villa rumipal",
+                "villa del dique", "amboy", "los molinos", "tala huasi",
+                "villa quillinzo", "ciudad de america")
+        return "calamuchita" if any(c in l for c in cala) else "punilla"
     if "san fernando" in l or "victoria" in l or "virreyes" in l:
         return "sanfdo"
     if "tigre" in l or "torcuato" in l or "pacheco" in l or "benavidez" in l:

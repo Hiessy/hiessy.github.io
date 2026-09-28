@@ -84,8 +84,10 @@ def main():
 <button class="pill" id="m2" hidden>100 m²+ <em></em></button>''')
 
     # arranca pidiendo patio: es el requisito de esta búsqueda
-    t = rep(t, 'let bar="",pk=false,mq=false,fu="",ter=0,shown=0,view=[];',
-               'let bar="",pk=false,mq=false,fu="",ter=100,shown=0,view=[];')
+    # Ojo: esta línea se ancla con `ter=0,` y no con la línea entera, porque cada
+    # filtro nuevo que se agrega al estado la cambia y rompe el generador. Ya pasó
+    # al sumar `va=""` para el filtro de valle de las sierras.
+    t = rep(t, 'fu="",va="",ter=0,', 'fu="",va="",ter=100,')
 
     # textos
     t = rep(t, "<title>Búsqueda de propiedades · Argentina</title>",

@@ -3,10 +3,9 @@
 Tercera pestaña, mismo CSS y mismo JS que las otras dos. Lo que cambia:
 
 - los pills de zona pasan a ser los **pueblos** de los dos valles;
-- el filtro de **Fuente** se convierte en el de **Valle**, sin tocar el JS: la
-  página filtra la columna 14 y `build_sierras.py` guarda ahí el valle en vez de
-  la fuente, porque acá todo sale de Zonaprop y filtrar por fuente no filtraría
-  nada;
+- se suma un filtro de **Valle** (`data-v`, columna 13) además del de Fuente:
+  antes el valle ocupaba el lugar de la fuente porque todo salía de Zonaprop, y
+  desde que hay avisos de Argenprop en la sierra hacen falta los dos;
 - el botón de 100 m² cubiertos se cambia por el de **terreno libre**, con
   umbrales de sierra (300/600/1000 m²) en vez de los 100/150/200 del conurbano.
 
@@ -57,14 +56,15 @@ def main():
                    '<button class="pill gold" id="pk" hidden>', t, count=1)
     assert k == 1, "no encontré el botón de picks"
 
-    # Fuente -> Valle. La columna 14 trae el valle, así que los mismos botones
-    # `data-s` que filtraban Zonaprop/Argenprop filtran Punilla/Calamuchita.
-    t = rep(t, '<span class="lbl">Fuente</span>\n'
-               '<button class="pill" data-s="Zonaprop">Zonaprop <em></em></button>\n'
-               '<button class="pill" data-s="Argenprop">Argenprop <em></em></button>',
+    # El **valle** es un filtro propio (`data-v`, columna 13) y la fuente se queda
+    # donde estaba. Antes el valle ocupaba el lugar de la fuente, porque acá todo
+    # salía de Zonaprop; desde que hay avisos de Argenprop hacen falta los dos.
+    t = rep(t, '<span class="lbl">Fuente</span>',
                '<span class="lbl">Valle</span>\n'
-               '<button class="pill" data-s="Punilla">Punilla <em></em></button>\n'
-               '<button class="pill" data-s="Calamuchita">Calamuchita <em></em></button>')
+               '<button class="pill" data-v="Punilla">Punilla <em></em></button>\n'
+               '<button class="pill" data-v="Calamuchita">Calamuchita <em></em></button>\n'
+               '<span class="sep"></span>\n'
+               '<span class="lbl">Fuente</span>')
 
     # el metro cubierto no decide nada acá; el lote sí
     t = rep(t, '<button class="pill" id="m2">100 m²+ <em></em></button>',
@@ -89,8 +89,8 @@ def main():
     # sobre todo el bloque también se comía las comas de las oraciones
     mil = lambda v: f"{v:,}".replace(",", ".")
     n = mil(len(rows))
-    puni = mil(sum(1 for r in rows if r[14] == "Punilla"))
-    cala = mil(sum(1 for r in rows if r[14] == "Calamuchita"))
+    puni = mil(sum(1 for r in rows if r[13] == "Punilla"))
+    cala = mil(sum(1 for r in rows if r[13] == "Calamuchita"))
     lote = {k: mil(sum(1 for r in rows if r[18] >= k)) for k in (300, 600, 1000)}
     sinlote = mil(sum(1 for r in rows if not r[18]))
     hoy = datetime.date.today()

@@ -581,6 +581,44 @@ unen. Un aviso de Argenprop sin geocodificar se queda con las coordenadas que
 Zonaprop sí publica, y cada portal recorta la descripción en distinto lugar, así
 que la unión de rasgos detecta más que cualquiera de los dos por separado.
 
+## Argenprop en las sierras (`sierras_ap.py`)
+
+Mismo criterio que el barrido de Zonaprop: casas, hasta USD 260.000, Punilla y
+Calamuchita.
+
+**Acá no se valida contra `loc`.** En el resto del país la tarjeta trae "Casa en
+Venta en Olivos, Vicente López"; en la sierra ese campo **viene vacío**. El
+pueblo está en la dirección y en la URL (`casa-en-venta-en-villa-carlos-paz-…`),
+así que se valida contra los dos. Hace falta la URL además de la dirección porque
+"Alem 600, Los Manantiales" es Villa Carlos Paz y no lo dice.
+
+Tres cosas más hubo que tocar:
+
+- **El valle se mudó de la columna 14 a la 13.** Ocupaba el lugar de la fuente
+  porque todo salía de Zonaprop y filtrar por fuente no filtraba nada. Con dos
+  portales hacen falta los dos filtros, así que el JS tiene ahora `data-v` para
+  el valle y `data-s` vuelve a ser la fuente.
+- `geocode.py` no tenía cajas de Córdoba: las direcciones caían contra la de
+  CABA, que es el default de `zone_of`, y se descartaban todas. Hay una por valle.
+- **El ancla del generador se rompió.** `make_gba.py` copiaba la línea de estado
+  entera (`let bar="",pk=false,…,ter=0,…`) y al sumar `va=""` dejó de matchear.
+  Ahora se ancla solo en `fu="",va="",ter=0,`; cualquier filtro nuevo la va a
+  romper de nuevo si se vuelve a anclar la línea completa.
+
+## Memoria de filtros
+
+Lo que quedó seleccionado se guarda en `localStorage`, una clave por página
+(`hiessy:filtros:<archivo>`), y se restaura al volver.
+
+Se guarda **qué botones quedaron encendidos**, no el estado interno: al volver se
+disparan los mismos clics que haría una persona. Así no hay una segunda copia de
+la lógica de cada filtro que se pueda desincronizar — el mismo criterio que usa
+el botón **Limpiar**. Mientras restaura, `draw()` no hace nada: se dibuja una vez
+sola al final en vez de una por filtro.
+
+Todo va dentro de `try/catch`: en modo privado `localStorage` puede tirar
+excepción y no es motivo para romper la página.
+
 ## Los filtros viven en un cajón
 
 La barra pegada arriba medía **~190 px** y se comía media pantalla de avisos

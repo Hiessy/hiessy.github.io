@@ -3,13 +3,14 @@
 Misma forma de fila que las otras dos páginas, con un cambio deliberado:
 
   0 valle(idx) 1 img 2 url 3 precioTxt 4 precio 5 dirección 6 specs 7 nota
-  8 pick 9 pueblo 10 ambientes 11 dormitorios 12 jardín(texto) 13 —
-  14 **valle** 15 lat 16 lng 17 m² cub 18 terreno libre 19 rasgos
+  8 pick 9 pueblo 10 ambientes 11 dormitorios 12 jardín(texto) 13 **valle**
+  14 fuente 15 lat 16 lng 17 m² cub 18 terreno libre 19 rasgos
 
-En la columna 14 va el **valle** y no la fuente. Acá todo sale de Zonaprop, así
-que el filtro de fuente no filtraría nada; usando ese lugar, los dos botones de
-valle y el "Pueblo · Valle" de cada ficha salen gratis, sin tocar el JS de la
-página. Las otras dos páginas siguen usando esa columna para la fuente.
+El **valle** va en la columna 13 y la **fuente** en la 14, como en las otras dos
+páginas. Antes el valle ocupaba la 14 porque acá todo salía de Zonaprop y el
+filtro de fuente no filtraba nada; desde que hay avisos de Argenprop hace falta
+poder distinguirlos, así que el valle se mudó a la 13 y el JS tiene su propio
+filtro `data-v`.
 
 El **terreno libre** (lote − cubierto) es el filtro que importa: en la sierra casi
 todos los avisos declaran el lote (2.257 de 2.266), al revés de la zona norte,
@@ -20,6 +21,7 @@ from collections import Counter
 
 from build2 import note, geo, drop_far_coords, m2_of, feats_of, descartar, load_dead, is_dead
 from dedupe import dedupe
+from geocode import load_cache, coords_for
 from sierras import LOCS, PUNILLA, CALAMUCHITA
 
 D = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".work")
@@ -102,9 +104,47 @@ def main():
             rows.append([VALLES.index(valle), r["img"], r["url"],
                          f"{r['price']:,}".replace(",", "."), r["price"],
                          addr, specs(r), n, 0, pueblo,
-                         r.get("amb", 0), r.get("dorm", 0), r.get("gar", 0), "",
-                         valle, *geo(r), m2_of(r), patio(r),
+                         r.get("amb", 0), r.get("dorm", 0), r.get("gar", 0), valle,
+                         "Zonaprop", *geo(r), m2_of(r), patio(r),
                          feats_of(r.get("d", ""))])
+
+    # --- Argenprop. No publica coordenadas: se geocodifica la dirección.
+    geo_cache = load_cache()
+    ap = os.path.join(D, "sierras_ap.json")
+    ap_n = 0
+    if os.path.exists(ap):
+        for key, bucket in json.load(open(ap, encoding="utf-8")).items():
+            if key.startswith("_") or not isinstance(bucket, list):
+                continue
+            for r in bucket:
+                if r["id"] in seen:
+                    continue
+                seen.add(r["id"])
+                if is_dead(r.get("url", ""), dead):
+                    bajas += 1
+                    continue
+                motivo = descartar(r.get("d"), r.get("addr"))
+                if motivo:
+                    fuera[motivo] = fuera.get(motivo, 0) + 1
+                    continue
+                n = note(r.get("d", ""))
+                if not n:
+                    continue
+                pueblo = r.get("loc") or ""
+                valle = r.get("valle") or PUNILLA
+                addr = r.get("addr") or ""
+                if es_titulo(addr):
+                    addr = ""
+                addr = f"{addr}, {pueblo}" if addr else pueblo
+                rows.append([VALLES.index(valle), r["img"], r["url"],
+                             f"{r['price']:,}".replace(",", "."), r["price"],
+                             addr, specs(r), n, 0, pueblo,
+                             r.get("amb", 0), r.get("dorm", 0), r.get("gar", 0), valle,
+                             "Argenprop",
+                             *coords_for(r.get("addr"), pueblo + ", Córdoba", geo_cache),
+                             m2_of(r), patio(r), feats_of(r.get("d", ""))])
+                ap_n += 1
+    print("Argenprop:", ap_n)
 
     print("descartados:", fuera or "ninguno", "| dados de baja:", bajas)
     rows, dups = dedupe(rows)
@@ -124,7 +164,8 @@ def main():
     far = drop_far_coords(rows, km=12, key=lambda r: r[9])
 
     print("avisos", len(rows), "| coordenadas descartadas por lejanía:", far)
-    print("por valle", Counter(r[14] for r in rows))
+    print("por valle", Counter(r[13] for r in rows),
+          "| fuente", Counter(r[14] for r in rows))
     print("con coordenadas", sum(1 for r in rows if r[15] and r[16]))
     for th in (300, 600, 1000):
         print(f"  terreno libre >= {th} m²: {sum(1 for r in rows if r[18] >= th)}")
