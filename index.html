@@ -323,22 +323,33 @@ const okR=r=>!bar||r[9]===bar,
       // distinguirlos, igual que en las otras dos páginas
       okV=r=>!va||r[13]===va;
 const E=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+// El número de cada pill es "cuántos avisos quedarían si aprieto este": se
+// aplican todos los filtros activos **menos el del propio grupo**, porque
+// elegir dentro de un grupo reemplaza lo que ya estaba elegido ahí.
+//
+// Cada línea repetía la lista de filtros a mano y a varias les faltaba alguno:
+// a todas okV, así que con un valle elegido los pills seguían contando los dos;
+// y al de terreno le faltaba okPr. Los números no sumaban el total de arriba.
+// Ahora la lista está en un solo lugar y cada pill dice de qué grupo es.
 function tally(){
- const n=f=>D.filter(f).length;
+ const n=(grupo,suyo)=>D.filter(r=>
+   (grupo==='b'||okR(r))&&(grupo==='d'||okD(r))&&(grupo==='x'||okG(r))&&
+   (grupo==='s'||okF(r))&&(grupo==='v'||okV(r))&&(grupo==='t'||okT(r))&&
+   (grupo==='m'||okM(r))&&okPr(r)&&(grupo==='pk'||!pk||r[8])&&suyo(r)).length;
  document.querySelectorAll('.pill[data-b]').forEach(b=>{const v=b.dataset.b;
-  b.querySelector('em').textContent=n(r=>(!v||r[9]===v)&&okD(r)&&okG(r)&&okF(r)&&okM(r)&&okT(r)&&okPr(r)&&(!pk||r[8]))});
+  b.querySelector('em').textContent=n('b',r=>!v||r[9]===v)});
  document.querySelectorAll('.pill[data-d]').forEach(b=>{const d=+b.dataset.d;
-  b.querySelector('em').textContent=n(r=>okR(r)&&okG(r)&&okF(r)&&okM(r)&&okT(r)&&okPr(r)&&(d<0?true:dmOf(r)===d)&&(!pk||r[8]))});
+  b.querySelector('em').textContent=n('d',r=>d<0||dmOf(r)===d)});
  document.querySelectorAll('.pill[data-s]').forEach(b=>{const v=b.dataset.s;
-  b.querySelector('em').textContent=n(r=>okR(r)&&okD(r)&&okG(r)&&okM(r)&&okT(r)&&okPr(r)&&r[14]===v&&(!pk||r[8]))});
+  b.querySelector('em').textContent=n('s',r=>r[14]===v)});
  document.querySelectorAll('.pill[data-v]').forEach(b=>{const v=b.dataset.v;
-  b.querySelector('em').textContent=n(r=>okR(r)&&okD(r)&&okG(r)&&okF(r)&&okM(r)&&okT(r)&&okPr(r)&&(!v||r[13]===v)&&(!pk||r[8]))});
+  b.querySelector('em').textContent=n('v',r=>!v||r[13]===v)});
  document.querySelectorAll('.pill[data-t]').forEach(b=>{const v=+b.dataset.t;
-  b.querySelector('em').textContent=n(r=>okR(r)&&okD(r)&&okG(r)&&okF(r)&&okM(r)&&(!v||(r[18]||0)>=v)&&(!pk||r[8]))});
- document.getElementById('m2').querySelector('em').textContent=n(r=>okR(r)&&okD(r)&&okG(r)&&okF(r)&&r[17]>=100&&(!pk||r[8]));
+  b.querySelector('em').textContent=n('t',r=>!v||(r[18]||0)>=v)});
+ document.getElementById('m2').querySelector('em').textContent=n('m',r=>r[17]>=100);
  document.querySelectorAll('.pill[data-x]').forEach(b=>{const v=+b.dataset.x;
-  b.querySelector('em').textContent=n(r=>okR(r)&&okD(r)&&okF(r)&&okM(r)&&okT(r)&&okPr(r)&&(r[19]||[]).includes(v)&&(!pk||r[8]))});
- document.getElementById('pk').querySelector('em').textContent=n(r=>okR(r)&&okD(r)&&okG(r)&&okF(r)&&okM(r)&&okT(r)&&okPr(r)&&r[8]);
+  b.querySelector('em').textContent=n('x',r=>(r[19]||[]).includes(v))});
+ document.getElementById('pk').querySelector('em').textContent=n('pk',r=>r[8]);
 }
 const abs=s=>/^https?:/.test(s);
 // mismo orden que FEATS en build2.py; se guardan como índices para no repetir

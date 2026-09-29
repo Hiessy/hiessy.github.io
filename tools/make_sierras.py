@@ -85,8 +85,8 @@ def main():
     # filtro sigue igual, que ahí Zonaprop declara el lote casi siempre.
     t = rep(t, "okT=r=>!ter||(r[18]||0)>=ter,",
                "okT=r=>!ter||!(r[18]||0)||r[18]>=ter,   // sin lote declarado = no sabemos, no descarta")
-    t = rep(t, "okM(r)&&(!v||(r[18]||0)>=v)&&(!pk||r[8])",
-               "okM(r)&&(!v||!(r[18]||0)||r[18]>=v)&&(!pk||r[8])")
+    t = rep(t, "n('t',r=>!v||(r[18]||0)>=v)",
+               "n('t',r=>!v||!(r[18]||0)||r[18]>=v)")
     t = rep(t, ''' // con un mínimo de terreno activo, los avisos sin lote declarado quedan afuera.
  // Decirlo: si no, parecen no existir (son casi todos los de Argenprop).''',
 ''' // Los avisos sin lote declarado entran igual cuando hay un mínimo puesto
