@@ -614,7 +614,14 @@ function initMap(){
   {maxZoom:19,maxNativeZoom:16,pane:'shadowPane'}).addTo(map);
  sat=L.tileLayer(ESRI+'World_Imagery/MapServer/tile/{z}/{y}/{x}',
   {maxZoom:19,maxNativeZoom:18,attribution:'Tiles &copy; Esri'});
- map.setView([-34.58,-58.45],12);
+ // El arranque sale de los datos y no de una coordenada fija. Estaba clavado en
+ // CABA, así que en sierras.html el mapa aparecía sobre Buenos Aires cada vez que
+ // el filtro no dejaba ningún pin: sin puntos no hay `fitBounds` que lo corrija.
+ const geo=D.filter(hasGeo);
+ if(geo.length){
+  const la=geo.map(r=>r[15]).sort((x,y)=>x-y),lo=geo.map(r=>r[16]).sort((x,y)=>x-y);
+  map.setView([la[la.length>>1],lo[lo.length>>1]],11);
+ }else map.setView([-34.58,-58.45],12);
 }
 // Satélite: para una casa con jardín, ver el fondo desde arriba dice más que
 // cualquier foto del aviso. Es la misma fuente y tampoco pide clave.
