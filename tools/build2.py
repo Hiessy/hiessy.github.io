@@ -6,7 +6,7 @@ Row shape (unchanged prefix, two new trailing fields):
   13 distribuidora eléctrica  14 fuente (Zonaprop / Argenprop)  15 lat  16 lng  17 m²
   18 terreno libre  19 rasgos mencionados (índices de FEATS)
 """
-import json, os, re
+import io, json, os, re
 from collections import Counter
 
 D = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".work")
@@ -38,12 +38,28 @@ def wanted(row):
 ZP_BASE = "https://www.zonaprop.com.ar/propiedades/clasificado/"
 
 
+EXCLUIDOS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "excluidos.txt")
+
+
 def load_dead():
+    """URLs que no se publican: las verificadas como baja más la lista a mano.
+
+    `excluidos.txt` existe porque hay avisos **ya vendidos que siguen
+    publicados**: Zonaprop contesta 200, no manda 410, no trae campo de estado y
+    el texto tampoco lo dice. No hay chequeo automático que los distinga, así que
+    cuando uno se entera por otro lado se anota ahí.
+    """
+    fuera = set()
     p = os.path.join(D, "alive.json")
-    if not os.path.exists(p):
-        return set()
-    d = json.load(open(p, encoding="utf-8"))
-    return {u for u, v in d.items() if not v.get("ok")}
+    if os.path.exists(p):
+        d = json.load(open(p, encoding="utf-8"))
+        fuera |= {u for u, v in d.items() if not v.get("ok")}
+    if os.path.exists(EXCLUIDOS):
+        for linea in io.open(EXCLUIDOS, encoding="utf-8"):
+            linea = linea.split("#")[0].strip()
+            if linea:
+                fuera.add(linea)
+    return fuera
 
 
 def is_dead(url, dead):

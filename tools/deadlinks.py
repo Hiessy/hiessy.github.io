@@ -100,6 +100,20 @@ def main():
         u = sys.argv[sys.argv.index("--url") + 1]
         if not u.startswith("http"):
             u = ZP + u
+        # `--vendido`: el aviso está vivo pero la propiedad ya se vendió. No hay
+        # forma de detectarlo desde afuera —200, sin 410, sin campo de estado y
+        # sin decirlo en el texto— así que se anota a mano y no se publica más.
+        if "--vendido" in sys.argv:
+            slug = u.rsplit("/", 1)[-1]
+            ex = os.path.join(os.path.dirname(os.path.abspath(__file__)), "excluidos.txt")
+            ya = io.open(ex, encoding="utf-8").read() if os.path.exists(ex) else ""
+            if slug in ya:
+                print("ya estaba en excluidos.txt")
+            else:
+                with io.open(ex, "a", encoding="utf-8") as f:
+                    f.write(slug + "\n")
+                print("anotado en excluidos.txt; sale en el próximo build")
+            return
         estado = check(u)
         print({"ok": "VIVO", "baja": "DADO DE BAJA (410)",
                "404": "NO EXISTE (404)",

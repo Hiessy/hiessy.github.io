@@ -1,0 +1,13 @@
+# Avisos que sabemos que no sirven y que ningún chequeo automático detecta.
+#
+# Hay propiedades ya vendidas cuyo aviso sigue publicado igual: Zonaprop
+# contesta 200, no dice 410, no trae ningún campo de estado y el texto tampoco
+# lo menciona. Desde afuera es indistinguible de una a la venta. Cuando uno se
+# entera por otro lado —llamando a la inmobiliaria, por ejemplo— se anota acá y
+# las tres páginas dejan de mostrarlo.
+#
+# Una URL (o su slug) por línea. Para agregar uno:
+#
+#     python tools/deadlinks.py --url <url> --vendido
+#
+veclcain-espectacular-propiedad-2-casas-con-3350-m-sup2--de-54892567.html
