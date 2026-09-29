@@ -41,14 +41,31 @@ BOXES = {
     # Los dos valles de Córdoba. Punilla corre de norte a sur unos 100 km y
     # Calamuchita queda al sur de la capital: una caja por valle, generosa,
     # porque acá lo que se descarta es una respuesta que cayó en otra provincia.
-    "punilla":     (-31.30, -30.70, -64.65, -64.35),
-    "calamuchita": (-32.35, -31.75, -64.85, -64.30),
+    # Punilla va de Capilla del Monte (-30,86) a Cuesta Blanca (-31,48): el
+    # borde sur tiene que pasar los -31,50. Con -31,30 quedaban afuera Villa
+    # Carlos Paz, Tanti y todo el sur del valle, y se descartaban **todas** sus
+    # direcciones como "fuera de zona" estando bien resueltas.
+    "punilla":     (-31.60, -30.75, -64.75, -64.30),
+    "calamuchita": (-32.40, -31.70, -64.90, -64.30),
 }
 
 
 def plain(s):
     s = unicodedata.normalize("NFD", s or "")
     return "".join(c for c in s if unicodedata.category(c) != "Mn").lower()
+
+
+# Los pueblos de sierra salen de la misma tabla que usa el barrido, así que
+# agregar uno no obliga a tocar esto. `loc` llega como "Cosquín" pelado —sin
+# "Córdoba"—, de modo que reconocerlos por nombre es la única forma de mandarlos
+# a la caja correcta: mirando si decía "córdoba" no entraba ninguno y todos se
+# validaban contra la caja de CABA.
+try:
+    from sierras import LOCS as _LOCS
+    T_PUNILLA = {plain(lab) for _, lab, val in _LOCS if val == "Punilla"}
+    T_CALAMUCHITA = {plain(lab) for _, lab, val in _LOCS if val == "Calamuchita"}
+except Exception:
+    T_PUNILLA = T_CALAMUCHITA = set()
 
 
 # Abreviaturas de calle: Nominatim no resuelve "Int. Arricau", sí "Intendente
@@ -91,13 +108,10 @@ def zone_of(loc):
         return "sanmiguel"
     if "maschwitz" in l or "escobar" in l:
         return "escobar"
-    if "cordoba" in l or "cordoba" in plain(loc or ""):
-        # los pueblos de sierra se pasan como "Cosquín, Córdoba"
-        cala = ("calamuchita", "villa general belgrano", "santa rosa", "los reartes",
-                "la cumbrecita", "villa yacanto", "embalse", "villa rumipal",
-                "villa del dique", "amboy", "los molinos", "tala huasi",
-                "villa quillinzo", "ciudad de america")
-        return "calamuchita" if any(c in l for c in cala) else "punilla"
+    if any(pu in l for pu in T_CALAMUCHITA):
+        return "calamuchita"
+    if any(pu in l for pu in T_PUNILLA) or "cordoba" in l:
+        return "punilla"
     if "san fernando" in l or "victoria" in l or "virreyes" in l:
         return "sanfdo"
     if "tigre" in l or "torcuato" in l or "pacheco" in l or "benavidez" in l:
