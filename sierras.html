@@ -316,6 +316,8 @@ Córdoba ni las Sierras Chicas.</p>
 <main><div class="grid" id="g"></div></main>
 </div>
 <footer>
+<p><b>Los avisos de Argenprop no declaran el lote</b>: con cualquier mínimo de terreno
+puesto desaparecen los 241 que hay. El contador avisa cuántos quedaron afuera por eso.</p>
 <p><b>Terreno libre</b> es lote menos superficie cubierta. Antes de viajar preguntá por el
 <b>agua</b> (red, perforación o cisterna), por el <b>gas</b> —en buena parte de los dos valles
 es envasado— y por el estado del dominio: en los loteos viejos de sierra abunda la posesión
@@ -549,7 +551,7 @@ function draw(){
  // con un mínimo de terreno activo, los avisos sin lote declarado quedan afuera.
  // Decirlo: si no, parecen no existir (son casi todos los de Argenprop).
  const base=view.length===D.length?`${D.length} propiedades`:`${view.length} de ${D.length} propiedades`;
- const mudos=ter?D.filter(r=>okR(r)&&okD(r)&&okG(r)&&okF(r)&&okM(r)&&okPr(r)&&(!pk||r[8])&&!(r[18]||0)).length:0;
+ const mudos=ter?D.filter(r=>okR(r)&&okD(r)&&okG(r)&&okF(r)&&okV(r)&&okM(r)&&okPr(r)&&(!pk||r[8])&&!(r[18]||0)).length:0;
  cnt.textContent=base+(mudos?` · ${mudos} sin lote declarado`:'');
 }
 // --- mapa ---

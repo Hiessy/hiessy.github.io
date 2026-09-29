@@ -93,6 +93,7 @@ def main():
     cala = mil(sum(1 for r in rows if r[13] == "Calamuchita"))
     lote = {k: mil(sum(1 for r in rows if r[18] >= k)) for k in (300, 600, 1000)}
     sinlote = mil(sum(1 for r in rows if not r[18]))
+    ap = mil(sum(1 for r in rows if r[14] == "Argenprop"))
     hoy = datetime.date.today()
 
     i, j = t.index('<p class="sub">'), t.index("</header>")
@@ -103,6 +104,8 @@ Córdoba ni las Sierras Chicas.</p>
 
     i = t.index("<footer>"); j = t.index("</footer>")
     t = t[:i] + f'''<footer>
+<p><b>Los avisos de Argenprop no declaran el lote</b>: con cualquier mínimo de terreno
+puesto desaparecen los {ap} que hay. El contador avisa cuántos quedaron afuera por eso.</p>
 <p><b>Terreno libre</b> es lote menos superficie cubierta. Antes de viajar preguntá por el
 <b>agua</b> (red, perforación o cisterna), por el <b>gas</b> —en buena parte de los dos valles
 es envasado— y por el estado del dominio: en los loteos viejos de sierra abunda la posesión
