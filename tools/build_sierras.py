@@ -141,7 +141,13 @@ def main():
                              addr, specs(r), n, 0, pueblo,
                              r.get("amb", 0), r.get("dorm", 0), r.get("gar", 0), valle,
                              "Argenprop",
-                             *coords_for(r.get("addr"), pueblo + ", Córdoba", geo_cache),
+                             # `pueblo` pelado y no "pueblo, Córdoba": la clave de
+                             # la caché es el texto exacto de la consulta, y
+                             # `geocode.py` la arma con el `loc` del aviso. Con la
+                             # provincia de más, las 134 filas de Argenprop
+                             # preguntaban por una clave que nunca existió y se
+                             # quedaban sin pin estando geocodificadas.
+                             *coords_for(r.get("addr"), pueblo, geo_cache),
                              m2_of(r), patio(r), feats_of(r.get("d", ""))])
                 ap_n += 1
     print("Argenprop:", ap_n)

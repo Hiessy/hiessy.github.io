@@ -24,7 +24,7 @@ from sierras import LOCS
 D = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".work")
 OUT = os.path.join(D, "sierras_ap.json")
 PAGES = 5
-DELAY = (7.0, 11.0)
+DELAY = (7.0, 11.0)      # se puede subir con --delay cuando Argenprop está duro
 
 
 def plain(s):
@@ -44,6 +44,10 @@ def main():
     deadline = None
     if "--deadline" in sys.argv:
         deadline = time.time() + float(sys.argv[sys.argv.index("--deadline") + 1])
+    demora = DELAY
+    if "--delay" in sys.argv:
+        d = float(sys.argv[sys.argv.index("--delay") + 1])
+        demora = (d, d * 1.5)
     only = None
     if "--only" in sys.argv:
         only = set(sys.argv[sys.argv.index("--only") + 1].split(","))
@@ -97,7 +101,7 @@ def main():
                 print(f"{slug}: fuera de pueblo, corto", flush=True); break
             if deadline and time.time() > deadline:
                 break
-            time.sleep(random.uniform(*DELAY))
+            time.sleep(random.uniform(*demora))
         if len(bucket) > before:
             stamp[slug] = time.time()
         json.dump(data, open(OUT, "w", encoding="utf-8"), ensure_ascii=False)
