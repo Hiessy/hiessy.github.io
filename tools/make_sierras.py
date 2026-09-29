@@ -76,6 +76,32 @@ def main():
 <button class="pill on" data-t="0">Sin mínimo <em></em></button>
 <button class="pill" id="m2" hidden>100 m²+ <em></em></button>''')
 
+    # **Lote no declarado no es lote chico.** Argenprop no publica superficie
+    # total en la sierra: sus 267 avisos traen terreno 0. Con el filtro original
+    # (`>= ter`) cualquier mínimo de terreno los borraba a todos de una, la
+    # fuente marcaba 0 y parecía que el relevamiento nunca los había traído.
+    # Pasó dos veces. Acá el mínimo deja pasar lo que no declara lote y la ficha
+    # lo aclara; el contador dice cuántos son. En las otras dos páginas el
+    # filtro sigue igual, que ahí Zonaprop declara el lote casi siempre.
+    t = rep(t, "okT=r=>!ter||(r[18]||0)>=ter,",
+               "okT=r=>!ter||!(r[18]||0)||r[18]>=ter,   // sin lote declarado = no sabemos, no descarta")
+    t = rep(t, "okM(r)&&(!v||(r[18]||0)>=v)&&(!pk||r[8])",
+               "okM(r)&&(!v||!(r[18]||0)||r[18]>=v)&&(!pk||r[8])")
+    t = rep(t, ''' // con un mínimo de terreno activo, los avisos sin lote declarado quedan afuera.
+ // Decirlo: si no, parecen no existir (son casi todos los de Argenprop).''',
+''' // Los avisos sin lote declarado entran igual cuando hay un mínimo puesto
+ // (ver okT). Decir cuántos son, para que el número no engañe en el otro sentido.''')
+    t = rep(t, " const mudos=ter?D.filter(r=>okR(r)&&okD(r)&&okG(r)&&okF(r)&&okV(r)"
+               "&&okM(r)&&okPr(r)&&(!pk||r[8])&&!(r[18]||0)).length:0;\n"
+               " cnt.textContent=base+(mudos?` · ${mudos} sin lote declarado`:'');",
+               " const mudos=ter?view.filter(r=>!(r[18]||0)).length:0;\n"
+               " cnt.textContent=base+(mudos?` · incluye ${mudos} sin lote declarado`:'');")
+
+    # y que se vea en la ficha cuál es cuál
+    t = rep(t, "<p class=\"src\">${E(r[9])}${r[14]?' · '+E(r[14]):''}</p>",
+               "<p class=\"src\">${E(r[9])}${r[14]?' · '+E(r[14]):''}"
+               "${ter&&!(r[18]||0)?' · <b>lote no declarado</b>':''}</p>")
+
     # textos
     t = rep(t, "<title>Búsqueda de propiedades · Argentina</title>",
                "<title>Sierras de Córdoba · Argentina</title>")
@@ -104,8 +130,9 @@ Córdoba ni las Sierras Chicas.</p>
 
     i = t.index("<footer>"); j = t.index("</footer>")
     t = t[:i] + f'''<footer>
-<p><b>Los avisos de Argenprop no declaran el lote</b>: con cualquier mínimo de terreno
-puesto desaparecen los {ap} que hay. El contador avisa cuántos quedaron afuera por eso.</p>
+<p><b>{sinlote} avisos no declaran el lote</b> —Argenprop no publica superficie total acá, así
+que son casi todos sus {ap}—. Con un mínimo de terreno puesto entran igual, marcados en la
+ficha: que el portal no lo diga no quiere decir que el lote sea chico.</p>
 <p><b>Terreno libre</b> es lote menos superficie cubierta. Antes de viajar preguntá por el
 <b>agua</b> (red, perforación o cisterna), por el <b>gas</b> —en buena parte de los dos valles
 es envasado— y por el estado del dominio: en los loteos viejos de sierra abunda la posesión
