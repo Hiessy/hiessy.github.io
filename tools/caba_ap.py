@@ -64,11 +64,17 @@ def main():
     if "--only" in sys.argv:
         only = set(sys.argv[sys.argv.index("--only") + 1].split(","))
         print("solo:", sorted(only), flush=True)
+    # `--force`: volver a pedir un barrio aunque se haya relevado hoy. El sello se
+    # escribe también cuando el barrido se bloqueó a mitad (basta con que el barrio
+    # haya crecido), así que sin esto una corrida cortada no se puede retomar hasta
+    # el día siguiente: Argenprop lista 500 avisos en Belgrano y el bloqueo nos
+    # dejaba 37, con las 24 h de caché tapando el reintento.
+    force = "--force" in sys.argv
 
     for slug, label in order:
         if only and slug not in only:
             continue
-        if time.time() - stamp.get(slug, 0) < 24 * 3600:
+        if not force and time.time() - stamp.get(slug, 0) < 24 * 3600:
             print(f"{slug}: cache — skip", flush=True); continue
         bucket = data.setdefault(slug, [])
         before = len(bucket)
@@ -99,8 +105,18 @@ def main():
                     print(f"{slug}/{tipo} p{p}: sin avisos", flush=True); break
                 added = wrong = 0
                 for r in rows:
-                    # el título trae "PH en Venta en Villa Urquiza, CABA"
-                    if want not in plain(r.get("loc", "")):
+                    # El barrio se busca en la **dirección y en la URL**, no en
+                    # `loc`: en las páginas de PH `loc` viene vacío y el barrio
+                    # está en addr ("Superí 2300, Piso PB, Belgrano"). Mirando
+                    # solo `loc`, los 20 avisos de cada primera página de PH
+                    # daban "fuera de barrio", el barrido cortaba ese tipo en el
+                    # acto y de PH no entraba casi nada: Argenprop lista 500 en
+                    # Belgrano y teníamos 37 contando las casas. En casas `loc`
+                    # sí viene, así que el error pasó desapercibido.
+                    # Es el mismo arreglo que ya tenía sierras_ap.py.
+                    donde = (plain(r.get("loc", "")) + " " + plain(r.get("addr", ""))
+                             + " " + plain(r.get("url", "")).replace("-", ""))
+                    if want not in donde and want.replace(" ", "") not in donde:
                         wrong += 1
                         continue
                     if r["id"] in seen or not (15000 <= r["price"] <= mx):
