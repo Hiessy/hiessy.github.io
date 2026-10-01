@@ -160,16 +160,29 @@ def main():
     # ver, y los avisos dados de baja se quedan publicados. En la última corrida
     # se bloquearon los 12 barrios, así que no se purgó ninguno.
     pend = [r for r in rows if recheck or url_de(r) not in done]
+    # **Primero Zonaprop.** Un URL de Argenprop bloqueado cuesta hasta 150 s de
+    # espera, así que un lote con muchos se come el presupuesto entero y deja sin
+    # revisar los de Zonaprop, que contestan siempre. En sierras pasó: 41
+    # bloqueos gastaron los 90 minutos y quedaron 206 sin mirar.
+    pend.sort(key=lambda r: "argenprop" in r[2])
     print(f"{pagina} ({fuente or 'todas las fuentes'}): {len(rows)} publicados, "
           f"{len(pend)} sin verificar, reviso hasta {limit}", flush=True)
 
     tally = {}
+    seguidos = 0        # bloqueos consecutivos
     for n, r in enumerate(pend[:limit], 1):
         if time.time() > deadline:
             print("se acabó el tiempo, corto", flush=True); break
+        # Si el portal viene bloqueando sin parar, no es un aviso puntual: es que
+        # hoy no nos quiere. Seguir insistiendo solo gasta el reloj.
+        if seguidos >= 8:
+            print(f"  {seguidos} bloqueos seguidos: el portal está cortando, "
+                  f"dejo el resto para otra corrida", flush=True)
+            break
         u = url_de(r)
         st = check(u, deadline)
         tally[st] = tally.get(st, 0) + 1
+        seguidos = seguidos + 1 if st == "bloqueado" else 0
         if st != "bloqueado":          # un bloqueo no es un veredicto: se reintenta
             done[u] = {"ok": st == "ok", "t": int(time.time()),
                        **({} if st == "ok" else {"por": st})}
