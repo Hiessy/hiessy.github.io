@@ -149,6 +149,16 @@ def main():
     fuente = arg("--fuente", "")
     deadline = time.time() + arg("--deadline", 1500.0)
     recheck = "--recheck" in sys.argv
+    # `--dias N`: volver a pedir lo que se verificó hace más de N días. Un aviso
+    # verificado no queda bueno para siempre —en la sierra casi todo estaba
+    # mirado hacía 4 o 5 días y mientras tanto se vendieron varios—, pero
+    # `--recheck` revisa todo de cero en cada corrida y, cortando de a tandas
+    # cortas, cada tanda volvía a empezar por los mismos. Esto avanza solo:
+    # cada tanda actualiza el sello de los que mira y la siguiente los saltea.
+    #
+    # Solo revalida los que están **vivos**: un 410 no vuelve a la vida, y
+    # pedirlos de nuevo gasta el reloj sin cambiar nada.
+    dias = arg("--dias", 0.0)
 
     done = load()
     rows = [r for r in rows_publicados(pagina) if not fuente or r[14] == fuente]
@@ -159,14 +169,22 @@ def main():
     # a mitad, caba_ap.py no purga ese barrio para no borrar lo que no llegó a
     # ver, y los avisos dados de baja se quedan publicados. En la última corrida
     # se bloquearon los 12 barrios, así que no se purgó ninguno.
-    pend = [r for r in rows if recheck or url_de(r) not in done]
+    def vencido(u):
+        v = done.get(u)
+        return bool(dias) and v is not None and v["ok"] and \
+            (time.time() - v["t"]) / 86400 > dias
+
+    pend = [r for r in rows
+            if recheck or url_de(r) not in done or vencido(url_de(r))]
     # **Primero Zonaprop.** Un URL de Argenprop bloqueado cuesta hasta 150 s de
     # espera, así que un lote con muchos se come el presupuesto entero y deja sin
     # revisar los de Zonaprop, que contestan siempre. En sierras pasó: 41
     # bloqueos gastaron los 90 minutos y quedaron 206 sin mirar.
     pend.sort(key=lambda r: "argenprop" in r[2])
     print(f"{pagina} ({fuente or 'todas las fuentes'}): {len(rows)} publicados, "
-          f"{len(pend)} sin verificar, reviso hasta {limit}", flush=True)
+          f"{len(pend)} para mirar"
+          f"{f' (sin verificar, o verificados hace más de {dias:g} días)' if dias else ' sin verificar'}"
+          f", reviso hasta {limit}", flush=True)
 
     tally = {}
     seguidos = 0        # bloqueos consecutivos
