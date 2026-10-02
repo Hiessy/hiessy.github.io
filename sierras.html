@@ -55,6 +55,10 @@ h1{font-size:clamp(28px,5vw,44px);line-height:1.1;margin:0 0 12px;letter-spacing
  text-decoration:none;color:var(--mut);background:var(--card);white-space:nowrap}
 .tab:hover{border-color:var(--acc);color:var(--ink)}
 .tab.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+/* la pestaña de favoritos lleva el contador de lo guardado; vacío no muestra nada */
+.tab.fav em{font-style:normal;font-variant-numeric:tabular-nums;color:var(--pick)}
+.tab.fav em:not(:empty){margin-left:5px;font-weight:600}
+.tab.fav.on em{color:var(--bg)}
 /* con tres pestañas ya no entran de una en un teléfono: se deslizan de costado,
    igual que las filas de filtros, y la barra no se corta */
 @media(max-width:720px){.tabs{padding:14px 16px 0;overflow-x:auto;scrollbar-width:none}
@@ -208,6 +212,7 @@ body.noscroll{overflow:hidden}
  <a href="index.html" class="tab">CABA norte</a>
  <a href="gba-norte.html" class="tab">Zona norte con patio</a>
  <a href="sierras.html" class="tab on">Sierras de Córdoba</a>
+ <a href="favoritos.html" class="tab fav">Favoritos <em id="favn"></em></a>
 </nav>
 <header>
 <h1>Casas en las sierras de Córdoba<br>Punilla y Calamuchita</h1>
@@ -550,6 +555,7 @@ function draw(){
    picked.has(k)?picked.delete(k):picked.add(k);
    b.classList.toggle('on',picked.has(k));
    b.setAttribute('aria-pressed',picked.has(k));
+   favSet(k,picked.has(k));
    drawPins();
    return;
   }
@@ -572,8 +578,39 @@ function draw(){
 // r[15] lat, r[16] lng. Se dibuja el resultado filtrado completo (no solo las
 // fichas pintadas) con canvas, que aguanta miles de puntos sin trabarse.
 let map=null,layer=null,pins=new Map(),hi=null,base=null,rotulos=null,sat=null;
-const picked=new Set();
 const rowByKey=new Map(D.map(r=>[r[2],r]));
+// --- favoritos -------------------------------------------------------------
+// El ✓ de cada ficha guarda el aviso en localStorage y la clave es **la misma en
+// las tres páginas**, así favoritos.html junta lo marcado en CABA, en el
+// conurbano y en la sierra. Se guarda la fila entera porque esa página no tiene
+// dataset propio: las columnas 0-12 y 14-19 significan lo mismo en las tres (la
+// 13 no —distribuidora, nada, valle— y por eso allá no se usa).
+const FAVK='hiessy:favoritos';
+const favPag=location.pathname.replace(/.*\//,'')||'index.html';
+function favLoad(){
+ try{const o=JSON.parse(localStorage.getItem(FAVK)||'{}');
+     return o&&typeof o==='object'&&!Array.isArray(o)?o:{}}
+ catch(e){return {}}      // modo privado, storage lleno o JSON roto
+}
+let favs=favLoad();
+function favSave(){
+ try{localStorage.setItem(FAVK,JSON.stringify(favs))}catch(e){}
+}
+function favSet(k,on){
+ // Si ya estaba, se conserva de dónde salió y cuándo: volver a marcarlo desde
+ // favoritos.html no tiene que reescribir su origen ni mandarlo al final.
+ if(on)favs[k]={r:rowByKey.get(k),p:(favs[k]||{}).p||favPag,t:(favs[k]||{}).t||Date.now()};
+ else delete favs[k];
+ favSave();favBadge();
+}
+// Cuántos hay guardados en total, contando los de las otras dos páginas: si no,
+// desde CABA parece que no hubiera ninguno.
+function favBadge(){
+ const a=document.getElementById('favn');
+ if(a)a.textContent=Object.keys(favs).length||'';
+}
+// Solo lo marcado que está **en esta página** puede pintarse en este mapa.
+const picked=new Set(Object.keys(favs).filter(k=>rowByKey.has(k)));
 const hasGeo=r=>r[15]&&r[16];
 const money=v=>'USD '+v.toLocaleString('es-AR');
 function initPrice(){
@@ -667,7 +704,9 @@ function drawPins(){
  layer=L.layerGroup(marks).addTo(map);
  const cl=document.getElementById('clr');
  cl.hidden=!picked.size;
- cl.textContent=`Limpiar selección (${picked.size})`;
+ // Dice lo que hace de verdad: el ✓ ahora guarda en favoritos, así que vaciar
+ // la selección es sacarlos de ahí, no solo despintar el mapa.
+ cl.textContent=`Quitar de favoritos (${picked.size})`;
  // no todos los avisos traen coordenadas (Argenprop no las publica), así que
  // conviene decir cuántas de las marcadas se pueden mostrar
  document.getElementById('mapn').textContent=picked.size
@@ -703,7 +742,9 @@ function focusPin(k,on){
  if(on)m.bringToFront();
 }
 document.getElementById('clr').onclick=()=>{
+ picked.forEach(k=>{delete favs[k]});
  picked.clear();
+ favSave();favBadge();
  document.querySelectorAll('.pickbtn.on').forEach(b=>{b.classList.remove('on');b.setAttribute('aria-pressed','false')});
  drawPins();
 };
@@ -752,5 +793,5 @@ document.querySelectorAll('.pill[data-v]').forEach(b=>b.onclick=()=>{
  document.querySelectorAll('.pill[data-v]').forEach(x=>x.classList.remove('on'));
  va=was?'':v;b.classList.toggle('on',!was);draw();scrollTo({top:0,behavior:'smooth'})});
 document.getElementById('sort').onchange=draw;
-initPrice();fitSticky();initMap();loadF();draw();
+initPrice();fitSticky();initMap();loadF();draw();favBadge();
 </script></body></html>

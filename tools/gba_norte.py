@@ -34,6 +34,12 @@ ZONES = [
     ("sanmiguel",  "San Miguel",  "san-miguel",             "san miguel"),
     ("olivos",     "Olivos",      "olivos",                 "vicente lopez"),
     ("lalucila",   "La Lucila",   "la-lucila-vicente-lopez", "vicente lopez"),
+    # Florida va al revés que La Lucila: `florida-vicente-lopez` **no** falla, pero
+    # devuelve todo el partido (Munro, Carapachay, Olivos, Villa Martelli) y el
+    # pelado `florida` da 30 de 30 en Florida. Ojo que el control de partido no
+    # ataja ese caso: "munro > vicente lopez" también lleva el partido pedido, así
+    # que los avisos de Munro entrarían etiquetados como Florida.
+    ("florida",    "Florida",     "florida",                "vicente lopez"),
     ("martinez",   "Martínez",    "martinez",               "san isidro"),
     # `maschwitz` a secas cae en Fisherton (Rosario) y San Bernardo, y
     # `ingeniero-maschwitz-escobar` devuelve todo Belén de Escobar: el bueno

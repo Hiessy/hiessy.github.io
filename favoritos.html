@@ -1,0 +1,762 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Favoritos · Argentina</title>
+<meta name="description" content="Los avisos marcados con el ✓ en las tres búsquedas.">
+<style>
+*{box-sizing:border-box}
+:root{--bg:#faf8f5;--ink:#1c1a17;--mut:#6f675d;--line:#e5ded4;--acc:#8a5a2b;--pick:#b8862f;--card:#fff}
+@media(prefers-color-scheme:dark){:root{--bg:#141311;--ink:#f0ece6;--mut:#9c948a;--line:#2c2926;--acc:#d9a066;--pick:#e0b05a;--card:#1c1a18}}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+header{max-width:1220px;margin:0 auto;padding:48px 20px 8px}
+h1{font-size:clamp(28px,5vw,44px);line-height:1.1;margin:0 0 12px;letter-spacing:-.02em}
+.sub{color:var(--mut);max-width:64ch;margin:0 0 8px}
+.bar{position:sticky;top:0;z-index:9;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);margin-top:26px}
+.bar .in{max-width:1220px;margin:0 auto;padding:12px 20px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.bar .row2{padding-top:0;padding-bottom:11px}
+.lbl{font-size:12px;color:var(--mut);letter-spacing:.04em;text-transform:uppercase;margin-right:2px}
+.sep{width:1px;align-self:stretch;background:var(--line);margin:2px 6px}
+.cnt{font-size:12.5px;color:var(--mut);margin-left:auto}
+.pill em:empty{display:none}
+.more{display:block;margin:34px auto 0;font:inherit;font-size:14px;padding:11px 26px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;cursor:pointer}
+.more:hover{border-color:var(--acc)}
+.empty{color:var(--mut);padding:40px 2px;font-size:14px}
+/* rasgos del aviso: aparecen sobre la foto al pasar el mouse */
+.feats{position:absolute;inset:auto 0 0 0;z-index:4;padding:8px 9px;display:flex;
+ flex-wrap:wrap;gap:5px;background:linear-gradient(to top,rgba(0,0,0,.88),rgba(0,0,0,.55));
+ opacity:0;transition:opacity .16s ease;pointer-events:none}
+.thumb:hover .feats,.card.hi .feats{opacity:1}
+.feats b{font-weight:600;font-size:11px;padding:3px 7px;border-radius:5px;
+ background:rgba(255,255,255,.94);color:#111}
+.feats i{font-style:normal;font-size:11px;padding:3px 7px;border-radius:5px;
+ border:1px dashed rgba(255,255,255,.5);color:rgba(255,255,255,.72)}
+.feats u{text-decoration:none;font-size:10.5px;color:rgba(255,255,255,.6);
+ width:100%;order:9}
+@media(hover:none){.feats{opacity:1;position:static;background:none;padding:7px 2px 0}
+ .feats b{background:var(--line);color:var(--ink)}
+ .feats i{border-color:var(--line);color:var(--mut)}
+ .feats u{color:var(--mut)}}
+/* slider de precio: dos <input range> superpuestos. Los inputs no reciben
+   clicks salvo en el thumb, así los dos se pueden agarrar. */
+.bar .row3{padding-top:0;padding-bottom:11px;flex-wrap:wrap}
+.rng{position:relative;width:280px;height:26px;flex:0 0 auto}
+.rng .track{position:absolute;left:0;right:0;top:11px;height:4px;border-radius:2px;background:var(--line)}
+.rng .fill{position:absolute;top:11px;height:4px;border-radius:2px;background:var(--acc)}
+.rng input{position:absolute;left:0;top:0;width:100%;height:26px;margin:0;background:none;
+ pointer-events:none;-webkit-appearance:none;appearance:none}
+.rng input:focus{outline:none}
+.rng input::-webkit-slider-thumb{pointer-events:auto;-webkit-appearance:none;width:16px;height:16px;
+ border-radius:50%;background:var(--card);border:2px solid var(--acc);cursor:grab;margin-top:0}
+.rng input::-moz-range-thumb{pointer-events:auto;width:16px;height:16px;border-radius:50%;
+ background:var(--card);border:2px solid var(--acc);cursor:grab}
+.rng input::-moz-range-track{background:none;border:none}
+.prtxt{font-size:12.5px;color:var(--ink);font-variant-numeric:tabular-nums}
+.tabs{max-width:1220px;margin:0 auto;padding:20px 20px 0;display:flex;gap:8px}
+.tab{font-size:13.5px;padding:8px 15px;border:1px solid var(--line);border-radius:999px;
+ text-decoration:none;color:var(--mut);background:var(--card);white-space:nowrap}
+.tab:hover{border-color:var(--acc);color:var(--ink)}
+.tab.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+/* la pestaña de favoritos lleva el contador de lo guardado; vacío no muestra nada */
+.tab.fav em{font-style:normal;font-variant-numeric:tabular-nums;color:var(--pick)}
+.tab.fav em:not(:empty){margin-left:5px;font-weight:600}
+.tab.fav.on em{color:var(--bg)}
+/* con tres pestañas ya no entran de una en un teléfono: se deslizan de costado,
+   igual que las filas de filtros, y la barra no se corta */
+@media(max-width:720px){.tabs{padding:14px 16px 0;overflow-x:auto;scrollbar-width:none}
+ .tabs::-webkit-scrollbar{display:none}}
+.pill{font:inherit;font-size:13px;padding:7px 13px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;cursor:pointer;transition:.15s}
+.pill:hover{border-color:var(--acc)}
+.pill.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.pill em{font-style:normal;opacity:.5;font-size:11px;margin-left:3px}
+.pill.gold.on{background:var(--pick);border-color:var(--pick);color:#fff}
+.sp{flex:1}
+select{font:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px}
+main{max-width:1220px;margin:0 auto;padding:26px 20px 70px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:26px 20px}
+.card{display:flex;flex-direction:column}
+.card .note,.card .src{cursor:pointer}
+.shot{position:relative;display:block;border-radius:12px;overflow:hidden;background:var(--line);aspect-ratio:4/3;text-decoration:none}
+.shot img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .45s ease}
+.shot:hover img{transform:scale(1.045)}
+.shot::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.78) 0,rgba(0,0,0,.3) 34%,transparent 62%)}
+.tag{position:absolute;top:9px;left:9px;z-index:2;background:rgba(255,255,255,.95);color:#111;font-size:12px;font-weight:650;padding:4px 9px;border-radius:6px}
+.star{position:absolute;top:9px;right:9px;z-index:2;background:var(--pick);color:#fff;font-size:10.5px;font-weight:700;padding:4px 8px;border-radius:6px;letter-spacing:.03em}
+.cap{position:absolute;left:11px;right:11px;bottom:9px;z-index:2;color:#fff;font-size:11.5px;line-height:1.35;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+.cap b{font-weight:650;display:block;font-size:12.5px}
+.note{margin:10px 2px 3px;font-size:13.5px;line-height:1.45}
+.src{margin:0 2px;font-size:11px;color:var(--mut)}
+footer{max-width:1220px;margin:0 auto;padding:26px 20px 70px;color:var(--mut);font-size:13px;line-height:1.65;border-top:1px solid var(--line)}
+footer b{color:var(--ink)} a.tx{color:var(--acc)}
+@media(max-width:1000px){
+ /* las filas de filtros no se apilan: se deslizan de costado, así la barra
+    pegada arriba no se come media pantalla */
+ .bar .in{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;gap:7px}
+ .bar .in::-webkit-scrollbar{display:none}
+ .pill,.lbl,select,.cnt{flex:0 0 auto}
+ /* en la fila que se desliza, cada botón va en una línea sola */
+ .pill,.lbl,.cnt{white-space:nowrap}
+ .sp{display:none}
+ .cnt{margin-left:0;padding-right:4px}
+ .sep{margin:2px 4px}
+ /* la fila del precio NO se desliza: arrastrar el thumb dentro de un contenedor
+    que scrollea de costado es imposible en touch. Se apila y ocupa el ancho. */
+ .bar .row3{flex-wrap:wrap;overflow:visible;row-gap:6px}
+ .bar .row3 .rng{width:100%}
+ /* el "USD 28.000 – 260.000" ya dice qué es: la etiqueta solo gastaba una línea */
+ .bar .row3 .lbl{display:none}
+ .prtxt{white-space:nowrap}
+}
+@media(max-width:720px){
+ header{padding:26px 16px 4px}
+ .sub{font-size:14.5px}
+ main{padding:18px 16px 56px}
+ footer{padding:22px 16px 56px}
+ .bar{margin-top:18px}
+ .bar .in{padding:9px 16px}
+ .bar .row2{padding-top:0;padding-bottom:9px}
+ .pill{font-size:13.5px;padding:8px 13px}
+ select{font-size:13.5px}
+ .grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px 14px}
+ .more{width:100%;padding:13px 20px}
+}
+@media(max-width:430px){
+ .grid{grid-template-columns:1fr;gap:22px}
+ .shot{aspect-ratio:3/2}
+ h1{font-size:27px}
+ .note{font-size:14px}
+}
+.layout{max-width:1220px;margin:0 auto;padding:18px 20px 0;display:grid;
+ grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start}
+.layout main{max-width:none;margin:0;padding:0 0 70px}
+.layout .grid{grid-template-columns:1fr;gap:26px}
+/* el mapa queda quieto mientras el listado scrollea. --stick lo mide el JS:
+   la barra de filtros cambia de alto según cuántos botones entren por fila. */
+:root{--stick:120px}
+.mapcol{position:sticky;top:calc(var(--stick) + 12px);align-self:start}
+#map{height:calc(100vh - var(--stick) - 76px);min-height:320px;border-radius:12px;border:1px solid var(--line);background:var(--line)}
+.pickbtn{position:absolute;top:9px;right:9px;z-index:3;width:26px;height:26px;border-radius:50%;
+ border:1px solid rgba(255,255,255,.75);background:rgba(0,0,0,.42);color:#fff;font:inherit;
+ font-size:13px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}
+.pickbtn:hover{background:rgba(0,0,0,.68)}
+.pickbtn.on{background:var(--pick);border-color:var(--pick)}
+.pickbtn.nogeo{opacity:.45}
+.thumb{position:relative}
+.card .star{right:44px}
+.maphead{display:flex;align-items:center;gap:10px;margin:0 0 8px}
+.maphead .lbl{margin:0}
+.mapnote{font-size:12.5px;color:var(--mut)}
+.leaflet-container{font:inherit;background:var(--line)}
+.leaflet-popup-content{margin:9px 11px;font-size:13px;line-height:1.35}
+.leaflet-popup-content b{display:block;font-size:13.5px}
+.leaflet-popup-content a{color:var(--acc)}
+.card.hi .shot{outline:3px solid var(--pick);outline-offset:2px}
+@media(max-width:1000px){
+ .layout{grid-template-columns:1fr;gap:16px;padding:14px 16px 0}
+ .mapcol{position:static}
+ #map{height:320px}
+ .layout .grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px 14px}
+}
+@media(max-width:430px){.layout .grid{grid-template-columns:1fr;gap:22px}}
+
+/* --- Filtros en cajón ----------------------------------------------------
+   La barra pegada arriba medía ~190 px y se comía media pantalla de avisos.
+   Ahora los filtros viven en un cajón que se saca, se usa y se guarda, y
+   arriba queda una tira fina que dice qué está aplicado. El mapa gana alto
+   solo: su `top` sale de --stick, que ahora mide la tira y no la barra. */
+.toolbar{position:sticky;top:0;z-index:12;
+ background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);
+ border-bottom:1px solid var(--line)}
+.toolbar .tin{max-width:1220px;margin:0 auto;padding:9px 20px;
+ display:flex;gap:10px;align-items:center}
+.fbtn{font-weight:600;flex:none}
+.fbtn em{font-style:normal;background:var(--acc);color:var(--bg);border-radius:999px;
+ padding:0 6px;margin-left:5px;font-size:11.5px}
+.fbtn em:empty{display:none}
+.fsum{flex:1;min-width:0;font-size:12.5px;color:var(--mut);
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.toolbar .cnt{font-size:12.5px;color:var(--mut);white-space:nowrap;flex:none}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.34);z-index:19}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(390px,92vw);z-index:20;
+ background:var(--card);border-left:1px solid var(--line);
+ display:flex;flex-direction:column;transform:translateX(102%);
+ transition:transform .22s ease;box-shadow:-18px 0 40px rgba(0,0,0,.13)}
+.drawer.open{transform:none}
+@media(prefers-reduced-motion:reduce){.drawer{transition:none}}
+.dhead{display:flex;align-items:center;gap:10px;padding:14px 16px;
+ border-bottom:1px solid var(--line)}
+.dhead b{flex:1;font-size:15px}
+.xbtn{border:0;background:none;color:var(--mut);font:inherit;font-size:16px;
+ cursor:pointer;padding:4px 6px;line-height:1}
+.xbtn:hover{color:var(--ink)}
+.dbody{flex:1;overflow-y:auto}
+.dfoot{padding:12px 16px;border-top:1px solid var(--line)}
+.wide{width:100%;justify-content:center;font-weight:600;padding:10px 12px}
+body.noscroll{overflow:hidden}
+/* En un teléfono los cuatro elementos no entran: el resumen quedaba aplastado
+   a 0 px de ancho. Se esconde, que para eso el botón ya lleva el número de
+   filtros aplicados, y el contador se queda con el espacio libre. */
+@media(max-width:620px){
+ .toolbar .tin{padding:8px 16px;gap:8px}
+ .fsum{display:none}
+ .toolbar .cnt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+ #sort{max-width:42vw}
+}
+/* adentro del cajón las filas se apilan y respiran: nada se desliza de costado */
+.drawer .bar{position:static;background:none;backdrop-filter:none;border:0;margin:0}
+.drawer .bar .in{max-width:none;flex-wrap:wrap;overflow:visible;padding:13px 16px;gap:7px}
+.drawer .bar .in+.in{border-top:1px solid var(--line)}
+.drawer .bar .lbl{width:100%;margin:0 0 3px}
+.drawer .sep,.drawer .sp{display:none}
+</style></head><body>
+<nav class="tabs">
+ <a href="index.html" class="tab">CABA norte</a>
+ <a href="gba-norte.html" class="tab">Zona norte con patio</a>
+ <a href="sierras.html" class="tab">Sierras de Córdoba</a>
+ <a href="favoritos.html" class="tab fav on">Favoritos <em id="favn"></em></a>
+</nav>
+<header>
+<h1>Favoritos<br>lo que fuimos marcando</h1>
+<p class="sub">Los avisos marcados con el <b>✓</b> en CABA norte, zona norte
+y sierras de Córdoba. Se guardan en este navegador: no viajan a ningún servidor y
+no se ven desde otra computadora.</p>
+</header>
+<div class="toolbar"><div class="tin">
+<button class="pill fbtn" id="fopen" aria-expanded="false" aria-controls="drawer">Filtros <em id="fcount"></em></button>
+<span class="fsum" id="fsum"></span>
+<span class="cnt" id="cnt"></span>
+<select id="sort"><option value="pick">Destacadas primero</option><option value="asc">Precio: menor a mayor</option><option value="desc">Precio: mayor a menor</option></select>
+</div></div>
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" aria-label="Filtros">
+<div class="dhead"><b>Filtros</b><button class="pill" id="fclear">Limpiar</button><button class="xbtn" id="fclose" aria-label="Cerrar filtros">&#10005;</button></div>
+<div class="dbody">
+<div class="bar"><div class="in">
+<button class="pill on" data-b="">Todos <em></em></button>
+<button class="pill gold" id="pk" hidden>★ Solo picks <em>49</em></button>
+<span class="sp"></span>
+
+</div>
+<div class="in row2">
+<span class="lbl">Dormitorios</span>
+<button class="pill on" data-d="-1">Todos <em></em></button>
+<button class="pill" data-d="2">2 <em></em></button>
+<button class="pill" data-d="3">3 <em></em></button>
+<button class="pill" data-d="4">4+ <em></em></button>
+<span class="sep"></span>
+<span class="lbl">Exterior</span>
+<button class="pill" data-x="0">Terraza <em></em></button>
+<button class="pill" data-x="1">Balcón <em></em></button>
+<button class="pill" data-x="3">Jardín <em></em></button>
+<button class="pill" id="m2">100 m²+ <em></em></button>
+<span class="sep"></span>
+<span class="lbl">Fuente</span>
+<button class="pill" data-s="Zonaprop">Zonaprop <em></em></button>
+<button class="pill" data-s="Argenprop">Argenprop <em></em></button>
+
+</div>
+<div class="in row3">
+<span class="lbl">Precio</span>
+<div class="rng"><div class="track"></div><div class="fill" id="pfill"></div>
+<input type="range" id="pmin" aria-label="Precio mínimo">
+<input type="range" id="pmax" aria-label="Precio máximo"></div>
+<span class="prtxt" id="prtxt"></span>
+<button class="pill" id="prst" hidden>Todo el rango</button>
+</div></div>
+</div>
+<div class="dfoot"><button class="pill wide" id="fdone">Ver avisos</button></div>
+</aside>
+<div class="layout">
+<aside class="mapcol">
+ <div class="maphead"><span class="lbl">Mapa</span>
+  <button class="pill" id="mapt">Ocultar</button>
+  <button class="pill" id="sat">Satélite</button>
+  <button class="pill" id="clr" hidden>Limpiar selección</button>
+  <span class="mapnote" id="mapn"></span></div>
+ <div id="map"></div>
+</aside>
+<main><div class="grid" id="g"></div></main>
+</div>
+<footer>
+<p>Esta página es una <b>copia del día en que marcaste cada aviso</b>: el precio y la
+foto son los de ese momento y, si después se dio de baja, acá va a seguir apareciendo.
+El link lleva al aviso original, que es lo que manda.</p>
+<p>Se borran con el <b>✓</b> de la ficha o con "Quitar de favoritos" arriba del mapa.
+Si limpiás los datos del navegador, se van con todo lo demás.</p>
+</footer>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+ integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+ integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+const IP="https://imgar.zonapropcdn.com/avisos/",UP="https://www.zonaprop.com.ar/propiedades/clasificado/";
+const REG=["San Martín de los Andes","La Cumbre","Santa Rosa de Calamuchita","CABA","Tigre","San Miguel · Bella Vista"];
+const D=(()=>{
+ let o={};
+ try{o=JSON.parse(localStorage.getItem('hiessy:favoritos')||'{}')||{}}catch(e){}
+ return Object.keys(o).sort((a,b)=>(o[b].t||0)-(o[a].t||0))
+  .map(k=>o[k]&&o[k].r).filter(r=>Array.isArray(r)&&r.length>19);
+})();
+// Un pill por zona presente en lo guardado. Tiene que correr antes de que se
+// enganchen los onclick de los pills, unas líneas más abajo.
+(()=>{
+ const todos=document.querySelector('.pill[data-b=""]');
+ if(!todos)return;
+ const zs=[...new Set(D.map(r=>r[9]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+ todos.insertAdjacentHTML('afterend',zs.map(z=>
+  `<button class="pill" data-b="${z.replace(/"/g,'&quot;')}">${z} <em></em></button>`).join(''));
+})();
+const g=document.getElementById('g'),cnt=document.getElementById('cnt');
+let pk=false,mq=false,fu="",va="",ter=0,shown=0,view=[];
+// zona/barrio/pueblo: multiselección, igual que dormitorios. Vacío = todas.
+const zn=new Set();
+// exterior: multiselección sobre los rasgos del aviso (índices de FEATS).
+// Varios tildados = "alguna de estas", no "todas": las tres juntas dan 12 avisos.
+const ext=new Set();
+// dormitorios: multiselección. Vacío = todos. 4 significa "4 o más".
+const dm=new Set();
+const dmOf=r=>r[11]>=4?4:r[11];
+let pLo=0,pHi=0,pFloor=0,pCeil=0;   // rango de precio elegido y los topes reales
+const STEP=120;
+// r[11] dormitorios, r[12] jardín/parque propio, r[13] distribuidora, r[14] fuente,
+// r[15]/r[16] lat/lng, r[17] los m² que muestra la ficha (cubiertos, o totales si no hay)
+const okR=r=>!zn.size||zn.has(r[9]),
+      okD=r=>!dm.size||dm.has(dmOf(r)),
+      okG=r=>!ext.size||(r[19]||[]).some(i=>ext.has(i)),
+      okM=r=>!mq||r[17]>=100,
+      // terreno libre = total menos cubierto; solo lo usa la página de zona norte
+      okT=r=>!ter||(r[18]||0)>=ter,
+      okPr=r=>r[4]>=pLo&&r[4]<=pHi,
+      okF=r=>!fu||r[14]===fu,
+      // el valle va en la columna 13 para dejar la 14 libre para la fuente:
+      // en sierras hay avisos de Zonaprop y de Argenprop y hay que poder
+      // distinguirlos, igual que en las otras dos páginas
+      okV=r=>!va||r[13]===va;
+const E=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+// El número de cada pill es "cuántos avisos quedarían si aprieto este": se
+// aplican todos los filtros activos **menos el del propio grupo**, porque
+// elegir dentro de un grupo reemplaza lo que ya estaba elegido ahí.
+//
+// Cada línea repetía la lista de filtros a mano y a varias les faltaba alguno:
+// a todas okV, así que con un valle elegido los pills seguían contando los dos;
+// y al de terreno le faltaba okPr. Los números no sumaban el total de arriba.
+// Ahora la lista está en un solo lugar y cada pill dice de qué grupo es.
+function tally(){
+ const n=(grupo,suyo)=>D.filter(r=>
+   (grupo==='b'||okR(r))&&(grupo==='d'||okD(r))&&(grupo==='x'||okG(r))&&
+   (grupo==='s'||okF(r))&&(grupo==='v'||okV(r))&&(grupo==='t'||okT(r))&&
+   (grupo==='m'||okM(r))&&okPr(r)&&(grupo==='pk'||!pk||r[8])&&suyo(r)).length;
+ document.querySelectorAll('.pill[data-b]').forEach(b=>{const v=b.dataset.b;
+  b.querySelector('em').textContent=n('b',r=>!v||r[9]===v)});
+ document.querySelectorAll('.pill[data-d]').forEach(b=>{const d=+b.dataset.d;
+  b.querySelector('em').textContent=n('d',r=>d<0||dmOf(r)===d)});
+ document.querySelectorAll('.pill[data-s]').forEach(b=>{const v=b.dataset.s;
+  b.querySelector('em').textContent=n('s',r=>r[14]===v)});
+ document.querySelectorAll('.pill[data-v]').forEach(b=>{const v=b.dataset.v;
+  b.querySelector('em').textContent=n('v',r=>!v||r[13]===v)});
+ document.querySelectorAll('.pill[data-t]').forEach(b=>{const v=+b.dataset.t;
+  b.querySelector('em').textContent=n('t',r=>!v||(r[18]||0)>=v)});
+ document.getElementById('m2').querySelector('em').textContent=n('m',r=>r[17]>=100);
+ document.querySelectorAll('.pill[data-x]').forEach(b=>{const v=+b.dataset.x;
+  b.querySelector('em').textContent=n('x',r=>(r[19]||[]).includes(v))});
+ document.getElementById('pk').querySelector('em').textContent=n('pk',r=>r[8]);
+}
+const abs=s=>/^https?:/.test(s);
+// mismo orden que FEATS en build2.py; se guardan como índices para no repetir
+// nueve palabras en 1.500 filas
+const FEATS=["terraza","balcón","patio","jardín","cochera","parrilla","pileta","apto crédito","a refaccionar"];
+// Solo lo que mueve la decisión. "No lo menciona" NO es "no lo tiene": el aviso
+// pudo no escribirlo, y la mitad de las descripciones vienen cortadas.
+const SHOW=[0,1,2,3,4,6];
+const featChips=r=>{
+ const has=new Set(r[19]||[]);
+ const si=SHOW.filter(i=>has.has(i)).map(i=>`<b>${FEATS[i]}</b>`).join('');
+ const no=SHOW.filter(i=>!has.has(i)).map(i=>`<i>${FEATS[i]}</i>`).join('');
+ return `<span class="feats">${si}${no}<u>lleno = lo menciona el aviso · punteado = no lo menciona (puede tenerlo igual)</u></span>`;
+};
+const card=r=>`<article class="card" data-k="${E(r[2])}"><div class="thumb"><a class="shot" href="${abs(r[2])?r[2]:UP+r[2]}" target="_blank" rel="noopener">
+<img loading="lazy" src="${abs(r[1])?r[1]:IP+r[1]}" alt="${E(r[5])}">
+<span class="tag">${r[3]==='?'?'Consultar':'USD '+r[3]}</span>${r[8]?'<span class="star">★ pick</span>':''}
+<span class="cap"><b>${E(r[5])}</b>${r[6]?' · '+E(r[6]):''}</span></a>
+${featChips(r)}<button class="pickbtn${picked.has(r[2])?' on':''}${r[15]?'':' nogeo'}" title="${r[15]?'Marcar para ver solo estas en el mapa':'Este aviso no publica ubicación: no tiene pin'}" aria-pressed="${picked.has(r[2])}">✓</button></div>
+<p class="note">${E(r[7])}</p><p class="src">${E(r[9])}${r[14]?' · '+E(r[14]):''}</p></article>`;
+function more(){
+ const next=view.slice(shown,shown+STEP);
+ g.insertAdjacentHTML('beforeend',next.map(card).join(''));
+ shown+=next.length;
+ const b=document.getElementById('mo');
+ if(b)b.remove();
+ if(shown<view.length){
+  const btn=document.createElement('button');
+  btn.className='more';btn.id='mo';
+  btn.textContent=`Ver más (${view.length-shown} restantes)`;
+  btn.onclick=more;
+  g.after(btn);
+ }
+}
+
+// --- Cajón de filtros -----------------------------------------------------
+// Se saca, se usa y se guarda. El resumen de arriba evita tener que abrirlo
+// para saber qué está aplicado.
+const drw=document.getElementById('drawer'),scr=document.getElementById('scrim');
+function openF(){
+ drw.classList.add('open');scr.hidden=false;
+ document.body.classList.add('noscroll');
+ document.getElementById('fopen').setAttribute('aria-expanded','true');
+}
+function closeF(){
+ drw.classList.remove('open');scr.hidden=true;
+ document.body.classList.remove('noscroll');
+ document.getElementById('fopen').setAttribute('aria-expanded','false');
+}
+document.getElementById('fopen').onclick=()=>drw.classList.contains('open')?closeF():openF();
+document.getElementById('fclose').onclick=closeF;
+document.getElementById('fdone').onclick=closeF;
+scr.onclick=closeF;
+addEventListener('keydown',e=>{if(e.key==='Escape'&&drw.classList.contains('open'))closeF()});
+
+// Deja todo en su valor por defecto disparando los mismos clics que haría a mano,
+// así no hay una segunda copia de la lógica de cada filtro.
+document.getElementById('fclear').onclick=()=>{
+ document.querySelectorAll('#drawer [data-x].on,#drawer [data-s].on,#drawer [data-v].on').forEach(b=>b.click());
+ ['[data-b=""]','[data-d="-1"]','[data-t="0"]'].forEach(s=>{
+  const b=document.querySelector('#drawer '+s);
+  if(b&&!b.classList.contains('on'))b.click();
+ });
+ ['m2','pk'].forEach(id=>{
+  const b=document.getElementById(id);
+  if(b&&b.classList.contains('on'))b.click();
+ });
+ const rs=document.getElementById('prst');
+ if(rs&&!rs.hidden)rs.click();
+};
+
+function fsummary(){
+ const act=[];
+ document.querySelectorAll('#drawer .pill.on').forEach(b=>{
+  if(b.hidden)return;
+  const d=b.dataset;
+  if(d.b===''||d.d==='-1'||d.t==='0')return;        // los "Todos" no son un filtro
+  const txt=(b.firstChild&&b.firstChild.textContent||'').trim();
+  if(!txt)return;
+  // "3" solo no dice nada: se le pega la etiqueta del grupo, que es el .lbl
+  // anterior más cercano dentro de la misma fila ("Dormitorios", "Exterior"…)
+  let g=b.previousElementSibling;
+  while(g&&!g.classList.contains('lbl'))g=g.previousElementSibling;
+  act.push(g?g.textContent.trim().toLowerCase()+' '+txt:txt);
+ });
+ const rs=document.getElementById('prst');
+ if(rs&&!rs.hidden){
+  const p=document.getElementById('prtxt');
+  if(p&&p.textContent.trim())act.push(p.textContent.trim());
+ }
+ document.getElementById('fcount').textContent=act.length||'';
+ document.getElementById('fsum').textContent=act.length?act.join(' · '):'sin filtros';
+ const fd=document.getElementById('fdone');
+ if(fd)fd.textContent='Ver '+view.length.toLocaleString('es-AR')+' avisos';
+}
+
+// --- Memoria de filtros ---------------------------------------------------
+// Se guarda qué botones quedaron encendidos, no el estado interno: al volver se
+// disparan los mismos clics, así no hay una segunda copia de la lógica de cada
+// filtro que se pueda desincronizar. Una clave por página, porque los pills de
+// zona no son los mismos en las tres.
+const MEMK='hiessy:filtros:'+location.pathname.replace(/.*\//,'');
+let restaurando=false;
+function saveF(){
+ if(restaurando)return;
+ try{
+  const on=[];
+  document.querySelectorAll('#drawer .pill.on').forEach(b=>{
+   const d=b.dataset;
+   for(const k of ['b','d','x','t','s','v'])if(k in d){on.push(k+':'+d[k]);return}
+   if(b.id)on.push('#'+b.id);
+  });
+  localStorage.setItem(MEMK,JSON.stringify({on,
+   sort:document.getElementById('sort').value,lo:pLo,hi:pHi}));
+ }catch(e){}      // modo privado o storage lleno: que no rompa la página
+}
+function loadF(){
+ let s=null;
+ try{s=JSON.parse(localStorage.getItem(MEMK)||'null')}catch(e){}
+ if(!s||!Array.isArray(s.on))return;
+ restaurando=true;                    // draw() no hace nada mientras tanto
+ try{
+  document.getElementById('fclear').click();
+  s.on.forEach(k=>{
+   const b=k[0]==='#'?document.getElementById(k.slice(1))
+    :document.querySelector('#drawer [data-'+k.slice(0,k.indexOf(':'))+
+      '="'+k.slice(k.indexOf(':')+1).replace(/"/g,'\\"')+'"]');
+   if(b&&!b.classList.contains('on'))b.click();
+  });
+  if(s.sort)document.getElementById('sort').value=s.sort;
+  if(typeof s.lo==='number'&&typeof s.hi==='number'&&s.lo<=s.hi){
+   pLo=Math.max(s.lo,pFloor);pHi=Math.min(s.hi,pCeil);
+   document.getElementById('pmin').value=pLo;
+   document.getElementById('pmax').value=pHi;
+   paintPrice();
+  }
+ }catch(e){}
+ restaurando=false;
+}
+
+function draw(){
+ if(restaurando)return;
+ view=D.filter(r=>okR(r)&&okD(r)&&okG(r)&&okF(r)&&okV(r)&&okM(r)&&okT(r)&&okPr(r)&&(!pk||r[8]));
+ tally();
+ fsummary();
+ saveF();
+ fitSticky();   // los contadores cambian el ancho de los botones y la barra puede cambiar de alto
+ const s=document.getElementById('sort').value,p=r=>r[4]||1e9;
+ view.sort(s==='asc'?(a,b)=>p(a)-p(b):s==='desc'?(a,b)=>p(b)-p(a):(a,b)=>(b[8]-a[8])||(p(a)-p(b)));
+ g.innerHTML='';shown=0;
+ const b=document.getElementById('mo');if(b)b.remove();
+ if(!view.length)g.innerHTML='<p class="empty">Ningún aviso coincide con esa combinación de filtros.</p>';
+ else more();
+ g.onclick=e=>{
+  const b=e.target.closest('.pickbtn');
+  if(b){
+   e.preventDefault();
+   const k=b.closest('.card').dataset.k;
+   picked.has(k)?picked.delete(k):picked.add(k);
+   b.classList.toggle('on',picked.has(k));
+   b.setAttribute('aria-pressed',picked.has(k));
+   favSet(k,picked.has(k));
+   drawPins();
+   return;
+  }
+  // clic en la ficha (no en la foto, que abre el aviso) => centrar el mapa ahí
+  if(e.target.closest('.shot'))return;
+  const c=e.target.closest('.card');
+  if(!c)return;
+  zoomTo(c.dataset.k);
+ };
+ g.onmouseover=e=>{const c=e.target.closest('.card');if(c&&c.dataset.k!==hi){hi&&focusPin(hi,false);hi=c.dataset.k;focusPin(hi,true)}};
+ g.onmouseleave=()=>{hi&&focusPin(hi,false);hi=null};
+ drawPins();
+ // con un mínimo de terreno activo, los avisos sin lote declarado quedan afuera.
+ // Decirlo: si no, parecen no existir (son casi todos los de Argenprop).
+ const base=view.length===D.length?`${D.length} propiedades`:`${view.length} de ${D.length} propiedades`;
+ const mudos=ter?D.filter(r=>okR(r)&&okD(r)&&okG(r)&&okF(r)&&okV(r)&&okM(r)&&okPr(r)&&(!pk||r[8])&&!(r[18]||0)).length:0;
+ cnt.textContent=base+(mudos?` · ${mudos} sin lote declarado`:'');
+}
+// --- mapa ---
+// r[15] lat, r[16] lng. Se dibuja el resultado filtrado completo (no solo las
+// fichas pintadas) con canvas, que aguanta miles de puntos sin trabarse.
+let map=null,layer=null,pins=new Map(),hi=null,base=null,rotulos=null,sat=null;
+const rowByKey=new Map(D.map(r=>[r[2],r]));
+// --- favoritos -------------------------------------------------------------
+// El ✓ de cada ficha guarda el aviso en localStorage y la clave es **la misma en
+// las tres páginas**, así favoritos.html junta lo marcado en CABA, en el
+// conurbano y en la sierra. Se guarda la fila entera porque esa página no tiene
+// dataset propio: las columnas 0-12 y 14-19 significan lo mismo en las tres (la
+// 13 no —distribuidora, nada, valle— y por eso allá no se usa).
+const FAVK='hiessy:favoritos';
+const favPag=location.pathname.replace(/.*\//,'')||'index.html';
+function favLoad(){
+ try{const o=JSON.parse(localStorage.getItem(FAVK)||'{}');
+     return o&&typeof o==='object'&&!Array.isArray(o)?o:{}}
+ catch(e){return {}}      // modo privado, storage lleno o JSON roto
+}
+let favs=favLoad();
+function favSave(){
+ try{localStorage.setItem(FAVK,JSON.stringify(favs))}catch(e){}
+}
+function favSet(k,on){
+ // Si ya estaba, se conserva de dónde salió y cuándo: volver a marcarlo desde
+ // favoritos.html no tiene que reescribir su origen ni mandarlo al final.
+ if(on)favs[k]={r:rowByKey.get(k),p:(favs[k]||{}).p||favPag,t:(favs[k]||{}).t||Date.now()};
+ else delete favs[k];
+ favSave();favBadge();
+}
+// Cuántos hay guardados en total, contando los de las otras dos páginas: si no,
+// desde CABA parece que no hubiera ninguno.
+function favBadge(){
+ const a=document.getElementById('favn');
+ if(a)a.textContent=Object.keys(favs).length||'';
+}
+// Solo lo marcado que está **en esta página** puede pintarse en este mapa.
+const picked=new Set(Object.keys(favs).filter(k=>rowByKey.has(k)));
+const hasGeo=r=>r[15]&&r[16];
+const money=v=>'USD '+v.toLocaleString('es-AR');
+function initPrice(){
+ const ps=D.map(r=>r[4]).filter(Boolean);
+ const step=1000;
+ pFloor=Math.floor(Math.min(...ps)/step)*step;
+ pCeil=Math.ceil(Math.max(...ps)/step)*step;
+ pLo=pFloor;pHi=pCeil;
+ for(const [el,val] of [[document.getElementById('pmin'),pLo],[document.getElementById('pmax'),pHi]]){
+  el.min=pFloor;el.max=pCeil;el.step=step;el.value=val;
+  el.addEventListener('input',onPrice);
+ }
+ document.getElementById('prst').onclick=()=>{
+  pLo=pFloor;pHi=pCeil;
+  document.getElementById('pmin').value=pLo;document.getElementById('pmax').value=pHi;
+  paintPrice();draw();
+ };
+ paintPrice();
+}
+function onPrice(){
+ const a=+document.getElementById('pmin').value,b=+document.getElementById('pmax').value;
+ // los thumbs se pueden cruzar: el menor manda como piso
+ pLo=Math.min(a,b);pHi=Math.max(a,b);
+ paintPrice();
+ clearTimeout(onPrice.t);
+ onPrice.t=setTimeout(draw,110);   // redibujar al soltar, no en cada pixel
+}
+function paintPrice(){
+ const span=pCeil-pFloor||1;
+ const f=document.getElementById('pfill');
+ f.style.left=((pLo-pFloor)/span*100)+'%';
+ f.style.width=((pHi-pLo)/span*100)+'%';
+ document.getElementById('prtxt').textContent=money(pLo)+' – '+pHi.toLocaleString('es-AR');
+ document.getElementById('prst').hidden=(pLo===pFloor&&pHi===pCeil);
+}
+function fitSticky(){
+ const bar=document.querySelector('.toolbar');
+ if(bar)document.documentElement.style.setProperty('--stick',Math.round(bar.getBoundingClientRect().height)+'px');
+}
+addEventListener('resize',()=>{fitSticky();if(map)map.invalidateSize()});
+function initMap(){
+ if(map||typeof L==='undefined')return;
+ map=L.map('map',{scrollWheelZoom:false,preferCanvas:true});
+ // CARTO empezó a estampar "API KEY REQUIRED" en diagonal sobre sus tiles
+ // gratuitos. Devuelven 200 y un PNG válido, así que no falla nada: el cartel
+ // viene dibujado adentro de la imagen. Esri Light Gray es igual de sobrio,
+ // no pide clave, y así los pines marrones siguen resaltando.
+ // Ojo con el orden: Esri sirve {z}/{y}/{x}, al revés que OSM y CARTO.
+ const ESRI='https://server.arcgisonline.com/ArcGIS/rest/services/';
+ base=L.tileLayer(ESRI+'Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+  {maxZoom:19,maxNativeZoom:16,attribution:'Tiles &copy; Esri'}).addTo(map);
+ // las etiquetas van en una capa aparte, si no el gris queda sin nombres
+ rotulos=L.tileLayer(ESRI+'Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+  {maxZoom:19,maxNativeZoom:16,pane:'shadowPane'}).addTo(map);
+ sat=L.tileLayer(ESRI+'World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  {maxZoom:19,maxNativeZoom:18,attribution:'Tiles &copy; Esri'});
+ // El arranque sale de los datos y no de una coordenada fija. Estaba clavado en
+ // CABA, así que en sierras.html el mapa aparecía sobre Buenos Aires cada vez que
+ // el filtro no dejaba ningún pin: sin puntos no hay `fitBounds` que lo corrija.
+ const geo=D.filter(hasGeo);
+ if(geo.length){
+  const la=geo.map(r=>r[15]).sort((x,y)=>x-y),lo=geo.map(r=>r[16]).sort((x,y)=>x-y);
+  map.setView([la[la.length>>1],lo[lo.length>>1]],11);
+ }else map.setView([-34.58,-58.45],12);
+}
+// Satélite: para una casa con jardín, ver el fondo desde arriba dice más que
+// cualquier foto del aviso. Es la misma fuente y tampoco pide clave.
+function toggleSat(){
+ const on=map.hasLayer(sat);
+ if(on){map.removeLayer(sat);base.addTo(map);rotulos.addTo(map);}
+ else{base.remove();rotulos.remove();sat.addTo(map);}
+ const b=document.getElementById('sat');
+ if(b){b.textContent=on?'Satélite':'Mapa';b.classList.toggle('on',!on);}
+}
+function drawPins(){
+ if(!map)return;
+ if(layer)layer.remove();
+ pins.clear();
+ const sel=picked.size?view.filter(r=>picked.has(r[2])):view;
+ const pts=sel.filter(hasGeo);
+ const marks=pts.map(r=>{
+  const m=L.circleMarker([r[15],r[16]],
+   {radius:5,weight:1,color:'#fff',fillColor:r[8]?'#b8862f':'#8a5a2b',fillOpacity:.85});
+  m.bindPopup(`<b>${E(r[5])}</b>${r[3]==='?'?'Consultar':'USD '+r[3]} · ${E(r[6])}<br>
+   <a href="${abs(r[2])?r[2]:UP+r[2]}" target="_blank" rel="noopener">ver aviso</a>`);
+  m.on('mouseover',()=>markCard(r,true));
+  m.on('mouseout',()=>markCard(r,false));
+  pins.set(r[2],m);
+  return m;
+ });
+ layer=L.layerGroup(marks).addTo(map);
+ const cl=document.getElementById('clr');
+ cl.hidden=!picked.size;
+ // Dice lo que hace de verdad: el ✓ ahora guarda en favoritos, así que vaciar
+ // la selección es sacarlos de ahí, no solo despintar el mapa.
+ cl.textContent=`Quitar de favoritos (${picked.size})`;
+ // no todos los avisos traen coordenadas (Argenprop no las publica), así que
+ // conviene decir cuántas de las marcadas se pueden mostrar
+ document.getElementById('mapn').textContent=picked.size
+  ?(pts.length===sel.length?`${pts.length} seleccionada${pts.length===1?'':'s'} en el mapa`
+                           :`${pts.length} de ${sel.length} seleccionadas tienen ubicación`)
+  :(pts.length===view.length?`${pts.length} en el mapa`:`${pts.length} de ${view.length} con ubicación`);
+ // animate:false a propósito: con la animación por defecto el encuadre inicial
+ // a veces no llega a aplicarse y el mapa se queda en la vista de arranque
+ if(pts.length)map.fitBounds(L.latLngBounds(pts.map(r=>[r[15],r[16]])),
+  {padding:[24,24],maxZoom:15,animate:false});
+}
+function zoomTo(k){
+ const r=rowByKey.get(k);
+ const note=document.getElementById('mapn');
+ if(!r||!r[15]||!r[16]){note.textContent='Ese aviso no publica ubicación';return}
+ if(!map)return;
+ if(document.querySelector('.maprow,.mapcol').dataset.off==='1')
+  document.getElementById('mapt').click();   // si estaba oculto, mostrarlo
+ map.setView([r[15],r[16]],17,{animate:true});
+ const m=pins.get(k);
+ if(m){m.openPopup();focusPin(k,true);hi=k}
+ // apilado (celular/tablet) el mapa está arriba: hay que ir a verlo
+ if(innerWidth<=1000)document.getElementById('map').scrollIntoView({behavior:'smooth',block:'center'});
+}
+function markCard(r,on){
+ const c=document.querySelector(`.card[data-k="${CSS.escape(r[2])}"]`);
+ if(c)c.classList.toggle('hi',on);
+}
+function focusPin(k,on){
+ const m=pins.get(k);
+ if(!m)return;
+ m.setStyle(on?{radius:10,fillColor:'#e0b05a',weight:2}:{radius:5,fillColor:'#8a5a2b',weight:1});
+ if(on)m.bringToFront();
+}
+document.getElementById('clr').onclick=()=>{
+ picked.forEach(k=>{delete favs[k]});
+ picked.clear();
+ favSave();favBadge();
+ document.querySelectorAll('.pickbtn.on').forEach(b=>{b.classList.remove('on');b.setAttribute('aria-pressed','false')});
+ drawPins();
+};
+document.getElementById('sat').onclick=toggleSat;
+document.getElementById('mapt').onclick=e=>{
+ const box=document.querySelector('.maprow'),on=box.dataset.off!=='1';
+ box.dataset.off=on?'1':'0';
+ document.getElementById('map').style.display=on?'none':'';
+ e.target.textContent=on?'Mostrar':'Ocultar';
+ if(!on&&map)setTimeout(()=>{map.invalidateSize();drawPins()},60);
+};
+document.querySelectorAll('.pill[data-b]').forEach(b=>b.onclick=()=>{
+ const v=b.dataset.b;
+ if(!v)zn.clear();                        // "Todos" limpia la selección
+ else zn.has(v)?zn.delete(v):zn.add(v);   // los demás se acumulan
+ document.querySelectorAll('.pill[data-b]').forEach(x=>{
+  const s=x.dataset.b;
+  x.classList.toggle('on',s?zn.has(s):!zn.size);
+ });
+ draw();scrollTo({top:0,behavior:'smooth'})});
+document.querySelectorAll('.pill[data-d]').forEach(b=>b.onclick=()=>{
+ const v=+b.dataset.d;
+ if(v<0)dm.clear();                       // "Todos" limpia la selección
+ else dm.has(v)?dm.delete(v):dm.add(v);   // los demás se acumulan
+ document.querySelectorAll('.pill[data-d]').forEach(x=>{
+  const n=+x.dataset.d;
+  x.classList.toggle('on',n<0?!dm.size:dm.has(n));
+ });
+ draw();scrollTo({top:0,behavior:'smooth'})});
+document.getElementById('pk').onclick=e=>{pk=!pk;e.currentTarget.classList.toggle('on',pk);draw()};
+document.querySelectorAll('.pill[data-x]').forEach(b=>b.onclick=()=>{
+ const v=+b.dataset.x;
+ ext.has(v)?ext.delete(v):ext.add(v);
+ b.classList.toggle('on',ext.has(v));
+ draw();scrollTo({top:0,behavior:'smooth'})});
+document.getElementById('m2').onclick=e=>{mq=!mq;e.currentTarget.classList.toggle('on',mq);draw()};
+document.querySelectorAll('.pill[data-t]').forEach(b=>b.onclick=()=>{
+ document.querySelectorAll('.pill[data-t]').forEach(x=>x.classList.remove('on'));
+ b.classList.add('on');ter=+b.dataset.t;draw();scrollTo({top:0,behavior:'smooth'})});
+document.querySelectorAll('.pill[data-s]').forEach(b=>b.onclick=()=>{
+ const was=fu===b.dataset.s;
+ document.querySelectorAll('.pill[data-s]').forEach(x=>x.classList.remove('on'));
+ fu=was?'':b.dataset.s;b.classList.toggle('on',!was);draw();scrollTo({top:0,behavior:'smooth'})});
+document.querySelectorAll('.pill[data-v]').forEach(b=>b.onclick=()=>{
+ const v=b.dataset.v,was=b.classList.contains('on');
+ document.querySelectorAll('.pill[data-v]').forEach(x=>x.classList.remove('on'));
+ va=was?'':v;b.classList.toggle('on',!was);draw();scrollTo({top:0,behavior:'smooth'})});
+document.getElementById('sort').onchange=draw;
+initPrice();fitSticky();initMap();loadF();draw();favBadge();
+</script></body></html>

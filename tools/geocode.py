@@ -100,7 +100,11 @@ def clean_addr(addr):
 
 def zone_of(loc):
     l = plain(loc)
-    if "vicente lopez" in l or "olivos" in l or "la lucila" in l:
+    # "florida": las direcciones de Argenprop traen la localidad y no el partido,
+    # así que sin esto los avisos de Florida quedaban sin zona y se descartaban
+    # sus coordenadas. Entra en la misma caja que el resto de Vicente López.
+    if ("vicente lopez" in l or "olivos" in l or "la lucila" in l
+            or "florida" in l):
         return "vicente"
     if "san isidro" in l or "martinez" in l:
         return "sanisidro"

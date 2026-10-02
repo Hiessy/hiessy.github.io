@@ -14,8 +14,8 @@ SRC = os.path.join(ROOT, "index.html")
 DST = os.path.join(ROOT, "gba-norte.html")
 DATA = os.path.join(ROOT, ".work", "DG.js")
 
-ZONES = ["Bella Vista", "San Miguel", "Olivos", "La Lucila", "Martínez",
-         "Ingeniero Maschwitz", "San Fernando", "Tigre"]
+ZONES = ["Bella Vista", "San Miguel", "Olivos", "La Lucila", "Florida",
+         "Martínez", "Ingeniero Maschwitz", "San Fernando", "Tigre"]
 
 MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
          "agosto", "septiembre", "octubre", "noviembre", "diciembre"]

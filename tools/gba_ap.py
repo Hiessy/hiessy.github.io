@@ -30,6 +30,10 @@ ZONES = [
     ("sanmiguel",  "San Miguel",  "san-miguel",  "san miguel"),
     ("olivos",     "Olivos",      "olivos",      "vicente lopez"),
     ("lalucila",   "La Lucila",   "la-lucila",   "vicente lopez"),
+    # Acá el slug bueno es el que nombra el partido, al contrario que en Zonaprop,
+    # donde `florida-vicente-lopez` devuelve el partido entero y hay que pedir
+    # `florida` pelado. Un portal, un slug: no se pueden copiar de uno al otro.
+    ("florida",    "Florida",     "florida-vicente-lopez", "vicente lopez"),
     ("martinez",   "Martínez",    "martinez",    "san isidro"),
     # `maschwitz` a secas cae en Fisherton (Rosario) y San Bernardo, y
     # `ingeniero-maschwitz-escobar` devuelve todo Belén de Escobar: el bueno
@@ -87,9 +91,18 @@ def main():
                     print(f"{key}/{tipo} p{p}: sin avisos", flush=True); break
                 added = wrong = 0
                 for r in rows:
-                    # el título dice "Casa en Venta en Olivos, Vicente López":
-                    # así se descarta la Bella Vista de Corrientes y compañía
-                    if partido not in plain(r.get("loc", "")):
+                    # La localidad se busca en la **dirección y en la URL**, no en
+                    # `loc`, que en estas páginas viene vacío ("Coronel Pringles al
+                    # 3500 , Florida"). Mirando solo `loc` se caían todos los
+                    # avisos: de 2.961 en la página, Argenprop aportaba 101. Es el
+                    # mismo error que tenía caba_ap.py.
+                    #
+                    # Vale el partido **o** la localidad: en la dirección aparece
+                    # "Florida", no "Vicente López". Con una de las dos alcanza
+                    # para descartar la Bella Vista de Corrientes y compañía.
+                    donde = (plain(r.get("loc", "")) + " " + plain(r.get("addr", ""))
+                             + " " + plain(r.get("url", "")).replace("-", " "))
+                    if partido not in donde and plain(label) not in donde:
                         wrong += 1
                         continue
                     if r["id"] in seen or not (15000 <= r["price"] <= mx):
