@@ -1,7 +1,7 @@
 <!doctype html><html lang="es"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Favoritos · Argentina</title>
-<meta name="description" content="Los avisos marcados con el ✓ en las tres búsquedas.">
+<meta name="description" content="Los avisos marcados con el ♥ en las tres búsquedas.">
 <style>
 *{box-sizing:border-box}
 :root{--bg:#faf8f5;--ink:#1c1a17;--mut:#6f675d;--line:#e5ded4;--acc:#8a5a2b;--pick:#b8862f;--card:#fff}
@@ -134,10 +134,12 @@ footer b{color:var(--ink)} a.tx{color:var(--acc)}
 :root{--stick:120px}
 .mapcol{position:sticky;top:calc(var(--stick) + 12px);align-self:start}
 #map{height:calc(100vh - var(--stick) - 76px);min-height:320px;border-radius:12px;border:1px solid var(--line);background:var(--line)}
-.pickbtn{position:absolute;top:9px;right:9px;z-index:3;width:26px;height:26px;border-radius:50%;
+/* el corazón se lee más chico que el ✓ que había antes, así que va un punto más
+   grande y apenas levantado: centrado a ojo queda bajo por la punta de abajo */
+.pickbtn{position:absolute;top:9px;right:9px;z-index:3;width:28px;height:28px;border-radius:50%;
  border:1px solid rgba(255,255,255,.75);background:rgba(0,0,0,.42);color:#fff;font:inherit;
- font-size:13px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}
-.pickbtn:hover{background:rgba(0,0,0,.68)}
+ font-size:14px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0 0 1px}
+.pickbtn:hover{background:rgba(0,0,0,.68);transform:scale(1.08)}
 .pickbtn.on{background:var(--pick);border-color:var(--pick)}
 .pickbtn.nogeo{opacity:.45}
 .thumb{position:relative}
@@ -216,7 +218,7 @@ body.noscroll{overflow:hidden}
 </nav>
 <header>
 <h1>Favoritos<br>lo que fuimos marcando</h1>
-<p class="sub">Los avisos marcados con el <b>✓</b> en CABA norte, zona norte
+<p class="sub">Los avisos marcados con el <b>♥</b> en CABA norte, zona norte
 y sierras de Córdoba. Se guardan en este navegador: no viajan a ningún servidor y
 no se ven desde otra computadora.</p>
 </header>
@@ -280,7 +282,7 @@ no se ven desde otra computadora.</p>
 <p>Esta página es una <b>copia del día en que marcaste cada aviso</b>: el precio y la
 foto son los de ese momento y, si después se dio de baja, acá va a seguir apareciendo.
 El link lleva al aviso original, que es lo que manda.</p>
-<p>Se borran con el <b>✓</b> de la ficha o con "Quitar de favoritos" arriba del mapa.
+<p>Se borran con el <b>♥</b> de la ficha o con "Quitar de favoritos" arriba del mapa.
 Si limpiás los datos del navegador, se van con todo lo demás.</p>
 </footer>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -377,7 +379,7 @@ const card=r=>`<article class="card" data-k="${E(r[2])}"><div class="thumb"><a c
 <img loading="lazy" src="${abs(r[1])?r[1]:IP+r[1]}" alt="${E(r[5])}">
 <span class="tag">${r[3]==='?'?'Consultar':'USD '+r[3]}</span>${r[8]?'<span class="star">★ pick</span>':''}
 <span class="cap"><b>${E(r[5])}</b>${r[6]?' · '+E(r[6]):''}</span></a>
-${featChips(r)}<button class="pickbtn${picked.has(r[2])?' on':''}${r[15]?'':' nogeo'}" title="${r[15]?'Marcar para ver solo estas en el mapa':'Este aviso no publica ubicación: no tiene pin'}" aria-pressed="${picked.has(r[2])}">✓</button></div>
+${featChips(r)}<button class="pickbtn${picked.has(r[2])?' on':''}${r[15]?'':' nogeo'}" title="${picked.has(r[2])?'Sacar de favoritos':r[15]?'Guardar en favoritos':'Guardar en favoritos · este aviso no publica ubicación, no tiene pin'}" aria-label="Favorito" aria-pressed="${picked.has(r[2])}">♥</button></div>
 <p class="note">${E(r[7])}</p><p class="src">${E(r[9])}${r[14]?' · '+E(r[14]):''}</p></article>`;
 function more(){
  const next=view.slice(shown,shown+STEP);
@@ -520,6 +522,12 @@ function draw(){
    picked.has(k)?picked.delete(k):picked.add(k);
    b.classList.toggle('on',picked.has(k));
    b.setAttribute('aria-pressed',picked.has(k));
+   // el title se arma al pintar la ficha: sin esto queda diciendo "Guardar"
+   // sobre un corazón ya guardado hasta que se vuelva a dibujar la lista
+   b.title=picked.has(k)?'Sacar de favoritos'
+    :b.classList.contains('nogeo')
+     ?'Guardar en favoritos · este aviso no publica ubicación, no tiene pin'
+     :'Guardar en favoritos';
    favSet(k,picked.has(k));
    drawPins();
    return;

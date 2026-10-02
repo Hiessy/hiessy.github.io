@@ -1,7 +1,7 @@
 """Genera `favoritos.html` a partir de `index.html`.
 
 Cuarta pestaña. No tiene relevamiento propio: el dataset lo arma el navegador con
-lo que uno marcó con el ✓ en las otras tres, que se guarda en `localStorage` bajo
+lo que uno marcó con el ♥ en las otras tres, que se guarda en `localStorage` bajo
 una clave común a todo el sitio. Por eso acá `const D` no es una lista de avisos
 sino el código que la lee.
 
@@ -76,11 +76,11 @@ def main():
     t = rep(t, '<h1>PH y casas en la zona norte de CABA<br>con menos de USD 260.000</h1>',
                '<h1>Favoritos<br>lo que fuimos marcando</h1>')
     t = re.sub(r'<meta name="description" content="[^"]*">',
-               '<meta name="description" content="Los avisos marcados con el ✓ en las tres '
+               '<meta name="description" content="Los avisos marcados con el ♥ en las tres '
                'búsquedas.">', t, count=1)
 
     i, j = t.index('<p class="sub">'), t.index("</header>")
-    t = t[:i] + '''<p class="sub">Los avisos marcados con el <b>✓</b> en CABA norte, zona norte
+    t = t[:i] + '''<p class="sub">Los avisos marcados con el <b>♥</b> en CABA norte, zona norte
 y sierras de Córdoba. Se guardan en este navegador: no viajan a ningún servidor y
 no se ven desde otra computadora.</p>
 ''' + t[j:]
@@ -90,7 +90,7 @@ no se ven desde otra computadora.</p>
 <p>Esta página es una <b>copia del día en que marcaste cada aviso</b>: el precio y la
 foto son los de ese momento y, si después se dio de baja, acá va a seguir apareciendo.
 El link lleva al aviso original, que es lo que manda.</p>
-<p>Se borran con el <b>✓</b> de la ficha o con "Quitar de favoritos" arriba del mapa.
+<p>Se borran con el <b>♥</b> de la ficha o con "Quitar de favoritos" arriba del mapa.
 Si limpiás los datos del navegador, se van con todo lo demás.</p>
 ''' + t[j:]
 

@@ -188,8 +188,12 @@ def main():
                        **({} if st == "ok" else {"por": st})}
         if st != "ok":
             print(f"  [{st}] {r[3]} · {r[5][:40]} · {u[-52:]}", flush=True)
-        if n % 25 == 0:
+        # Guardar seguido: si matan la corrida (o se corta la luz) se pierde todo
+        # lo verificado desde el último guardado. Con cada 25 se perdieron tres
+        # 410 ya confirmados y hubo que anotarlos a mano.
+        if n % 10 == 0:
             save(done)
+        if n % 50 == 0:
             print(f"  ...{n}/{min(limit, len(pend))} {tally}", flush=True)
         time.sleep(delay + random.random() * 0.6)
 
