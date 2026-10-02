@@ -70,6 +70,26 @@ def main():
                    '<button class="pill gold" id="pk" hidden>', t, count=1)
     assert k == 1, "no encontré el botón de picks"
 
+    # Botón para bajar el archivo, al lado de "Quitar de favoritos".
+    t = rep(t, '<button class="pill" id="clr" hidden>Limpiar selección</button>',
+               '<button class="pill" id="clr" hidden>Limpiar selección</button>\n'
+               '<button class="pill" id="fexp" title="Para commitearlo en el repo y '
+               'que los favoritos se vean en el sitio publicado y en el teléfono">'
+               'Bajar favoritos.json</button>')
+
+    # `D` se arma de localStorage al cargar, así que lo que traiga `favSync()`
+    # después no está en la lista. En las otras tres páginas alcanza con volver a
+    # dibujar; acá hay que rehacer `D`, que es `const`. Una recarga, y una sola:
+    # el flag de sesión evita el bucle si el archivo trae algo que no se guarda.
+    t = rep(t, "initPrice();fitSticky();initMap();loadF();draw();favBadge();favSync();",
+               "initPrice();fitSticky();initMap();loadF();draw();favBadge();\n"
+               "document.getElementById('fexp').onclick=favExport;\n"
+               "favSync().then(n=>{\n"
+               " if(!n||sessionStorage.getItem('favrecarga'))return;\n"
+               " try{sessionStorage.setItem('favrecarga','1')}catch(e){}\n"
+               " location.reload();\n"
+               "});")
+
     # textos
     t = rep(t, "<title>Búsqueda de propiedades · Argentina</title>",
                "<title>Favoritos · Argentina</title>")
@@ -90,8 +110,12 @@ no se ven desde otra computadora.</p>
 <p>Esta página es una <b>copia del día en que marcaste cada aviso</b>: el precio y la
 foto son los de ese momento y, si después se dio de baja, acá va a seguir apareciendo.
 El link lleva al aviso original, que es lo que manda.</p>
+<p><b>Para que se vean en el sitio publicado y en el teléfono</b>: "Bajar favoritos.json",
+el archivo va a la raíz del repo y se commitea. Desde ahí lo levanta cualquier navegador.
+Lo que marcás en <code>localhost</code> no se ve en el sitio publicado hasta que hacés eso:
+son dos navegadores distintos para el navegador, aunque sea la misma página.</p>
 <p>Se borran con el <b>♥</b> de la ficha o con "Quitar de favoritos" arriba del mapa.
-Si limpiás los datos del navegador, se van con todo lo demás.</p>
+Si limpiás los datos del navegador, se van los que no estén en el archivo.</p>
 ''' + t[j:]
 
     io.open(DST, "w", encoding="utf-8", newline="").write(t)

@@ -551,12 +551,22 @@ function draw(){
 let map=null,layer=null,pins=new Map(),hi=null,base=null,rotulos=null,sat=null;
 const rowByKey=new Map(D.map(r=>[r[2],r]));
 // --- favoritos -------------------------------------------------------------
-// El ✓ de cada ficha guarda el aviso en localStorage y la clave es **la misma en
+// El ♥ de cada ficha guarda el aviso en localStorage y la clave es **la misma en
 // las tres páginas**, así favoritos.html junta lo marcado en CABA, en el
 // conurbano y en la sierra. Se guarda la fila entera porque esa página no tiene
 // dataset propio: las columnas 0-12 y 14-19 significan lo mismo en las tres (la
 // 13 no —distribuidora, nada, valle— y por eso allá no se usa).
+//
+// **localStorage es por origen**: lo marcado en localhost:8123 no se ve en
+// hiessy.github.io ni en el teléfono, son cajones distintos. Por eso el repo
+// tiene `favoritos.json`: lo que esté ahí se carga en cualquier navegador y
+// viaja con el sitio. localStorage queda para lo que todavía no se exportó.
+// El botón "Bajar favoritos.json" de la pestaña Favoritos baja el archivo para
+// commitearlo.
 const FAVK='hiessy:favoritos';
+// Los borrados locales se recuerdan aparte: si no, `favoritos.json` los vuelve a
+// traer en la próxima carga y un favorito sacado reaparece solo.
+const FAVDK='hiessy:favoritos:borrados';
 const favPag=location.pathname.replace(/.*\//,'')||'index.html';
 function favLoad(){
  try{const o=JSON.parse(localStorage.getItem(FAVK)||'{}');
@@ -567,12 +577,60 @@ let favs=favLoad();
 function favSave(){
  try{localStorage.setItem(FAVK,JSON.stringify(favs))}catch(e){}
 }
+function favBorrados(){
+ try{const a=JSON.parse(localStorage.getItem(FAVDK)||'[]');return Array.isArray(a)?a:[]}
+ catch(e){return []}
+}
+function favBorrar(k,si){
+ const a=new Set(favBorrados());
+ si?a.add(k):a.delete(k);
+ try{localStorage.setItem(FAVDK,JSON.stringify([...a]))}catch(e){}
+}
 function favSet(k,on){
  // Si ya estaba, se conserva de dónde salió y cuándo: volver a marcarlo desde
  // favoritos.html no tiene que reescribir su origen ni mandarlo al final.
  if(on)favs[k]={r:rowByKey.get(k),p:(favs[k]||{}).p||favPag,t:(favs[k]||{}).t||Date.now()};
  else delete favs[k];
+ favBorrar(k,!on);
  favSave();favBadge();
+}
+// Trae lo que haya en `favoritos.json` (la copia que viaja con el repo) y lo
+// suma a lo local, salvo lo que se borró a mano. Es asincrónico: la página ya se
+// dibujó, así que si entra algo nuevo hay que volver a marcar los corazones.
+function favSync(){
+ return fetch('favoritos.json',{cache:'no-store'})
+  .then(r=>r.ok?r.json():null)
+  .then(o=>{
+   if(!o||typeof o!=='object'||Array.isArray(o))return 0;
+   const fuera=new Set(favBorrados());
+   let n=0;
+   for(const k in o){
+    if(favs[k]||fuera.has(k))continue;
+    if(!o[k]||!Array.isArray(o[k].r)||o[k].r.length<20)continue;
+    favs[k]=o[k];n++;
+   }
+   if(n){
+    favSave();favBadge();
+    picked.clear();
+    Object.keys(favs).forEach(k=>{if(rowByKey.has(k))picked.add(k)});
+    draw();
+   }
+   return n;
+  })
+  .catch(()=>0);      // sin archivo todavía, o sin red: no es un error
+}
+// Baja el archivo para commitearlo. Se ordena por clave para que dos exportadas
+// con lo mismo den el mismo texto y el diff del commit no sea ruido.
+function favExport(){
+ const o={};
+ Object.keys(favs).sort().forEach(k=>{o[k]=favs[k]});
+ const b=new Blob([JSON.stringify(o,null,1)],{type:'application/json'});
+ const a=document.createElement('a');
+ a.href=URL.createObjectURL(b);a.download='favoritos.json';a.click();
+ setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+ // Lo bajado ya refleja los borrados: el archivo nuevo no los trae, así que la
+ // lista de tumbas deja de hacer falta (y si no se commitea, vuelven: está dicho).
+ try{localStorage.removeItem(FAVDK)}catch(e){}
 }
 // Cuántos hay guardados en total, contando los de las otras dos páginas: si no,
 // desde CABA parece que no hubiera ninguno.
@@ -713,7 +771,7 @@ function focusPin(k,on){
  if(on)m.bringToFront();
 }
 document.getElementById('clr').onclick=()=>{
- picked.forEach(k=>{delete favs[k]});
+ picked.forEach(k=>{delete favs[k];favBorrar(k,true)});
  picked.clear();
  favSave();favBadge();
  document.querySelectorAll('.pickbtn.on').forEach(b=>{b.classList.remove('on');b.setAttribute('aria-pressed','false')});
@@ -764,5 +822,5 @@ document.querySelectorAll('.pill[data-v]').forEach(b=>b.onclick=()=>{
  document.querySelectorAll('.pill[data-v]').forEach(x=>x.classList.remove('on'));
  va=was?'':v;b.classList.toggle('on',!was);draw();scrollTo({top:0,behavior:'smooth'})});
 document.getElementById('sort').onchange=draw;
-initPrice();fitSticky();initMap();loadF();draw();favBadge();
+initPrice();fitSticky();initMap();loadF();draw();favBadge();favSync();
 </script></body></html>
