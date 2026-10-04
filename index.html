@@ -771,6 +771,13 @@ function focusPin(k,on){
  if(on)m.bringToFront();
 }
 document.getElementById('clr').onclick=()=>{
+ // Este botón vacía la lista entera y está pegado al mapa: un clic de más se
+ // llevaba puestos meses de favoritos sin manera de deshacerlo. Por uno solo no
+ // pregunta, que para eso está el ♥ de la ficha.
+ const n=picked.size;
+ if(n>1&&!confirm(`¿Sacar ${n} avisos de favoritos?\n\n`+
+   `Se quitan de este navegador y no se pueden recuperar desde acá. `+
+   `favoritos.json los sigue teniendo hasta que bajes el archivo de nuevo.`))return;
  picked.forEach(k=>{delete favs[k];favBorrar(k,true)});
  picked.clear();
  favSave();favBadge();
