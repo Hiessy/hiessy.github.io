@@ -728,9 +728,15 @@ function drawPins(){
  const sel=picked.size?view.filter(r=>picked.has(r[2])):view;
  const pts=sel.filter(hasGeo);
  const marks=pts.map(r=>{
+  // r[20]=1: el punto sale de la calle sin altura, así que es la cuadra y no la
+  // puerta. Se dibuja hueco y se avisa en el globo, porque un pin igual al resto
+  // promete una precisión que no tiene.
+  const ap=r[20]===1;
   const m=L.circleMarker([r[15],r[16]],
-   {radius:5,weight:1,color:'#fff',fillColor:r[8]?'#b8862f':'#8a5a2b',fillOpacity:.85});
+   {radius:5,weight:ap?2:1,color:ap?(r[8]?'#b8862f':'#8a5a2b'):'#fff',
+    fillColor:r[8]?'#b8862f':'#8a5a2b',fillOpacity:ap?.12:.85});
   m.bindPopup(`<b>${E(r[5])}</b>${r[3]==='?'?'Consultar':'USD '+r[3]} · ${E(r[6])}<br>
+   ${ap?'<i>ubicación aproximada: el aviso no da altura</i><br>':''}
    <a href="${abs(r[2])?r[2]:UP+r[2]}" target="_blank" rel="noopener">ver aviso</a>`);
   m.on('mouseover',()=>markCard(r,true));
   m.on('mouseout',()=>markCard(r,false));

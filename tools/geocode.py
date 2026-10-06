@@ -19,7 +19,12 @@ import json, os, re, sys, time, unicodedata, urllib.parse, urllib.request, urlli
 
 D = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".work")
 CACHE = os.path.join(D, "geocode.json")
-SOURCES = ["caba_ap.json", "gba_ap.json", "argenprop_merged.json", "sierras_ap.json"]
+SOURCES = ["caba_ap.json", "gba_ap.json", "argenprop_merged.json", "sierras_ap.json",
+           # Zonaprop **casi siempre** publica coordenadas, pero no siempre: en la
+           # sierra 315 avisos venían sin ellas y se quedaban fuera del mapa
+           # teniendo dirección. Los que ya traen lat/lng se saltean abajo, así
+           # que sumar este archivo no agrega 3.000 consultas sino las que faltan.
+           "sierras.json"]
 
 UA = "hiessy.github.io property map (contact via github.com/Hiessy)"
 DELAY = 1.1                      # la política de Nominatim es 1 req/s
@@ -123,14 +128,52 @@ def zone_of(loc):
     return "caba"
 
 
+def cola(loc):
+    tail = re.sub(r"^.*?\ben\s+Venta\s+en\s+", "", loc or "", flags=re.I)
+    return tail.replace("CABA", "Ciudad Autónoma de Buenos Aires")
+
+
 def query_for(addr, loc):
     """La dirección sola es ambigua: hay una calle Nuñez en media Argentina."""
     a = clean_addr(addr)
     if not a or not re.search(r"\d", a):
-        return None                      # sin altura no vale la pena preguntar
-    tail = re.sub(r"^.*?\ben\s+Venta\s+en\s+", "", loc or "", flags=re.I)
-    tail = tail.replace("CABA", "Ciudad Autónoma de Buenos Aires")
-    return f"{a}, {tail}, Argentina"
+        return None                      # sin altura: ver `query_calle`
+    return f"{a}, {cola(loc)}, Argentina"
+
+
+# Sin altura la dirección no da un punto exacto, pero la **calle** sí ubica el
+# aviso dentro del pueblo, que para mirar un mapa de la sierra ya es bastante.
+# Pidiendo solo las que traen altura quedaban 482 avisos sin pin teniendo los dos
+# datos escritos ("Curupaiti, La Falda"). Estos puntos se marcan como aproximados
+# y la página los dibuja distinto: un pin a media cuadra es útil, uno que finge
+# precisión que no tiene, no.
+SIN_ALTURA = re.compile(r"\bs/?n\b|\bsin\s+n[uú]mero\b", re.I)
+
+
+def query_calle(addr, loc):
+    a = clean_addr(addr)
+    if not a:
+        return None
+    a = SIN_ALTURA.sub("", a)
+    # sacar la cola de localidad que ya viene repetida en la dirección
+    t = cola(loc)
+    a = re.sub(r",\s*" + re.escape(t) + r"\s*$", "", a, flags=re.I).strip(" ,")
+    # entrecalles: con la primera alcanza para ubicar la cuadra
+    a = re.split(r"\s+(?:e/|entre|esq\.?|esquina|y)\s+", a, flags=re.I)[0].strip(" ,")
+    a = re.sub(r"\d+", "", a).strip(" ,")
+    if len(a) < 3 or not t:
+        return None
+    # "Ruta", "Privada", "Lote" sueltos no son una calle: lo que conteste
+    # Nominatim va a ser cualquier cosa que quede dentro de la caja del valle,
+    # y un pin equivocado es peor que ninguno.
+    if plain(a) in GENERICA:
+        return None
+    return f"{a}, {t}, Argentina"
+
+
+GENERICA = {"ruta", "rutas", "ruta nacional", "ruta provincial", "calle", "calles",
+            "privada", "publica", "camino", "barrio", "lote", "lotes", "manzana",
+            "sn", "s/n", "domicilio", "direccion", "zona", "centro", "s/d"}
 
 
 def lookup(q):
@@ -160,12 +203,25 @@ def load_cache():
 
 
 def coords_for(addr, loc, cache):
-    """(lat, lng) de una dirección ya geocodificada, o (0, 0) si no se resolvió."""
+    """(lat, lng) de una dirección ya geocodificada, o (0, 0) si no se resolvió.
+
+    Si la dirección exacta no está, cae en la de la calle sola, que es aproximada.
+    `aprox_for` dice cuál de las dos salió, para poder dibujarlas distinto.
+    """
+    for q in (query_for(addr, loc), query_calle(addr, loc)):
+        hit = cache.get(q) if q else None
+        if hit and "lat" in hit:
+            return hit["lat"], hit["lng"]
+    return 0, 0
+
+
+def aprox_for(addr, loc, cache):
+    """1 si el punto sale de la calle sola (sin altura), 0 si es exacto."""
     q = query_for(addr, loc)
-    hit = cache.get(q) if q else None
-    if not hit or "lat" not in hit:
-        return 0, 0
-    return hit["lat"], hit["lng"]
+    if q and "lat" in (cache.get(q) or {}):
+        return 0
+    q = query_calle(addr, loc)
+    return 1 if q and "lat" in (cache.get(q) or {}) else 0
 
 
 def main():
@@ -181,7 +237,13 @@ def main():
             if key.startswith("_"):
                 continue
             for r in bucket:
+                # el que ya trae coordenadas del portal no se pregunta
+                if r.get("lat") and r.get("lng"):
+                    continue
                 q = query_for(r.get("addr"), r.get("loc"))
+                # sin altura, al menos la calle: ver `query_calle`
+                if not q:
+                    q = query_calle(r.get("addr"), r.get("loc"))
                 if not q or q in cache or q in seen_q:
                     continue
                 seen_q.add(q)

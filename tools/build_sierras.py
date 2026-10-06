@@ -21,7 +21,7 @@ from collections import Counter
 
 from build2 import note, geo, drop_far_coords, m2_of, feats_of, descartar, load_dead, is_dead
 from dedupe import dedupe
-from geocode import load_cache, coords_for
+from geocode import load_cache, coords_for, aprox_for
 from sierras import LOCS, PUNILLA, CALAMUCHITA
 
 D = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".work")
@@ -75,6 +75,8 @@ def main():
     fuera = {}
     # los dados de baja que encontró deadlinks.py (410 Gone)
     dead = load_dead()
+    # Se carga acá arriba porque ahora lo usan las dos fuentes, no solo Argenprop.
+    geo_cache = load_cache()
     bajas = 0
     for key, bucket in src.items():
         if key.startswith("_"):
@@ -105,11 +107,19 @@ def main():
                          f"{r['price']:,}".replace(",", "."), r["price"],
                          addr, specs(r), n, 0, pueblo,
                          r.get("amb", 0), r.get("dorm", 0), r.get("gar", 0), valle,
-                         "Zonaprop", *geo(r), m2_of(r), patio(r),
-                         feats_of(r.get("d", ""))])
+                         # Zonaprop casi siempre publica coordenadas, pero en la
+                         # sierra 255 avisos vienen sin ellas y quedaban fuera del
+                         # mapa teniendo dirección. Cuando falta, se geocodifica
+                         # igual que los de Argenprop.
+                         "Zonaprop",
+                         *(geo(r) if geo(r)[0] else
+                           coords_for(r.get("addr"), pueblo, geo_cache)),
+                         m2_of(r), patio(r),
+                         feats_of(r.get("d", "")),
+                         # columna 20: el punto sale de la calle sin altura
+                         0 if geo(r)[0] else aprox_for(r.get("addr"), pueblo, geo_cache)])
 
     # --- Argenprop. No publica coordenadas: se geocodifica la dirección.
-    geo_cache = load_cache()
     ap = os.path.join(D, "sierras_ap.json")
     ap_n = 0
     if os.path.exists(ap):
@@ -148,7 +158,8 @@ def main():
                              # preguntaban por una clave que nunca existió y se
                              # quedaban sin pin estando geocodificadas.
                              *coords_for(r.get("addr"), pueblo, geo_cache),
-                             m2_of(r), patio(r), feats_of(r.get("d", ""))])
+                             m2_of(r), patio(r), feats_of(r.get("d", "")),
+                             aprox_for(r.get("addr"), pueblo, geo_cache)])
                 ap_n += 1
     print("Argenprop:", ap_n)
 
