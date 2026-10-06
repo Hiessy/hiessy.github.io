@@ -42,8 +42,16 @@ def main():
     salida = DST
     if "--salida" in sys.argv:
         salida = sys.argv[sys.argv.index("--salida") + 1]
-    if not args:
-        sys.exit(__doc__)
+        args = [a for a in args if a != salida]
+    # `--borrados`: lista de URLs sacadas a mano (la que el navegador guarda en
+    # `hiessy:favoritos:borrados`). Sin esto la unión las devuelve: alcanza con
+    # que un favorito siga en el archivo de otra máquina para resucitar uno que
+    # se acaba de sacar, y sacarlo de nuevo no sirve de nada.
+    quitar = set()
+    if "--borrados" in sys.argv:
+        p = sys.argv[sys.argv.index("--borrados") + 1]
+        args = [a for a in args if a != p]
+        quitar = set(json.load(io.open(p, encoding="utf-8")))
 
     base = cargar(salida)
     antes = len(base)
@@ -66,10 +74,15 @@ def main():
                 nuevos += 1
             base[k] = v
 
+    sacados = [k for k in base if k in quitar]
+    for k in sacados:
+        del base[k]
+
     json.dump(base, io.open(salida, "w", encoding="utf-8", newline=""),
               ensure_ascii=False, indent=1, sort_keys=True)
     print(f"{salida}: {antes} -> {len(base)} favoritos "
           f"({nuevos} nuevos, {repetidos} ya estaban"
+          f"{f', {len(sacados)} sacados a mano' if sacados else ''}"
           f"{f', {malos} descartados por venir incompletos' if malos else ''})")
     print("Falta commitearlo para que lo vean los demás navegadores.")
 
