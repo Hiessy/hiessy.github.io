@@ -80,7 +80,14 @@ def main():
     salida = os.path.join(ROOT, "pois.json")
     if os.path.exists(salida):
         out = json.load(io.open(salida, encoding="utf-8"))
+    # Qué zonas ya se barrieron, para poder cortar y seguir después: son ~30
+    # zonas por 31 búsquedas a un pedido por segundo, casi veinte minutos.
+    hechas = os.path.join(ROOT, ".work", "pois_zonas.json")
+    ya = set(json.load(io.open(hechas, encoding="utf-8"))) if os.path.exists(hechas) else set()
     for n, (lat, lng) in enumerate(centros, 1):
+        if f"{lat},{lng}" in ya:
+            print(f"  {n}/{len(centros)} ({lat},{lng}) ya estaba", flush=True)
+            continue
         nuevos = 0
         for cat, q in BUSQUEDAS:
             for e in buscar(q, lat, lng):
@@ -97,6 +104,8 @@ def main():
             time.sleep(DELAY)
         json.dump(out, io.open(salida, "w", encoding="utf-8", newline=""),
                   ensure_ascii=False, sort_keys=True)
+        ya.add(f"{lat},{lng}")
+        json.dump(sorted(ya), io.open(hechas, "w", encoding="utf-8", newline=""))
         print(f"  {n}/{len(centros)} ({lat},{lng}) +{nuevos} · total {len(out)}", flush=True)
 
     from collections import Counter

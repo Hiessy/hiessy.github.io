@@ -100,12 +100,12 @@
    0,
    "Calamuchita",
    "Argenprop",
-   0,
-   0,
+   -31.900491,
+   -64.772929,
    150,
    0,
    [],
-   0
+   2
   ],
   "t": 1790969405153
  },
@@ -127,12 +127,12 @@
    0,
    "Punilla",
    "Argenprop",
-   0,
-   0,
+   -31.278031,
+   -64.464349,
    360,
    0,
    [],
-   0
+   2
   ],
   "t": 1790966423982
  },
@@ -154,12 +154,12 @@
    0,
    "Calamuchita",
    "Argenprop",
-   0,
-   0,
+   -32.064486,
+   -64.539614,
    173,
    0,
    [],
-   0
+   2
   ],
   "t": 1790969452751
  },
@@ -773,8 +773,8 @@
    0,
    "Punilla",
    "Zonaprop",
-   0,
-   0,
+   -31.278031,
+   -64.464349,
    310,
    0,
    [
@@ -783,7 +783,7 @@
     6,
     7
    ],
-   0
+   2
   ],
   "t": 1790966388178
  },
@@ -857,7 +857,7 @@
    68000,
    "Publica, Huerta Grande",
    "5 amb · 4 dorm · 180 m² cub · 180 m² lote · 2 baños",
-   "[grupobanke-<span class='descripcionDatosAnunciante'><button class='btn btn-link js-verDatos' href='.",
+   "Chalet en venta huerta grande.",
    0,
    "Huerta Grande",
    5,

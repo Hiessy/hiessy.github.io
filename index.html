@@ -605,8 +605,16 @@ function favSync(){
    const fuera=new Set(favBorrados());
    let n=0;
    for(const k in o){
-    if(favs[k]||fuera.has(k))continue;
+    if(fuera.has(k))continue;
     if(!o[k]||!Array.isArray(o[k].r)||o[k].r.length<20)continue;
+    if(favs[k]){
+     // Ya está guardado acá: la selección es tuya y no se toca, pero **la copia
+     // del aviso sí se refresca** desde el archivo. Si no, una ficha vieja
+     // guardada en este navegador se queda para siempre con el precio, el pin y
+     // el texto del día en que la marcaste, aunque el repo ya los corrigiera.
+     if(JSON.stringify(favs[k].r)!==JSON.stringify(o[k].r)){favs[k].r=o[k].r;n++}
+     continue;
+    }
     favs[k]=o[k];n++;
    }
    if(n){

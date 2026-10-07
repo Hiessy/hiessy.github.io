@@ -126,8 +126,12 @@ fetch('notas.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(o=>{
 POIS_CSS = """
 /* Las capas del mapa se prenden de a una; apagadas no se dibuja nada, que con
    2.000 puntos encima de los avisos no se ve ninguno de los dos. */
-.pleg{font-size:11.6px;color:var(--mut);margin:6px 0 0;display:flex;
+.maphead{flex-wrap:wrap;row-gap:7px}
+.maphead .brk{flex-basis:100%;height:0;margin:0}
+.maphead .mapnote{flex:1 1 100%}
+.pleg{font-size:11.6px;color:var(--mut);margin:0 0 9px;display:flex;
  gap:11px;flex-wrap:wrap;align-items:center}
+.pleg[hidden]{display:none}
 .pleg i{font-style:normal;display:inline-flex;align-items:center;gap:4px}
 .pleg i::before{content:'';width:9px;height:9px;border-radius:50%;
  border:1.5px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.2)}
@@ -139,7 +143,7 @@ POIS_CSS = """
 .pleg .seguridad::before{background:#3b4a7a}
 .pleg .verde::before{background:#4a8f2e}
 .pleg .riesgo::before{background:#9a2f2f}
-.pleg .aviso{width:100%;margin:2px 0 0;color:var(--mut);opacity:.9}
+.pleg .aviso{width:100%;margin:1px 0 0;opacity:.85;line-height:1.45}
 """
 
 # Los puntos viven en `pois.json` y los carga el navegador, igual que las notas.
@@ -165,11 +169,27 @@ function dibujarCapa(g){
  document.getElementById('mapn').textContent=
   `${pts.length} puntos de ${g==='serv'?'servicios':g==='verde'?'producción':'industria'} en el mapa`;
 }
+// La leyenda se arma con las categorías de la capa prendida y nada más: listar
+// las ocho siempre ocupaba cuatro renglones de los que siete sobraban.
+const PNOM={escuela:'escuela',salud:'salud',farmacia:'farmacia',super:'comercio',
+            banco:'banco',seguridad:'policía y bomberos',
+            verde:'vivero, granja, reserva',riesgo:'cantera, fábrica, acopio'};
+const AVISO='Sale de OpenStreetMap: <b>sólo aparece lo que está mapeado y con nombre</b>, '+
+ 'así que si no se ve una cantera igual puede haberla. Si un campo usa agroquímicos '+
+ 'no está registrado en ningún lado y no se puede mostrar.';
+function legenda(g){
+ const el=document.getElementById('pleg');
+ if(!g){el.hidden=true;return}
+ el.innerHTML=(PGRUPO[g]||[]).map(c=>`<i class="${c}">${PNOM[c]}</i>`).join('')+
+  `<span class="aviso">${AVISO}</span>`;
+ el.hidden=false;
+}
 function toggleCapa(b){
  const g=b.dataset.cap;
  capaOn=capaOn===g?'':g;
  document.querySelectorAll('[data-cap]').forEach(x=>x.classList.toggle('on',x.dataset.cap===capaOn));
  dibujarCapa(capaOn);
+ legenda(capaOn);
  if(!capaOn)drawPins();
 }
 document.querySelectorAll('[data-cap]').forEach(b=>b.onclick=()=>toggleCapa(b));
@@ -207,12 +227,16 @@ def main():
                    '<button class="pill gold" id="pk" hidden>', t, count=1)
     assert k == 1, "no encontré el botón de picks"
 
-    # Botón para bajar el archivo, al lado de "Quitar de favoritos".
-    t = rep(t, '<button class="pill" id="clr" hidden>Limpiar selección</button>',
+    # Los dos botones de favoritos **salen de la barra del mapa** y se van a la
+    # de arriba: ahí arriba hay lugar, y en la del mapa competían con las capas
+    # hasta dejarla en cinco renglones de botones y el mapa abajo de todo.
+    t = rep(t, '<button class="pill" id="clr" hidden>Limpiar selección</button>\n', '')
+    t = rep(t, '<span class="cnt" id="cnt"></span>',
+               '<span class="cnt" id="cnt"></span>\n'
                '<button class="pill" id="clr" hidden>Limpiar selección</button>\n'
-               '<button class="pill" id="fexp" title="Para commitearlo en el repo y '
-               'que los favoritos se vean en el sitio publicado y en el teléfono">'
-               'Bajar favoritos.json</button>')
+               '<button class="pill" id="fexp" title="Baja lo marcado en este navegador '
+               'para commitearlo en el repo y que se vea también en el sitio publicado y '
+               'en el teléfono">Bajar JSON</button>')
 
     # `D` se arma de localStorage al cargar, así que lo que traiga `favSync()`
     # después no está en la lista. En las otras tres páginas alcanza con volver a
@@ -262,22 +286,20 @@ def main():
     t = rep(t, "scr.onclick=closeF;", "scr.onclick=()=>{closeF();cerrarNota()};")
 
     # --- capas de puntos de interés en el mapa -----------------------------
+    # `.maphead` es un flex **sin wrap**: ocho botones y una leyenda ahí adentro
+    # dejaban la leyenda en una columna de 80 px y el texto se derramaba encima
+    # de las fichas. Las capas van en su propia fila (`.brk` fuerza el salto) y
+    # la leyenda, afuera del maphead y sólo cuando hay una capa prendida.
     t = rep(t, '<button class="pill" id="sat">Satélite</button>',
                '<button class="pill" id="sat">Satélite</button>\n'
+               '<span class="brk"></span><span class="lbl">Cerca</span>\n'
                '<button class="pill" id="cserv" data-cap="serv">Servicios</button>\n'
                '<button class="pill" id="cverde" data-cap="verde">Producción</button>\n'
-               '<button class="pill" id="criesgo" data-cap="riesgo">Industria</button>')
+               '<button class="pill" id="criesgo" data-cap="riesgo">Industria</button>\n'
+               '<span class="brk"></span>')
     t = rep(t, '<span class="mapnote" id="mapn"></span></div>',
-               '<span class="mapnote" id="mapn"></span>\n'
-               '<p class="pleg"><i class="escuela">escuela</i><i class="salud">salud</i>'
-               '<i class="farmacia">farmacia</i><i class="super">comercio</i>'
-               '<i class="banco">banco</i><i class="seguridad">policía y bomberos</i>'
-               '<i class="verde">vivero, granja, reserva</i>'
-               '<i class="riesgo">cantera, fábrica, acopio</i>'
-               '<span class="aviso">Sale de OpenStreetMap y <b>sólo aparece lo que está '
-               'mapeado y con nombre</b>: que no se vea una cantera no quiere decir que no '
-               'haya una. Si un campo usa agroquímicos no está registrado en ningún lado, '
-               'así que no se puede mostrar.</span></p></div>')
+               '<span class="mapnote" id="mapn"></span></div>\n'
+               '<p class="pleg" id="pleg" hidden></p>')
     t = rep(t, "</style>", POIS_CSS + "\n</style>")
     t = rep(t, "document.getElementById('sat').onclick=toggleSat;",
                POIS_JS + "\ndocument.getElementById('sat').onclick=toggleSat;")

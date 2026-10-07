@@ -196,7 +196,16 @@ AMB_MAX = 12
 
 
 def note(d, reg=None):
-    t = re.sub(r"&[a-z]+;", " ", d or "")
+    # Algunos avisos traen **HTML crudo** metido en la descripción, del tipo
+    # "[grupobanke-<span class='...'><button class='btn js-verDatos' href='...'".
+    # Como la ficha escapa lo que muestra, eso no rompe la página: se ve tal
+    # cual, etiquetas incluidas, en el renglón de la nota. Se saca acá, antes de
+    # elegir la frase, para que no termine siendo la frase elegida.
+    t = re.sub(r"<[^>]*>", " ", d or "")
+    # lo que quedaba del HTML viene envuelto en corchetes, con el texto del
+    # botón adentro ("[grupobanke- Ver datos ]"): se saca el corchete entero
+    t = re.sub(r"\[[^\]]{0,300}\]", " ", t)
+    t = re.sub(r"&[a-z]+;", " ", t)
     t = re.sub(r"\bu\$?s?d?\s*[\d.,]+", "", t, flags=re.I)
     t = re.sub(r"\bUSD\s*[\d.,]+", "", t, flags=re.I)
     t = re.sub(r"[|•*]+", ". ", t)
