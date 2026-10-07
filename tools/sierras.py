@@ -73,7 +73,11 @@ LOCS = [
     ("los-reartes",               "Los Reartes",               CALAMUCHITA),
     ("villa-ciudad-de-america",   "Villa Ciudad de América",   CALAMUCHITA),
     ("los-molinos",               "Los Molinos",               CALAMUCHITA),
-    ("tala-huasi",                "Tala Huasi",                CALAMUCHITA),
+    # Tala Huasi está sobre el Icho Cruz, al sur de Villa Carlos Paz: es
+    # **Punilla**, no Calamuchita. Estaba en el valle equivocado, así que sus
+    # 27 avisos aparecían bajo el filtro de Calamuchita y la caja de
+    # geocodificación que les tocaba era la del otro valle.
+    ("tala-huasi",                "Tala Huasi",                PUNILLA),
     ("santa-rosa-de-calamuchita", "Santa Rosa de Calamuchita", CALAMUCHITA),
     ("villa-yacanto",             "Villa Yacanto",             CALAMUCHITA),
     ("villa-quillinzo",           "Villa Quillinzo",           CALAMUCHITA),

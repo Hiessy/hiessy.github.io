@@ -180,6 +180,22 @@ def main():
     # buenas. Cada pueblo entra holgado en 12 km.
     far = drop_far_coords(rows, km=12, key=lambda r: r[9])
 
+    # El guardia de arriba tira la coordenada pero deja el aviso, que se queda
+    # sin pin. Si la dirección está geocodificada, se usa esa: es justamente el
+    # caso de una coordenada mal publicada por el portal.
+    rescatados = 0
+    for r in rows:
+        if r[15] or not r[5]:
+            continue
+        dir_, pueblo = (r[5].rsplit(", ", 1) + [r[9]])[:2] if ", " in r[5] else (r[5], r[9])
+        lat, lng = coords_for(dir_, r[9], geo_cache)
+        if lat:
+            r[15], r[16] = lat, lng
+            r[20] = aprox_for(dir_, r[9], geo_cache)
+            rescatados += 1
+    if rescatados:
+        print("coordenadas recuperadas del geocodificador:", rescatados)
+
     print("avisos", len(rows), "| coordenadas descartadas por lejanía:", far)
     print("por valle", Counter(r[13] for r in rows),
           "| fuente", Counter(r[14] for r in rows))

@@ -80,7 +80,11 @@ ABBR = {"int": "Intendente", "av": "Avenida", "avda": "Avenida", "gral": "Genera
         "grl": "General", "dr": "Doctor", "dra": "Doctora", "cnel": "Coronel",
         "tte": "Teniente", "pte": "Presidente", "pje": "Pasaje", "sgto": "Sargento",
         "alte": "Almirante", "gob": "Gobernador", "ing": "Ingeniero",
-        "prof": "Profesor", "sta": "Santa", "sto": "Santo"}
+        "prof": "Profesor", "sta": "Santa", "sto": "Santo",
+        # Erratas que vienen escritas así en los avisos y que Nominatim no
+        # perdona: "Tucman 76, Tala Huasi" no resuelve, "Tucumán 76" sí.
+        "tucman": "Tucumán", "tucuman": "Tucumán", "cordoba": "Córdoba",
+        "sanmartin": "San Martín", "belgrano.": "Belgrano"}
 
 
 def expand_abbr(a):
@@ -237,8 +241,13 @@ def main():
             if key.startswith("_"):
                 continue
             for r in bucket:
-                # el que ya trae coordenadas del portal no se pregunta
-                if r.get("lat") and r.get("lng"):
+                # El que ya trae coordenadas del portal no se pregunta, **salvo
+                # que caigan fuera de su zona**: Zonaprop publica alguna mal
+                # (Tucumán 76 de Tala Huasi venía con la latitud de Capilla del
+                # Monte, 68 km al norte). El guardia de distancia las tira, y sin
+                # esto el aviso se quedaba sin pin teniendo dirección buena.
+                lat, lng = r.get("lat"), r.get("lng")
+                if lat and lng and in_box(lat, lng, zone_of(r.get("loc"))):
                     continue
                 q = query_for(r.get("addr"), r.get("loc"))
                 # sin altura, al menos la calle: ver `query_calle`
