@@ -123,6 +123,60 @@ fetch('notas.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(o=>{
 """
 
 
+POIS_CSS = """
+/* Las capas del mapa se prenden de a una; apagadas no se dibuja nada, que con
+   2.000 puntos encima de los avisos no se ve ninguno de los dos. */
+.pleg{font-size:11.6px;color:var(--mut);margin:6px 0 0;display:flex;
+ gap:11px;flex-wrap:wrap;align-items:center}
+.pleg i{font-style:normal;display:inline-flex;align-items:center;gap:4px}
+.pleg i::before{content:'';width:9px;height:9px;border-radius:50%;
+ border:1.5px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.2)}
+.pleg .escuela::before{background:#2f6f8f}
+.pleg .salud::before{background:#b4472e}
+.pleg .farmacia::before{background:#2e8b6f}
+.pleg .super::before{background:#8a6a2b}
+.pleg .banco::before{background:#6b6b6b}
+.pleg .seguridad::before{background:#3b4a7a}
+.pleg .verde::before{background:#4a8f2e}
+.pleg .riesgo::before{background:#9a2f2f}
+.pleg .aviso{width:100%;margin:2px 0 0;color:var(--mut);opacity:.9}
+"""
+
+# Los puntos viven en `pois.json` y los carga el navegador, igual que las notas.
+POIS_JS = """
+let POIS=null,capas={},capaOn='';
+const PCOL={escuela:'#2f6f8f',salud:'#b4472e',farmacia:'#2e8b6f',super:'#8a6a2b',
+            banco:'#6b6b6b',seguridad:'#3b4a7a',verde:'#4a8f2e',riesgo:'#9a2f2f'};
+const PGRUPO={serv:['escuela','salud','farmacia','super','banco','seguridad'],
+              verde:['verde'],riesgo:['riesgo']};
+function dibujarCapa(g){
+ Object.values(capas).forEach(l=>l.remove());
+ capas={};
+ if(!g||!POIS)return;
+ const cats=PGRUPO[g]||[];
+ const pts=Object.values(POIS).filter(p=>cats.includes(p.c));
+ const marks=pts.map(p=>{
+  const m=L.circleMarker([p.lat,p.lng],{radius:4,weight:1.5,color:'#fff',
+   fillColor:PCOL[p.c]||'#666',fillOpacity:.95});
+  m.bindPopup(`<b>${E(p.n)}</b><br>${E(p.c)}`);
+  return m;
+ });
+ capas[g]=L.layerGroup(marks).addTo(map);
+ document.getElementById('mapn').textContent=
+  `${pts.length} puntos de ${g==='serv'?'servicios':g==='verde'?'producción':'industria'} en el mapa`;
+}
+function toggleCapa(b){
+ const g=b.dataset.cap;
+ capaOn=capaOn===g?'':g;
+ document.querySelectorAll('[data-cap]').forEach(x=>x.classList.toggle('on',x.dataset.cap===capaOn));
+ dibujarCapa(capaOn);
+ if(!capaOn)drawPins();
+}
+document.querySelectorAll('[data-cap]').forEach(b=>b.onclick=()=>toggleCapa(b));
+fetch('pois.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(o=>{POIS=o||null}).catch(()=>{});
+"""
+
+
 def rep(t, a, b, n=1):
     assert t.count(a) == n, (a[:70], t.count(a))
     return t.replace(a, b)
@@ -206,6 +260,27 @@ def main():
 
     # el scrim cierra los dos paneles
     t = rep(t, "scr.onclick=closeF;", "scr.onclick=()=>{closeF();cerrarNota()};")
+
+    # --- capas de puntos de interés en el mapa -----------------------------
+    t = rep(t, '<button class="pill" id="sat">Satélite</button>',
+               '<button class="pill" id="sat">Satélite</button>\n'
+               '<button class="pill" id="cserv" data-cap="serv">Servicios</button>\n'
+               '<button class="pill" id="cverde" data-cap="verde">Producción</button>\n'
+               '<button class="pill" id="criesgo" data-cap="riesgo">Industria</button>')
+    t = rep(t, '<span class="mapnote" id="mapn"></span></div>',
+               '<span class="mapnote" id="mapn"></span>\n'
+               '<p class="pleg"><i class="escuela">escuela</i><i class="salud">salud</i>'
+               '<i class="farmacia">farmacia</i><i class="super">comercio</i>'
+               '<i class="banco">banco</i><i class="seguridad">policía y bomberos</i>'
+               '<i class="verde">vivero, granja, reserva</i>'
+               '<i class="riesgo">cantera, fábrica, acopio</i>'
+               '<span class="aviso">Sale de OpenStreetMap y <b>sólo aparece lo que está '
+               'mapeado y con nombre</b>: que no se vea una cantera no quiere decir que no '
+               'haya una. Si un campo usa agroquímicos no está registrado en ningún lado, '
+               'así que no se puede mostrar.</span></p></div>')
+    t = rep(t, "</style>", POIS_CSS + "\n</style>")
+    t = rep(t, "document.getElementById('sat').onclick=toggleSat;",
+               POIS_JS + "\ndocument.getElementById('sat').onclick=toggleSat;")
 
     # textos
     t = rep(t, "<title>Búsqueda de propiedades · Argentina</title>",

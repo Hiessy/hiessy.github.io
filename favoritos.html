@@ -234,6 +234,24 @@ body.noscroll{overflow:hidden}
 #ndraw .baja{color:#b4472e;font-weight:600}
 #ndraw .ver{display:inline-block;margin-top:9px}
 
+
+/* Las capas del mapa se prenden de a una; apagadas no se dibuja nada, que con
+   2.000 puntos encima de los avisos no se ve ninguno de los dos. */
+.pleg{font-size:11.6px;color:var(--mut);margin:6px 0 0;display:flex;
+ gap:11px;flex-wrap:wrap;align-items:center}
+.pleg i{font-style:normal;display:inline-flex;align-items:center;gap:4px}
+.pleg i::before{content:'';width:9px;height:9px;border-radius:50%;
+ border:1.5px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.2)}
+.pleg .escuela::before{background:#2f6f8f}
+.pleg .salud::before{background:#b4472e}
+.pleg .farmacia::before{background:#2e8b6f}
+.pleg .super::before{background:#8a6a2b}
+.pleg .banco::before{background:#6b6b6b}
+.pleg .seguridad::before{background:#3b4a7a}
+.pleg .verde::before{background:#4a8f2e}
+.pleg .riesgo::before{background:#9a2f2f}
+.pleg .aviso{width:100%;margin:2px 0 0;color:var(--mut);opacity:.9}
+
 </style></head><body>
 <nav class="tabs">
  <a href="index.html" class="tab">CABA norte</a>
@@ -301,9 +319,13 @@ no se ven desde otra computadora.</p>
  <div class="maphead"><span class="lbl">Mapa</span>
   <button class="pill" id="mapt">Ocultar</button>
   <button class="pill" id="sat">Satélite</button>
+<button class="pill" id="cserv" data-cap="serv">Servicios</button>
+<button class="pill" id="cverde" data-cap="verde">Producción</button>
+<button class="pill" id="criesgo" data-cap="riesgo">Industria</button>
   <button class="pill" id="clr" hidden>Limpiar selección</button>
 <button class="pill" id="fexp" title="Para commitearlo en el repo y que los favoritos se vean en el sitio publicado y en el teléfono">Bajar favoritos.json</button>
-  <span class="mapnote" id="mapn"></span></div>
+  <span class="mapnote" id="mapn"></span>
+<p class="pleg"><i class="escuela">escuela</i><i class="salud">salud</i><i class="farmacia">farmacia</i><i class="super">comercio</i><i class="banco">banco</i><i class="seguridad">policía y bomberos</i><i class="verde">vivero, granja, reserva</i><i class="riesgo">cantera, fábrica, acopio</i><span class="aviso">Sale de OpenStreetMap y <b>sólo aparece lo que está mapeado y con nombre</b>: que no se vea una cantera no quiere decir que no haya una. Si un campo usa agroquímicos no está registrado en ningún lado, así que no se puede mostrar.</span></p></div>
  <div id="map"></div>
 </aside>
 <main><div class="grid" id="g"></div></main>
@@ -812,15 +834,18 @@ function drawPins(){
  const sel=picked.size?view.filter(r=>picked.has(r[2])):view;
  const pts=sel.filter(hasGeo);
  const marks=pts.map(r=>{
-  // r[20]=1: el punto sale de la calle sin altura, así que es la cuadra y no la
-  // puerta. Se dibuja hueco y se avisa en el globo, porque un pin igual al resto
-  // promete una precisión que no tiene.
-  const ap=r[20]===1;
+  // r[20]: 0 el punto es la puerta · 1 sale de la calle sin altura, o sea la
+  // cuadra · 2 sólo sabemos el pueblo, porque el aviso pone una calle de relleno
+  // ("Publica 100"). Cuanto menos preciso, más hueco y más grande: un pin igual
+  // al resto prometería una precisión que no tiene, y uno ausente escondía
+  // avisos que sí existen.
+  const ap=r[20]||0,col=r[8]?'#b8862f':'#8a5a2b';
   const m=L.circleMarker([r[15],r[16]],
-   {radius:5,weight:ap?2:1,color:ap?(r[8]?'#b8862f':'#8a5a2b'):'#fff',
-    fillColor:r[8]?'#b8862f':'#8a5a2b',fillOpacity:ap?.12:.85});
+   {radius:ap===2?9:5,weight:ap?2:1,color:ap?col:'#fff',fillColor:col,
+    fillOpacity:ap===2?.06:ap?.12:.85,dashArray:ap===2?'3,3':null});
   m.bindPopup(`<b>${E(r[5])}</b>${r[3]==='?'?'Consultar':'USD '+r[3]} · ${E(r[6])}<br>
-   ${ap?'<i>ubicación aproximada: el aviso no da altura</i><br>':''}
+   ${ap===2?'<i>el aviso no da dirección: el punto es el centro del pueblo</i><br>'
+     :ap?'<i>ubicación aproximada: el aviso no da altura</i><br>':''}
    <a href="${abs(r[2])?r[2]:UP+r[2]}" target="_blank" rel="noopener">ver aviso</a>`);
   m.on('mouseover',()=>markCard(r,true));
   m.on('mouseout',()=>markCard(r,false));
@@ -881,6 +906,38 @@ document.getElementById('clr').onclick=()=>{
  document.querySelectorAll('.pickbtn.on').forEach(b=>{b.classList.remove('on');b.setAttribute('aria-pressed','false')});
  drawPins();
 };
+
+let POIS=null,capas={},capaOn='';
+const PCOL={escuela:'#2f6f8f',salud:'#b4472e',farmacia:'#2e8b6f',super:'#8a6a2b',
+            banco:'#6b6b6b',seguridad:'#3b4a7a',verde:'#4a8f2e',riesgo:'#9a2f2f'};
+const PGRUPO={serv:['escuela','salud','farmacia','super','banco','seguridad'],
+              verde:['verde'],riesgo:['riesgo']};
+function dibujarCapa(g){
+ Object.values(capas).forEach(l=>l.remove());
+ capas={};
+ if(!g||!POIS)return;
+ const cats=PGRUPO[g]||[];
+ const pts=Object.values(POIS).filter(p=>cats.includes(p.c));
+ const marks=pts.map(p=>{
+  const m=L.circleMarker([p.lat,p.lng],{radius:4,weight:1.5,color:'#fff',
+   fillColor:PCOL[p.c]||'#666',fillOpacity:.95});
+  m.bindPopup(`<b>${E(p.n)}</b><br>${E(p.c)}`);
+  return m;
+ });
+ capas[g]=L.layerGroup(marks).addTo(map);
+ document.getElementById('mapn').textContent=
+  `${pts.length} puntos de ${g==='serv'?'servicios':g==='verde'?'producción':'industria'} en el mapa`;
+}
+function toggleCapa(b){
+ const g=b.dataset.cap;
+ capaOn=capaOn===g?'':g;
+ document.querySelectorAll('[data-cap]').forEach(x=>x.classList.toggle('on',x.dataset.cap===capaOn));
+ dibujarCapa(capaOn);
+ if(!capaOn)drawPins();
+}
+document.querySelectorAll('[data-cap]').forEach(b=>b.onclick=()=>toggleCapa(b));
+fetch('pois.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(o=>{POIS=o||null}).catch(()=>{});
+
 document.getElementById('sat').onclick=toggleSat;
 document.getElementById('mapt').onclick=e=>{
  const box=document.querySelector('.maprow'),on=box.dataset.off!=='1';

@@ -175,6 +175,19 @@ def query_calle(addr, loc):
     return f"{a}, {t}, Argentina"
 
 
+def query_pueblo(loc):
+    """El pueblo, sin más. Último recurso y el menos preciso de los tres.
+
+    Cinco favoritos no tenían pin porque el aviso pone una calle de relleno
+    ("Publica 100", "Calle Publica 100") que `query_calle` descarta bien: un pin
+    inventado es peor que ninguno. Pero desaparecer del mapa tampoco sirve, y el
+    pueblo **sí** lo sabemos. Queda marcado como aproximado de pueblo (nivel 2) y
+    la página lo dibuja distinto y lo dice en el globo.
+    """
+    t = cola(loc)
+    return f"{t}, Córdoba, Argentina" if t and len(t) > 2 else None
+
+
 GENERICA = {"ruta", "rutas", "ruta nacional", "ruta provincial", "calle", "calles",
             "privada", "publica", "camino", "barrio", "lote", "lotes", "manzana",
             "sn", "s/n", "domicilio", "direccion", "zona", "centro", "s/d"}
@@ -209,10 +222,10 @@ def load_cache():
 def coords_for(addr, loc, cache):
     """(lat, lng) de una dirección ya geocodificada, o (0, 0) si no se resolvió.
 
-    Si la dirección exacta no está, cae en la de la calle sola, que es aproximada.
-    `aprox_for` dice cuál de las dos salió, para poder dibujarlas distinto.
+    Tres niveles, de mejor a peor: la dirección con altura, la calle sola, y el
+    pueblo. `aprox_for` dice cuál de los tres salió, para dibujarlos distinto.
     """
-    for q in (query_for(addr, loc), query_calle(addr, loc)):
+    for q in (query_for(addr, loc), query_calle(addr, loc), query_pueblo(loc)):
         hit = cache.get(q) if q else None
         if hit and "lat" in hit:
             return hit["lat"], hit["lng"]
@@ -220,12 +233,12 @@ def coords_for(addr, loc, cache):
 
 
 def aprox_for(addr, loc, cache):
-    """1 si el punto sale de la calle sola (sin altura), 0 si es exacto."""
-    q = query_for(addr, loc)
-    if q and "lat" in (cache.get(q) or {}):
-        return 0
-    q = query_calle(addr, loc)
-    return 1 if q and "lat" in (cache.get(q) or {}) else 0
+    """0 exacto · 1 la calle sin altura · 2 sólo el pueblo."""
+    for nivel, q in enumerate((query_for(addr, loc), query_calle(addr, loc),
+                               query_pueblo(loc))):
+        if q and "lat" in (cache.get(q) or {}):
+            return nivel
+    return 0
 
 
 def main():
@@ -249,14 +262,19 @@ def main():
                 lat, lng = r.get("lat"), r.get("lng")
                 if lat and lng and in_box(lat, lng, zone_of(r.get("loc"))):
                     continue
-                q = query_for(r.get("addr"), r.get("loc"))
-                # sin altura, al menos la calle: ver `query_calle`
-                if not q:
-                    q = query_calle(r.get("addr"), r.get("loc"))
-                if not q or q in cache or q in seen_q:
-                    continue
-                seen_q.add(q)
-                todo.append((q, zone_of(r.get("loc"))))
+                # Se encolan **los tres niveles**, no el primero que se pueda
+                # armar: "Publica 100" tiene número, así que `query_for` devolvía
+                # una consulta, esa consulta no resolvía y nunca se probaba el
+                # pueblo. El aviso quedaba sin pin teniendo el pueblo escrito.
+                # Las consultas de pueblo se repiten mucho y `seen_q` las junta:
+                # son una por pueblo, no una por aviso.
+                for q in (query_for(r.get("addr"), r.get("loc")),
+                          query_calle(r.get("addr"), r.get("loc")),
+                          query_pueblo(r.get("loc"))):
+                    if not q or q in cache or q in seen_q:
+                        continue
+                    seen_q.add(q)
+                    todo.append((q, zone_of(r.get("loc"))))
 
     print(f"direcciones nuevas: {len(todo)} | ya en caché: {len(cache)}", flush=True)
     if limit:
