@@ -133,24 +133,43 @@ POIS_CSS = """
  gap:11px;flex-wrap:wrap;align-items:center}
 .pleg[hidden]{display:none}
 .pleg i{font-style:normal;display:inline-flex;align-items:center;gap:4px}
-.pleg i::before{content:'';width:9px;height:9px;border-radius:50%;
- border:1.5px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.2)}
-.pleg .escuela::before{background:#2f6f8f}
-.pleg .salud::before{background:#b4472e}
-.pleg .farmacia::before{background:#2e8b6f}
-.pleg .super::before{background:#8a6a2b}
-.pleg .banco::before{background:#6b6b6b}
-.pleg .seguridad::before{background:#3b4a7a}
-.pleg .verde::before{background:#4a8f2e}
-.pleg .riesgo::before{background:#9a2f2f}
+/* Los avisos son marrón y dorado. Los servicios van en **frío** —azules,
+   violetas, verdes, cian— para que no se confundan: el comercio estaba en
+   #8a6a2b, que es el marrón de las casas con otro nombre. */
+.pleg i::before{content:attr(data-i);width:15px;height:15px;border-radius:50%;
+ border:1.5px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.22);color:#fff;
+ font-size:9.5px;font-weight:700;line-height:15px;text-align:center;flex:none}
+.pleg .escuela::before{background:#2563eb}
+.pleg .salud::before{background:#dc2626}
+.pleg .farmacia::before{background:#0d9488}
+.pleg .super::before{background:#7c3aed}
+.pleg .banco::before{background:#0891b2}
+.pleg .seguridad::before{background:#4338ca}
+.pleg .verde::before{background:#15803d}
+.pleg .riesgo::before{background:#be123c}
 .pleg .aviso{width:100%;margin:1px 0 0;opacity:.85;line-height:1.45}
+/* la chapita de cada punto en el mapa, misma letra y mismo color que la leyenda */
+.poi span{display:block;width:18px;height:18px;border-radius:50%;color:#fff;
+ font:700 10.5px/18px system-ui,sans-serif;text-align:center;
+ border:1.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+
+/* "Mapa grande": el mapa se lleva dos tercios y las fichas pasan a una columna
+   angosta. Con 33 fichas al lado, mirar el mapa era mirar una ventanita. */
+.layout.ancho{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}
+.layout.ancho #map{height:calc(100vh - var(--stick) - 56px)}
+@media(max-width:1000px){.layout.ancho{grid-template-columns:1fr}}
 """
 
 # Los puntos viven en `pois.json` y los carga el navegador, igual que las notas.
 POIS_JS = """
 let POIS=null,capas={},capaOn='';
-const PCOL={escuela:'#2f6f8f',salud:'#b4472e',farmacia:'#2e8b6f',super:'#8a6a2b',
-            banco:'#6b6b6b',seguridad:'#3b4a7a',verde:'#4a8f2e',riesgo:'#9a2f2f'};
+// Frío para los servicios, que los avisos son marrón y dorado. Cada categoría
+// lleva además una **letra**: con ocho colores juntos, el color solo no alcanza,
+// y encima del satélite se pierde.
+const PCOL={escuela:'#2563eb',salud:'#dc2626',farmacia:'#0d9488',super:'#7c3aed',
+            banco:'#0891b2',seguridad:'#4338ca',verde:'#15803d',riesgo:'#be123c'};
+const PINI={escuela:'E',salud:'H',farmacia:'F',super:'C',banco:'B',
+            seguridad:'P',verde:'V',riesgo:'I'};
 const PGRUPO={serv:['escuela','salud','farmacia','super','banco','seguridad'],
               verde:['verde'],riesgo:['riesgo']};
 function dibujarCapa(g){
@@ -160,9 +179,10 @@ function dibujarCapa(g){
  const cats=PGRUPO[g]||[];
  const pts=Object.values(POIS).filter(p=>cats.includes(p.c));
  const marks=pts.map(p=>{
-  const m=L.circleMarker([p.lat,p.lng],{radius:4,weight:1.5,color:'#fff',
-   fillColor:PCOL[p.c]||'#666',fillOpacity:.95});
-  m.bindPopup(`<b>${E(p.n)}</b><br>${E(p.c)}`);
+  const m=L.marker([p.lat,p.lng],{icon:L.divIcon({className:'poi',
+   html:`<span style="background:${PCOL[p.c]||'#666'}">${PINI[p.c]||'?'}</span>`,
+   iconSize:[18,18],iconAnchor:[9,9]})});
+  m.bindPopup(`<b>${E(p.n)}</b><br>${E(PNOM[p.c]||p.c)}`);
   return m;
  });
  capas[g]=L.layerGroup(marks).addTo(map);
@@ -180,7 +200,7 @@ const AVISO='Sale de OpenStreetMap: <b>sólo aparece lo que está mapeado y con 
 function legenda(g){
  const el=document.getElementById('pleg');
  if(!g){el.hidden=true;return}
- el.innerHTML=(PGRUPO[g]||[]).map(c=>`<i class="${c}">${PNOM[c]}</i>`).join('')+
+ el.innerHTML=(PGRUPO[g]||[]).map(c=>`<i class="${c}" data-i="${PINI[c]}">${PNOM[c]}</i>`).join('')+
   `<span class="aviso">${AVISO}</span>`;
  el.hidden=false;
 }
@@ -193,6 +213,22 @@ function toggleCapa(b){
  if(!capaOn)drawPins();
 }
 document.querySelectorAll('[data-cap]').forEach(b=>b.onclick=()=>toggleCapa(b));
+
+// Ancho del mapa. Se recuerda, como los filtros: el que lo quiere grande lo
+// quiere grande siempre. invalidateSize porque Leaflet no se entera solo de que
+// su contenedor cambió de tamaño y deja el mapa cortado.
+const LAY=document.querySelector('.layout'),ANCHOK='hiessy:mapaancho';
+function anchoMapa(on){
+ LAY.classList.toggle('ancho',on);
+ const b=document.getElementById('mbig');
+ b.classList.toggle('on',on);
+ b.textContent=on?'Mapa normal':'Mapa grande';
+ try{localStorage.setItem(ANCHOK,on?'1':'')}catch(e){}
+ if(map)setTimeout(()=>{map.invalidateSize();drawPins();if(capaOn)dibujarCapa(capaOn)},230);
+}
+document.getElementById('mbig').onclick=()=>anchoMapa(!LAY.classList.contains('ancho'));
+try{if(localStorage.getItem(ANCHOK))anchoMapa(true)}catch(e){}
+
 fetch('pois.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(o=>{POIS=o||null}).catch(()=>{});
 """
 
@@ -292,6 +328,7 @@ def main():
     # la leyenda, afuera del maphead y sólo cuando hay una capa prendida.
     t = rep(t, '<button class="pill" id="sat">Satélite</button>',
                '<button class="pill" id="sat">Satélite</button>\n'
+               '<button class="pill" id="mbig">Mapa grande</button>\n'
                '<span class="brk"></span><span class="lbl">Cerca</span>\n'
                '<button class="pill" id="cserv" data-cap="serv">Servicios</button>\n'
                '<button class="pill" id="cverde" data-cap="verde">Producción</button>\n'
