@@ -41,24 +41,29 @@ DATA = """const D=(()=>{
 
 
 NOTAS_CSS = """
-.notas{margin:0 14px 12px;font-size:12.6px;line-height:1.5}
-.notas summary{cursor:pointer;color:var(--mut);padding:5px 0;list-style:none;
- display:flex;gap:7px;align-items:center;flex-wrap:wrap}
-.notas summary::-webkit-details-marker{display:none}
-.notas summary::before{content:'▸';font-size:11px;transition:transform .15s}
-.notas[open] summary::before{transform:rotate(90deg)}
-.notas .imp{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--mut)}
-.notas ul{margin:3px 0 8px;padding-left:17px}
-.notas li{margin:2px 0}
-.notas .pro li::marker{content:'+  '}
-.notas .con li::marker{content:'–  '}
-.notas .ojo li::marker{content:'!  '}
-.notas .ojo{color:var(--ink)}
-.notas h4{margin:7px 0 1px;font-size:11.5px;text-transform:uppercase;
+/* El botón vive en la ficha; el contenido se abre en un panel que entra desde
+   la derecha, el mismo que usa Filtros. Antes era un <details> dentro de la
+   ficha: con treinta y tres avisos, abrir dos ya desarmaba la lista. */
+.qbtn{display:flex;align-items:center;gap:8px;width:calc(100% - 28px);margin:0 14px 12px;
+ padding:7px 11px;border:1px solid var(--line);border-radius:9px;background:none;
+ color:var(--mut);font:inherit;font-size:12.4px;cursor:pointer;text-align:left}
+.qbtn:hover{border-color:var(--acc);color:var(--ink)}
+.qbtn .imp{margin-left:auto;font-variant-numeric:tabular-nums;white-space:nowrap}
+.qbtn .baja{color:#b4472e;font-weight:600}
+#ndraw .dbody{padding:14px 16px;font-size:13.2px;line-height:1.55}
+#ndraw h4{margin:13px 0 2px;font-size:11.5px;text-transform:uppercase;
  letter-spacing:.055em;color:var(--mut);font-weight:600}
-.notas b{font-weight:600}
-.notas .serv{color:var(--mut);margin-top:6px}
-.notas .baja{color:#b4472e;font-weight:600}
+#ndraw h4:first-child{margin-top:0}
+#ndraw ul{margin:3px 0 0;padding-left:18px}
+#ndraw li{margin:3px 0}
+#ndraw .pro li::marker{content:'+  '}
+#ndraw .con li::marker{content:'\\2013  '}
+#ndraw .ojo li::marker{content:'!  '}
+#ndraw .meta{color:var(--mut);font-size:12.2px;margin-top:14px;
+ border-top:1px solid var(--line);padding-top:11px}
+#ndraw .precio{font-size:15px;color:var(--ink);font-weight:600}
+#ndraw .baja{color:#b4472e;font-weight:600}
+#ndraw .ver{display:inline-block;margin-top:9px}
 """
 
 # El marcado se arma en JS porque `notas.json` se carga en el navegador, igual
@@ -69,32 +74,51 @@ const mdB=s=>E(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
 const listaN=(t,c,xs)=>xs&&xs.length
  ?`<h4>${t}</h4><ul class="${c}">${xs.map(x=>`<li>${mdB(x)}</li>`).join('')}</ul>`:'';
 const SERVN={escuela:'escuela',salud:'salud',farmacia:'farmacia',
-             super:'super',banco:'banco',policia:'policía'};
+             super:'super',banco:'banco',policia:'polic\u00eda'};
 function servTxt(s){
  if(!s)return '';
  const p=Object.keys(SERVN).filter(k=>s[k]&&s[k].length)
   .map(k=>`${SERVN[k]} ${s[k][0][1]} km`);
- return p.length?`<p class="serv">Cerca: ${p.join(' · ')}</p>`:'';
+ return p.length?`<p>Cerca: ${p.join(' \u00b7 ')}</p>`:'';
 }
+// Botón en la ficha. El resumen de impuestos va en el botón para no tener que
+// abrir el panel sólo para verlo.
 function notaDe(r){
  const n=NOTAS[r[2]];
  if(!n)return '';
  const i=n.imp||{};
- const imp=i.anual_usd
-  ?`<span class="imp">imp. USD ${i.anual_usd[0]}-${i.anual_usd[2]}/año · compra USD ${i.compra_usd.toLocaleString('es-AR')}</span>`
-  :'';
- return `<details class="notas"><summary>Qué mirar${n.baja?' <span class="baja">· dado de baja</span>':''}${imp}</summary>
- ${listaN('A favor','pro',n.pros)}${listaN('En contra','con',n.contras)}${listaN('Preguntá','ojo',n.ojo)}
- ${servTxt(n.serv)}
- <p class="serv">El impuesto provincial se calcula sobre la <b>valuación fiscal</b>, no sobre el precio:
- el rango supone que es entre el 20% y el 50% del precio. El número real está en el cedulón, pediselo
- al vendedor. No incluye la tasa municipal, que en la sierra suele pesar más.</p>
- </details>`;
+ const imp=i.anual_usd?`<span class="imp">USD ${i.anual_usd[0]}-${i.anual_usd[2]}/a\u00f1o</span>`:'';
+ return `<button class="qbtn" data-q="${E(r[2])}">Qu\u00e9 mirar${
+  n.baja?' <span class="baja">\u00b7 dado de baja</span>':''}${imp}</button>`;
 }
+const ndraw=document.getElementById('ndraw');
+function abrirNota(k){
+ const n=NOTAS[k],r=rowByKey.get(k);
+ if(!n||!r)return;
+ document.getElementById('ntit').textContent=r[9]||'Qu\u00e9 mirar';
+ const i=n.imp||{};
+ document.getElementById('nbody').innerHTML=
+  `<p class="precio">USD ${E(r[3])}${n.baja?' <span class="baja">\u00b7 el aviso ya no est\u00e1 publicado</span>':''}</p>
+   <p>${E(r[5])}<br>${E(r[6]||'')}</p>
+   ${listaN('A favor','pro',n.pros)}${listaN('En contra','con',n.contras)}${listaN('Pregunt\u00e1','ojo',n.ojo)}
+   <div class="meta">${servTxt(n.serv)}
+   <p>Impuesto provincial <b>USD ${i.anual_usd?i.anual_usd[0]+'-'+i.anual_usd[2]:'?'} por a\u00f1o</b>
+   y <b>USD ${i.compra_usd?i.compra_usd.toLocaleString('es-AR'):'?'}</b> de gastos de compra (${i.compra_pct}%).
+   Se calcula sobre la <b>valuaci\u00f3n fiscal</b>, no sobre el precio: el rango supone que es
+   entre el 20% y el 50%. El n\u00famero real est\u00e1 en el cedul\u00f3n, pedi\u00b4selo al vendedor.
+   No incluye la tasa municipal, que en la sierra suele pesar m\u00e1s.</p>
+   <a class="tx ver" href="${abs(r[2])?r[2]:UP+r[2]}" target="_blank" rel="noopener">Ver el aviso \u2197</a></div>`;
+ ndraw.classList.add('open');scr.hidden=false;document.body.classList.add('noscroll');
+}
+function cerrarNota(){
+ ndraw.classList.remove('open');scr.hidden=true;document.body.classList.remove('noscroll');
+}
+document.getElementById('nclose').onclick=cerrarNota;
+addEventListener('keydown',e=>{if(e.key==='Escape'&&ndraw.classList.contains('open'))cerrarNota()});
 fetch('notas.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(o=>{
  if(!o)return;
  NOTAS=o;
- draw();          // ya se dibujó sin notas: se vuelve a dibujar con ellas
+ draw();          // ya se dibuj\u00f3 sin los botones: se vuelve a dibujar con ellos
 }).catch(()=>{});
 """
 
@@ -160,6 +184,28 @@ def main():
                NOTAS_JS + "\nconst card=r=>`<article class=\"card\"")
 
     t = rep(t, "</style>", NOTAS_CSS + "\n</style>")
+
+    # El panel de notas, hermano del de Filtros: mismo .drawer, mismo scrim,
+    # misma tecla Escape. Se agrega al lado del otro, no adentro.
+    t = rep(t,
+        '<div class="dfoot"><button class="pill wide" id="fdone">Ver avisos</button></div>\n</aside>',
+        '<div class="dfoot"><button class="pill wide" id="fdone">Ver avisos</button></div>\n</aside>\n'
+        '<aside class="drawer" id="ndraw" aria-label="Qué mirar">\n'
+        '<div class="dhead"><b id="ntit">Qué mirar</b>'
+        '<button class="xbtn" id="nclose" aria-label="Cerrar">&#10005;</button></div>\n'
+        '<div class="dbody" id="nbody"></div>\n</aside>')
+
+    # El clic en el botón de la ficha abre el panel y **no** sigue hasta el
+    # zoom al mapa, que es lo que hace un clic en cualquier otra parte.
+    t = rep(t,
+        " g.onclick=e=>{\n  const b=e.target.closest('.pickbtn');",
+        " g.onclick=e=>{\n"
+        "  const q=e.target.closest('.qbtn');\n"
+        "  if(q){e.preventDefault();abrirNota(q.dataset.q);return}\n"
+        "  const b=e.target.closest('.pickbtn');")
+
+    # el scrim cierra los dos paneles
+    t = rep(t, "scr.onclick=closeF;", "scr.onclick=()=>{closeF();cerrarNota()};")
 
     # textos
     t = rep(t, "<title>Búsqueda de propiedades · Argentina</title>",
