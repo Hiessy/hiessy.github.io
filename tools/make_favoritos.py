@@ -339,6 +339,8 @@ def main():
     # Los dos botones de favoritos **salen de la barra del mapa** y se van a la
     # de arriba: ahí arriba hay lugar, y en la del mapa competían con las capas
     # hasta dejarla en cinco renglones de botones y el mapa abajo de todo.
+    # acá todos los avisos son favoritos, así que "Sólo favoritos" no filtra nada
+    t = rep(t, '  <button class="pill" id="solofav" hidden>Sólo favoritos</button>\n', '')
     t = rep(t, '<button class="pill" id="clr" hidden>Limpiar selección</button>\n', '')
     t = rep(t, '<span class="cnt" id="cnt"></span>',
                '<span class="cnt" id="cnt"></span>\n'

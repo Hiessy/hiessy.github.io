@@ -289,6 +289,7 @@ superficie cubierta.</p>
  <div class="maphead"><span class="lbl">Mapa</span>
   <button class="pill" id="mapt">Ocultar</button>
   <button class="pill" id="sat">Satélite</button>
+  <button class="pill" id="solofav" hidden>Sólo favoritos</button>
   <button class="pill" id="clr" hidden>Limpiar selección</button>
   <span class="mapnote" id="mapn"></span></div>
  <div id="map"></div>
@@ -745,7 +746,12 @@ function drawPins(){
  if(!map)return;
  if(layer)layer.remove();
  pins.clear();
- const sel=picked.size?view.filter(r=>picked.has(r[2])):view;
+ // **Todos los avisos del filtro**, no sólo los marcados. Cuando el ♥ era una
+ // marca de sesión esto empezaba vacío y el mapa mostraba todo; desde que los
+ // favoritos se cargan solos del archivo, `picked` viene lleno y la sierra
+ // abría con 31 pines de 2.402. Los favoritos se distinguen por color, que es
+ // lo que uno quiere: verlos **entre** los demás, no en lugar de los demás.
+ const sel=soloFav&&picked.size?view.filter(r=>picked.has(r[2])):view;
  const pts=sel.filter(hasGeo);
  const marks=pts.map(r=>{
   // r[20]: 0 el punto es la puerta · 1 sale de la calle sin altura, o sea la
@@ -753,7 +759,8 @@ function drawPins(){
   // ("Publica 100"). Cuanto menos preciso, más hueco y más grande: un pin igual
   // al resto prometería una precisión que no tiene, y uno ausente escondía
   // avisos que sí existen.
-  const ap=r[20]||0,col=r[8]?'#b8862f':'#8a5a2b';
+  // el favorito va en dorado para encontrarlo entre los demás
+  const ap=r[20]||0,col=picked.has(r[2])||r[8]?'#b8862f':'#8a5a2b';
   const m=L.circleMarker([r[15],r[16]],
    {radius:ap===2?9:5,weight:ap?2:1,color:ap?col:'#fff',fillColor:col,
     fillOpacity:ap===2?.06:ap?.12:.85,dashArray:ap===2?'3,3':null});
@@ -769,15 +776,18 @@ function drawPins(){
  layer=L.layerGroup(marks).addTo(map);
  const cl=document.getElementById('clr');
  cl.hidden=!picked.size;
- // Dice lo que hace de verdad: el ✓ ahora guarda en favoritos, así que vaciar
- // la selección es sacarlos de ahí, no solo despintar el mapa.
+ // Dice lo que hace de verdad: el ♥ guarda en favoritos, así que vaciar la
+ // selección es sacarlos de ahí, no sólo despintar el mapa.
  cl.textContent=`Quitar de favoritos (${picked.size})`;
+ const sf=document.getElementById('solofav');
+ if(sf){sf.hidden=!picked.size;sf.classList.toggle('on',soloFav);}
  // no todos los avisos traen coordenadas (Argenprop no las publica), así que
- // conviene decir cuántas de las marcadas se pueden mostrar
- document.getElementById('mapn').textContent=picked.size
-  ?(pts.length===sel.length?`${pts.length} seleccionada${pts.length===1?'':'s'} en el mapa`
-                           :`${pts.length} de ${sel.length} seleccionadas tienen ubicación`)
-  :(pts.length===view.length?`${pts.length} en el mapa`:`${pts.length} de ${view.length} con ubicación`);
+ // conviene decir cuántas se pueden mostrar
+ const fav=pts.filter(r=>picked.has(r[2])).length;
+ document.getElementById('mapn').textContent=
+  (pts.length===sel.length?`${pts.length} en el mapa`
+                          :`${pts.length} de ${sel.length} con ubicación`)
+  +(fav&&!soloFav?` · ${fav} en dorado ${fav===1?'es favorito':'son favoritos'}`:'');
  // animate:false a propósito: con la animación por defecto el encuadre inicial
  // a veces no llega a aplicarse y el mapa se queda en la vista de arranque
  if(pts.length)map.fitBounds(L.latLngBounds(pts.map(r=>[r[15],r[16]])),
@@ -818,6 +828,16 @@ document.getElementById('clr').onclick=()=>{
  picked.clear();
  favSave();favBadge();
  document.querySelectorAll('.pickbtn.on').forEach(b=>{b.classList.remove('on');b.setAttribute('aria-pressed','false')});
+ drawPins();
+};
+// Filtrar el mapa a los favoritos es ahora una decisión y no un efecto de
+// tenerlos guardados. Se recuerda, como el resto de los filtros.
+let soloFav=false;
+try{soloFav=!!localStorage.getItem('hiessy:solofav')}catch(e){}
+document.getElementById('solofav').onclick=()=>{
+ soloFav=!soloFav;
+ try{soloFav?localStorage.setItem('hiessy:solofav','1')
+            :localStorage.removeItem('hiessy:solofav')}catch(e){}
  drawPins();
 };
 document.getElementById('sat').onclick=toggleSat;
