@@ -147,6 +147,9 @@ POIS_CSS = """
 .pleg .seguridad::before{background:#4338ca}
 .pleg .verde::before{background:#15803d}
 .pleg .riesgo::before{background:#be123c}
+.pleg .cantera::before{background:#ea580c}
+.pleg .mina::before{background:#a21caf}
+.pleg .planta::before{background:#9f1239}
 .pleg .aviso{width:100%;margin:1px 0 0;opacity:.85;line-height:1.45}
 /* la chapita de cada punto en el mapa, misma letra y mismo color que la leyenda */
 .poi span{display:block;width:18px;height:18px;border-radius:50%;color:#fff;
@@ -167,9 +170,13 @@ let POIS=null,capas={};
 // lleva además una **letra**: con ocho colores juntos, el color solo no alcanza,
 // y encima del satélite se pierde.
 const PCOL={escuela:'#2563eb',salud:'#dc2626',farmacia:'#0d9488',super:'#7c3aed',
-            banco:'#0891b2',seguridad:'#4338ca',verde:'#15803d',riesgo:'#be123c'};
-const PINI={escuela:'E',salud:'H',farmacia:'F',super:'C',banco:'B',
-            seguridad:'P',verde:'V',riesgo:'I'};
+            banco:'#0891b2',seguridad:'#4338ca',verde:'#15803d',riesgo:'#be123c',
+            cantera:'#ea580c',mina:'#a21caf',planta:'#9f1239'};
+// La C era "comercio" y ahora es "cantera", que es lo que uno busca en un mapa
+// de sierra; el comercio pasa a S de super.
+const PINI={escuela:'E',salud:'H',farmacia:'F',super:'S',banco:'B',
+            seguridad:'P',verde:'V',riesgo:'I',
+            cantera:'C',mina:'M',planta:'T'};
 const PGRUPO={serv:['escuela','salud','farmacia','super','banco','seguridad'],
               verde:['verde'],riesgo:['riesgo']};
 function marcasDe(g){
@@ -201,10 +208,49 @@ function marcasDe(g){
 const CAPASK='hiessy:capas';
 let capasOn=new Set(['serv','verde','riesgo']);
 try{const g=localStorage.getItem(CAPASK);if(g!==null)capasOn=new Set(g?g.split(','):[])}catch(e){}
+// --- catastro minero de la provincia (IDECOR) -----------------------------
+// Dato oficial, no "lo que alguien mapeó con nombre". Va dentro de la capa
+// Industria junto a lo de OpenStreetMap, con los polígonos dibujados: una
+// cantera es un área, y saber que tenés el borde a 300 m no es lo mismo que
+// saber que hay un punto en algún lado del pueblo.
+let MINERIA=null;
+const MNOM={cantera:'cantera',mina:'mina',planta:'planta de trituración o corte',
+            cateo:'área de cateo o pertenencia minera'};
+function marcasMineria(){
+ if(!MINERIA)return [];
+ const out=[];
+ (MINERIA.areas||[]).forEach(a=>{
+  (a.g||[]).forEach(anillo=>{
+   const p=L.polygon(anillo,{color:PCOL[a.c]||'#ea580c',weight:1.5,
+    fillOpacity:a.c==='cateo'?.06:.15,
+    dashArray:a.c==='cateo'?'5,4':null});
+   p.bindPopup(popMineria(a));
+   out.push(p);
+  });
+ });
+ (MINERIA.puntos||[]).forEach(p=>{
+  const m=L.marker([p.lat,p.lng],{icon:L.divIcon({className:'poi',
+   html:`<span style="background:${PCOL[p.c]||'#ea580c'}">${PINI[p.c]||'C'}</span>`,
+   iconSize:[18,18],iconAnchor:[9,9]})});
+  m.bindPopup(popMineria(p));
+  out.push(m);
+ });
+ return out;
+}
+function popMineria(r){
+ const g=`https://www.google.com/maps/search/?api=1&query=${r.lat},${r.lng}`;
+ return `<b>${E(r.n||MNOM[r.c]||'sin nombre')}</b><br>${E(MNOM[r.c]||r.c)}
+  ${r.t?'<br>'+E(r.t):''}${r.m?'<br>'+E(r.m):''}
+  ${r.eia?'<br>expediente ambiental '+E(r.eia):''}
+  <br><i>catastro minero de la provincia</i>
+  <br><a href="${g}" target="_blank" rel="noopener">ver este punto en el mapa ↗</a>`;
+}
+
 function dibujarCapas(){
  Object.values(capas).forEach(l=>l.remove());
  capas={};
  if(POIS)capasOn.forEach(g=>{capas[g]=L.layerGroup(marcasDe(g)).addTo(map)});
+ if(capasOn.has('riesgo'))capas.min=L.layerGroup(marcasMineria()).addTo(map);
  document.querySelectorAll('[data-cap]').forEach(x=>
   x.classList.toggle('on',capasOn.has(x.dataset.cap)));
  legenda();
@@ -214,16 +260,20 @@ function dibujarCapas(){
 // las ocho siempre ocupaba cuatro renglones de los que siete sobraban.
 const PNOM={escuela:'escuela',salud:'salud',farmacia:'farmacia',super:'comercio',
             banco:'banco',seguridad:'policía y bomberos',
-            verde:'vivero, granja, reserva',riesgo:'cantera, fábrica, acopio'};
-const AVISO='Sale de OpenStreetMap: <b>sólo aparece lo que está mapeado y con nombre</b>, '+
- 'así que si no se ve una cantera igual puede haberla. Si un campo usa agroquímicos '+
- 'no está registrado en ningún lado y no se puede mostrar.';
+            verde:'vivero, granja, reserva',riesgo:'fábrica, basural, acopio',
+            cantera:'cantera',mina:'mina',planta:'planta de trituración'};
+const AVISO='<b>Canteras, minas, plantas y áreas de cateo salen del catastro minero '+
+ 'de la provincia</b> (IDECOR): es el registro oficial, con razón social y expediente. '+
+ 'El resto sale de OpenStreetMap, donde sólo aparece lo que alguien mapeó con nombre. '+
+ 'Si un campo usa agroquímicos no está registrado en ningún lado y no se puede mostrar.';
 function legenda(){
  const el=document.getElementById('pleg');
  const cats=[];
  ['serv','verde','riesgo'].forEach(g=>{if(capasOn.has(g))cats.push(...(PGRUPO[g]||[]))});
+ if(capasOn.has('riesgo'))cats.push('cantera','mina','planta');
  if(!cats.length||!POIS){el.hidden=true;return}
- const n=Object.values(POIS).filter(p=>cats.includes(p.c)).length;
+ let n=Object.values(POIS).filter(p=>cats.includes(p.c)).length;
+ if(capasOn.has('riesgo')&&MINERIA)n+=(MINERIA.puntos||[]).length+(MINERIA.areas||[]).length;
  el.innerHTML=cats.map(c=>`<i class="${c}" data-i="${PINI[c]}">${PNOM[c]}</i>`).join('')+
   `<span class="aviso"><b>${n}</b> puntos en el mapa. ${AVISO}</span>`;
  el.hidden=false;
@@ -249,8 +299,10 @@ function anchoMapa(on){
 document.getElementById('mbig').onclick=()=>anchoMapa(!LAY.classList.contains('ancho'));
 try{if(localStorage.getItem(ANCHOK))anchoMapa(true)}catch(e){}
 
-fetch('pois.json',{cache:'no-store'}).then(r=>r.ok?r.json():null)
- .then(o=>{POIS=o||null;dibujarCapas()}).catch(()=>{});
+Promise.all([
+ fetch('pois.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null),
+ fetch('mineria.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null)
+]).then(([p,m])=>{POIS=p||null;MINERIA=m||null;dibujarCapas()});
 """
 
 

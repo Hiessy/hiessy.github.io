@@ -134,6 +134,8 @@ footer b{color:var(--ink)} a.tx{color:var(--acc)}
 :root{--stick:120px}
 .mapcol{position:sticky;top:calc(var(--stick) + 12px);align-self:start}
 #map{height:calc(100vh - var(--stick) - 76px);min-height:320px;border-radius:12px;border:1px solid var(--line);background:var(--line)}
+/* mientras la rueda hace zoom, que se note cuál de los dos la tiene */
+#map.foco{box-shadow:0 0 0 2px var(--acc)}
 /* el corazón se lee más chico que el ✓ que había antes, así que va un punto más
    grande y apenas levantado: centrado a ojo queda bajo por la punta de abajo */
 .pickbtn{position:absolute;top:9px;right:9px;z-index:3;width:28px;height:28px;border-radius:50%;
@@ -695,7 +697,19 @@ function fitSticky(){
 addEventListener('resize',()=>{fitSticky();if(map)map.invalidateSize()});
 function initMap(){
  if(map||typeof L==='undefined')return;
+ // scrollWheelZoom arranca apagado y se prende **al hacer clic en el mapa**:
+ // con la rueda siempre activa, bajar la página con el puntero encima del mapa
+ // hacía zoom en vez de scrollear y se perdía el lugar. Al sacar el mouse se
+ // apaga de nuevo, así que la rueda sólo hace zoom mientras el mapa es lo que
+ // estás usando.
  map=L.map('map',{scrollWheelZoom:false,preferCanvas:true});
+ const cajaMapa=document.getElementById('map');
+ const prender=()=>{map.scrollWheelZoom.enable();cajaMapa.classList.add('foco')};
+ const apagar=()=>{map.scrollWheelZoom.disable();cajaMapa.classList.remove('foco')};
+ map.on('click focus',prender);
+ cajaMapa.addEventListener('mouseenter',()=>{if(cajaMapa.classList.contains('foco'))map.scrollWheelZoom.enable()});
+ cajaMapa.addEventListener('mouseleave',()=>map.scrollWheelZoom.disable());
+ document.addEventListener('click',e=>{if(!e.target.closest('#map'))apagar()});
  // CARTO empezó a estampar "API KEY REQUIRED" en diagonal sobre sus tiles
  // gratuitos. Devuelven 200 y un PNG válido, así que no falla nada: el cartel
  // viene dibujado adentro de la imagen. Esri Light Gray es igual de sobrio,
