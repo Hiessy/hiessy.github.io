@@ -182,7 +182,12 @@ function dibujarCapa(g){
   const m=L.marker([p.lat,p.lng],{icon:L.divIcon({className:'poi',
    html:`<span style="background:${PCOL[p.c]||'#666'}">${PINI[p.c]||'?'}</span>`,
    iconSize:[18,18],iconAnchor:[9,9]})});
-  m.bindPopup(`<b>${E(p.n)}</b><br>${E(PNOM[p.c]||p.c)}`);
+  // Link a Google Maps **por coordenada** y no por nombre: la idea es confirmar
+  // qué hay en ese punto, y buscar por nombre te lleva a cualquier homónimo del
+  // país. Con la coordenada caés exactamente donde está el pin.
+  const gm=`https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
+  m.bindPopup(`<b>${E(p.n)}</b><br>${E(PNOM[p.c]||p.c)}<br>
+   <a href="${gm}" target="_blank" rel="noopener">ver en Google Maps ↗</a>`);
   return m;
  });
  capas[g]=L.layerGroup(marks).addTo(map);
