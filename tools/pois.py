@@ -37,11 +37,23 @@ BUSQUEDAS = [
     ("verde",    "vivero"), ("verde", "granja"), ("verde", "huerta"),
     ("verde",    "orgánico"), ("verde", "agroecológico"), ("verde", "feria franca"),
     ("verde",    "apícola"), ("verde", "reserva natural"),
-    # lo que conviene saber que está al lado
-    ("riesgo",   "cantera"), ("riesgo", "fábrica"), ("riesgo", "planta industrial"),
-    ("riesgo",   "aserradero"), ("riesgo", "basural"), ("riesgo", "relleno sanitario"),
-    ("riesgo",   "frigorífico"), ("riesgo", "cerealera"), ("riesgo", "acopio"),
-    ("riesgo",   "parque industrial"), ("riesgo", "planta de tratamiento"),
+    # Lo que puede ensuciar el aire, el agua o el suelo al lado de la casa. En
+    # Punilla y Calamuchita lo que molesta de verdad no es "una fábrica": son
+    # las **canteras** (polvo y voladuras), los **basurales a cielo abierto**,
+    # las **plantas depuradoras** y los **hornos de ladrillo**. Buscar sólo
+    # "fábrica" y "parque industrial" era buscar un problema de otra provincia.
+    ("riesgo",   "cantera"), ("riesgo", "minera"), ("riesgo", "mina"),
+    ("riesgo",   "planta de áridos"), ("riesgo", "arenera"), ("riesgo", "calera"),
+    ("riesgo",   "trituradora"), ("riesgo", "cementera"),
+    ("riesgo",   "basural"), ("riesgo", "relleno sanitario"), ("riesgo", "vertedero"),
+    ("riesgo",   "planta de residuos"), ("riesgo", "planta de tratamiento"),
+    ("riesgo",   "depuradora"), ("riesgo", "planta cloacal"),
+    ("riesgo",   "horno de ladrillos"), ("riesgo", "ladrillera"),
+    ("riesgo",   "aserradero"), ("riesgo", "curtiembre"), ("riesgo", "frigorífico"),
+    ("riesgo",   "feedlot"), ("riesgo", "criadero"), ("riesgo", "acopio de cereales"),
+    ("riesgo",   "cerealera"), ("riesgo", "agroquímicos"), ("riesgo", "fumigación"),
+    ("riesgo",   "fábrica"), ("riesgo", "planta industrial"),
+    ("riesgo",   "parque industrial"), ("riesgo", "subestación"),
 ]
 
 
@@ -69,6 +81,24 @@ def main():
         r = v.get("r") or []
         if len(r) > 16 and r[15] and r[16]:
             centros.append((round(r[15], 2), round(r[16], 2)))
+
+    # Y además **el centro de cada pueblo de los dos valles**, no sólo donde hay
+    # un favorito: barriendo únicamente alrededor de lo marcado, el mapa llegaba
+    # hasta -31,05 y Capilla del Monte, que está en -30,86, quedaba afuera. Los
+    # pueblos salen de la misma tabla que usa el barrido de avisos, así que
+    # agregar uno no obliga a tocar esto.
+    sys.path.insert(0, os.path.join(ROOT, "tools"))
+    try:
+        from sierras import LOCS
+        from geocode import query_pueblo, load_cache
+        gc = load_cache()
+        for _, label, _ in LOCS:
+            hit = gc.get(query_pueblo(label) or "")
+            if hit and "lat" in hit:
+                centros.append((round(hit["lat"], 2), round(hit["lng"], 2)))
+    except Exception as e:
+        print("(sin centros de pueblo:", e, ")", flush=True)
+
     # una consulta por zona y no por aviso: varios favoritos del mismo pueblo
     # devuelven exactamente lo mismo
     centros = sorted(set(centros))

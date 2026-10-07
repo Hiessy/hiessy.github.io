@@ -193,18 +193,34 @@ GENERICA = {"ruta", "rutas", "ruta nacional", "ruta provincial", "calle", "calle
             "sn", "s/n", "domicilio", "direccion", "zona", "centro", "s/d"}
 
 
-def lookup(q):
+def lookup(q, tries=4):
+    """Resuelve una dirección, esperando si el servidor pide que aflojemos.
+
+    Nominatim contesta **429** cuando se le pide de más, y antes eso se guardaba
+    en la caché como si fuera un resultado: la dirección quedaba marcada como no
+    resuelta para siempre sin haberla consultado nunca de verdad. Un 429 no es
+    una respuesta sobre la dirección, es una respuesta sobre nosotros: se espera
+    y se reintenta, y si no afloja se devuelve el error **sin** cachearlo.
+    """
     url = "https://nominatim.openstreetmap.org/search?" + urllib.parse.urlencode(
         {"q": q, "format": "jsonv2", "limit": 1, "countrycodes": "ar"})
     req = urllib.request.Request(url, headers={"User-Agent": UA,
                                                "Accept-Language": "es"})
-    try:
-        with urllib.request.urlopen(req, timeout=25) as r:
-            js = json.loads(r.read().decode("utf-8"))
-    except urllib.error.HTTPError as e:
-        return {"err": f"http{e.code}"}
-    except Exception as e:
-        return {"err": type(e).__name__}
+    for i in range(tries):
+        try:
+            with urllib.request.urlopen(req, timeout=25) as r:
+                js = json.loads(r.read().decode("utf-8"))
+            break
+        except urllib.error.HTTPError as e:
+            if e.code in (429, 503) and i < tries - 1:
+                time.sleep(20 * (i + 1))
+                continue
+            return {"err": f"http{e.code}", "reintentar": e.code in (429, 503)}
+        except Exception as e:
+            if i < tries - 1:
+                time.sleep(6)
+                continue
+            return {"err": type(e).__name__, "reintentar": True}
     if not js:
         return {"err": "nohit"}
     return {"lat": round(float(js[0]["lat"]), 6), "lng": round(float(js[0]["lon"]), 6)}
@@ -280,9 +296,13 @@ def main():
     if limit:
         todo = todo[:limit]
 
-    ok = bad = out = 0
+    ok = bad = out = saltadas = 0
     for i, (q, zone) in enumerate(todo, 1):
         res = lookup(q)
+        if res.pop("reintentar", False):
+            # el servidor nos frenó: no es un veredicto sobre esta dirección
+            saltadas += 1
+            continue
         if "lat" in res and not in_box(res["lat"], res["lng"], zone):
             res = {"err": "fuera de zona"}          # cayó en otra ciudad: no sirve
             out += 1
@@ -291,7 +311,7 @@ def main():
         bad += "err" in res
         if i % 25 == 0 or i == len(todo):
             json.dump(cache, open(CACHE, "w", encoding="utf-8"), ensure_ascii=False)
-            print(f"{i}/{len(todo)} resueltas={ok} sin_resultado={bad} fuera_de_zona={out}",
+            print(f"{i}/{len(todo)} resueltas={ok} sin_resultado={bad} fuera_de_zona={out}" + (f" frenadas={saltadas}" if saltadas else ""),
                   flush=True)
         time.sleep(DELAY)
 

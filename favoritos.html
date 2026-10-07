@@ -936,7 +936,7 @@ document.getElementById('clr').onclick=()=>{
  drawPins();
 };
 
-let POIS=null,capas={},capaOn='';
+let POIS=null,capas={};
 // Frío para los servicios, que los avisos son marrón y dorado. Cada categoría
 // lleva además una **letra**: con ocho colores juntos, el color solo no alcanza,
 // y encima del satélite se pierde.
@@ -946,27 +946,43 @@ const PINI={escuela:'E',salud:'H',farmacia:'F',super:'C',banco:'B',
             seguridad:'P',verde:'V',riesgo:'I'};
 const PGRUPO={serv:['escuela','salud','farmacia','super','banco','seguridad'],
               verde:['verde'],riesgo:['riesgo']};
-function dibujarCapa(g){
- Object.values(capas).forEach(l=>l.remove());
- capas={};
- if(!g||!POIS)return;
+function marcasDe(g){
  const cats=PGRUPO[g]||[];
  const pts=Object.values(POIS).filter(p=>cats.includes(p.c));
  const marks=pts.map(p=>{
   const m=L.marker([p.lat,p.lng],{icon:L.divIcon({className:'poi',
    html:`<span style="background:${PCOL[p.c]||'#666'}">${PINI[p.c]||'?'}</span>`,
    iconSize:[18,18],iconAnchor:[9,9]})});
-  // Link a Google Maps **por coordenada** y no por nombre: la idea es confirmar
-  // qué hay en ese punto, y buscar por nombre te lleva a cualquier homónimo del
-  // país. Con la coordenada caés exactamente donde está el pin.
-  const gm=`https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
+  // Dos links y a propósito distintos. **Por nombre** es el que importa: Google
+  // busca por su cuenta y te muestra dónde lo ubica él, que es la forma de
+  // contrastar lo que dice OpenStreetMap en vez de repetirlo. **Por coordenada**
+  // queda como segundo, para cuando el nombre es ambiguo o no aparece y hay que
+  // mirar qué hay físicamente en el punto.
+  const gmN=`https://www.google.com/maps/search/?api=1&query=`+
+   encodeURIComponent(`${p.n}, Córdoba, Argentina`);
+  const gmC=`https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
   m.bindPopup(`<b>${E(p.n)}</b><br>${E(PNOM[p.c]||p.c)}<br>
-   <a href="${gm}" target="_blank" rel="noopener">ver en Google Maps ↗</a>`);
+   <a href="${gmN}" target="_blank" rel="noopener">buscarlo en Google ↗</a><br>
+   <a class="tx" href="${gmC}" target="_blank" rel="noopener">ver este punto en el mapa ↗</a>`);
   return m;
  });
- capas[g]=L.layerGroup(marks).addTo(map);
- document.getElementById('mapn').textContent=
-  `${pts.length} puntos de ${g==='serv'?'servicios':g==='verde'?'producción':'industria'} en el mapa`;
+ return marks;
+}
+// Las capas **se superponen**: cada botón prende y apaga la suya y pueden estar
+// las tres juntas, que es como se mira de verdad —si hay escuela cerca importa
+// al mismo tiempo que si hay una cantera—. Arrancan todas prendidas y se van
+// apagando, y la elección se recuerda.
+const CAPASK='hiessy:capas';
+let capasOn=new Set(['serv','verde','riesgo']);
+try{const g=localStorage.getItem(CAPASK);if(g!==null)capasOn=new Set(g?g.split(','):[])}catch(e){}
+function dibujarCapas(){
+ Object.values(capas).forEach(l=>l.remove());
+ capas={};
+ if(POIS)capasOn.forEach(g=>{capas[g]=L.layerGroup(marcasDe(g)).addTo(map)});
+ document.querySelectorAll('[data-cap]').forEach(x=>
+  x.classList.toggle('on',capasOn.has(x.dataset.cap)));
+ legenda();
+ try{localStorage.setItem(CAPASK,[...capasOn].join(','))}catch(e){}
 }
 // La leyenda se arma con las categorías de la capa prendida y nada más: listar
 // las ocho siempre ocupaba cuatro renglones de los que siete sobraban.
@@ -976,22 +992,21 @@ const PNOM={escuela:'escuela',salud:'salud',farmacia:'farmacia',super:'comercio'
 const AVISO='Sale de OpenStreetMap: <b>sólo aparece lo que está mapeado y con nombre</b>, '+
  'así que si no se ve una cantera igual puede haberla. Si un campo usa agroquímicos '+
  'no está registrado en ningún lado y no se puede mostrar.';
-function legenda(g){
+function legenda(){
  const el=document.getElementById('pleg');
- if(!g){el.hidden=true;return}
- el.innerHTML=(PGRUPO[g]||[]).map(c=>`<i class="${c}" data-i="${PINI[c]}">${PNOM[c]}</i>`).join('')+
-  `<span class="aviso">${AVISO}</span>`;
+ const cats=[];
+ ['serv','verde','riesgo'].forEach(g=>{if(capasOn.has(g))cats.push(...(PGRUPO[g]||[]))});
+ if(!cats.length||!POIS){el.hidden=true;return}
+ const n=Object.values(POIS).filter(p=>cats.includes(p.c)).length;
+ el.innerHTML=cats.map(c=>`<i class="${c}" data-i="${PINI[c]}">${PNOM[c]}</i>`).join('')+
+  `<span class="aviso"><b>${n}</b> puntos en el mapa. ${AVISO}</span>`;
  el.hidden=false;
 }
-function toggleCapa(b){
+document.querySelectorAll('[data-cap]').forEach(b=>b.onclick=()=>{
  const g=b.dataset.cap;
- capaOn=capaOn===g?'':g;
- document.querySelectorAll('[data-cap]').forEach(x=>x.classList.toggle('on',x.dataset.cap===capaOn));
- dibujarCapa(capaOn);
- legenda(capaOn);
- if(!capaOn)drawPins();
-}
-document.querySelectorAll('[data-cap]').forEach(b=>b.onclick=()=>toggleCapa(b));
+ capasOn.has(g)?capasOn.delete(g):capasOn.add(g);
+ dibujarCapas();
+});
 
 // Ancho del mapa. Se recuerda, como los filtros: el que lo quiere grande lo
 // quiere grande siempre. invalidateSize porque Leaflet no se entera solo de que
@@ -1003,12 +1018,13 @@ function anchoMapa(on){
  b.classList.toggle('on',on);
  b.textContent=on?'Mapa normal':'Mapa grande';
  try{localStorage.setItem(ANCHOK,on?'1':'')}catch(e){}
- if(map)setTimeout(()=>{map.invalidateSize();drawPins();if(capaOn)dibujarCapa(capaOn)},230);
+ if(map)setTimeout(()=>{map.invalidateSize();drawPins();dibujarCapas()},230);
 }
 document.getElementById('mbig').onclick=()=>anchoMapa(!LAY.classList.contains('ancho'));
 try{if(localStorage.getItem(ANCHOK))anchoMapa(true)}catch(e){}
 
-fetch('pois.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(o=>{POIS=o||null}).catch(()=>{});
+fetch('pois.json',{cache:'no-store'}).then(r=>r.ok?r.json():null)
+ .then(o=>{POIS=o||null;dibujarCapas()}).catch(()=>{});
 
 document.getElementById('sat').onclick=toggleSat;
 document.getElementById('mapt').onclick=e=>{
