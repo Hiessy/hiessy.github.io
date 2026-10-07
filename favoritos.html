@@ -209,6 +209,26 @@ body.noscroll{overflow:hidden}
 .drawer .bar .in+.in{border-top:1px solid var(--line)}
 .drawer .bar .lbl{width:100%;margin:0 0 3px}
 .drawer .sep,.drawer .sp{display:none}
+
+.notas{margin:0 14px 12px;font-size:12.6px;line-height:1.5}
+.notas summary{cursor:pointer;color:var(--mut);padding:5px 0;list-style:none;
+ display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.notas summary::-webkit-details-marker{display:none}
+.notas summary::before{content:'▸';font-size:11px;transition:transform .15s}
+.notas[open] summary::before{transform:rotate(90deg)}
+.notas .imp{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--mut)}
+.notas ul{margin:3px 0 8px;padding-left:17px}
+.notas li{margin:2px 0}
+.notas .pro li::marker{content:'+  '}
+.notas .con li::marker{content:'–  '}
+.notas .ojo li::marker{content:'!  '}
+.notas .ojo{color:var(--ink)}
+.notas h4{margin:7px 0 1px;font-size:11.5px;text-transform:uppercase;
+ letter-spacing:.055em;color:var(--mut);font-weight:600}
+.notas b{font-weight:600}
+.notas .serv{color:var(--mut);margin-top:6px}
+.notas .baja{color:#b4472e;font-weight:600}
+
 </style></head><body>
 <nav class="tabs">
  <a href="index.html" class="tab">CABA norte</a>
@@ -380,12 +400,46 @@ const featChips=r=>{
  const no=SHOW.filter(i=>!has.has(i)).map(i=>`<i>${FEATS[i]}</i>`).join('');
  return `<span class="feats">${si}${no}<u>lleno = lo menciona el aviso · punteado = no lo menciona (puede tenerlo igual)</u></span>`;
 };
+
+let NOTAS={};
+const mdB=s=>E(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+const listaN=(t,c,xs)=>xs&&xs.length
+ ?`<h4>${t}</h4><ul class="${c}">${xs.map(x=>`<li>${mdB(x)}</li>`).join('')}</ul>`:'';
+const SERVN={escuela:'escuela',salud:'salud',farmacia:'farmacia',
+             super:'super',banco:'banco',policia:'policía'};
+function servTxt(s){
+ if(!s)return '';
+ const p=Object.keys(SERVN).filter(k=>s[k]&&s[k].length)
+  .map(k=>`${SERVN[k]} ${s[k][0][1]} km`);
+ return p.length?`<p class="serv">Cerca: ${p.join(' · ')}</p>`:'';
+}
+function notaDe(r){
+ const n=NOTAS[r[2]];
+ if(!n)return '';
+ const i=n.imp||{};
+ const imp=i.anual_usd
+  ?`<span class="imp">imp. USD ${i.anual_usd[0]}-${i.anual_usd[2]}/año · compra USD ${i.compra_usd.toLocaleString('es-AR')}</span>`
+  :'';
+ return `<details class="notas"><summary>Qué mirar${n.baja?' <span class="baja">· dado de baja</span>':''}${imp}</summary>
+ ${listaN('A favor','pro',n.pros)}${listaN('En contra','con',n.contras)}${listaN('Preguntá','ojo',n.ojo)}
+ ${servTxt(n.serv)}
+ <p class="serv">El impuesto provincial se calcula sobre la <b>valuación fiscal</b>, no sobre el precio:
+ el rango supone que es entre el 20% y el 50% del precio. El número real está en el cedulón, pediselo
+ al vendedor. No incluye la tasa municipal, que en la sierra suele pesar más.</p>
+ </details>`;
+}
+fetch('notas.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(o=>{
+ if(!o)return;
+ NOTAS=o;
+ draw();          // ya se dibujó sin notas: se vuelve a dibujar con ellas
+}).catch(()=>{});
+
 const card=r=>`<article class="card" data-k="${E(r[2])}"><div class="thumb"><a class="shot" href="${abs(r[2])?r[2]:UP+r[2]}" target="_blank" rel="noopener">
 <img loading="lazy" src="${abs(r[1])?r[1]:IP+r[1]}" alt="${E(r[5])}">
 <span class="tag">${r[3]==='?'?'Consultar':'USD '+r[3]}</span>${r[8]?'<span class="star">★ pick</span>':''}
 <span class="cap"><b>${E(r[5])}</b>${r[6]?' · '+E(r[6]):''}</span></a>
 ${featChips(r)}<button class="pickbtn${picked.has(r[2])?' on':''}${r[15]?'':' nogeo'}" title="${picked.has(r[2])?'Sacar de favoritos':r[15]?'Guardar en favoritos':'Guardar en favoritos · este aviso no publica ubicación, no tiene pin'}" aria-label="Favorito" aria-pressed="${picked.has(r[2])}">♥</button></div>
-<p class="note">${E(r[7])}</p><p class="src">${E(r[9])}${r[14]?' · '+E(r[14]):''}</p></article>`;
+<p class="note">${E(r[7])}</p>${notaDe(r)}<p class="src">${E(r[9])}${r[14]?' · '+E(r[14]):''}</p></article>`;
 function more(){
  const next=view.slice(shown,shown+STEP);
  g.insertAdjacentHTML('beforeend',next.map(card).join(''));

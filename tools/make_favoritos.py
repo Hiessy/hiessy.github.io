@@ -40,6 +40,65 @@ DATA = """const D=(()=>{
 })();"""
 
 
+NOTAS_CSS = """
+.notas{margin:0 14px 12px;font-size:12.6px;line-height:1.5}
+.notas summary{cursor:pointer;color:var(--mut);padding:5px 0;list-style:none;
+ display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.notas summary::-webkit-details-marker{display:none}
+.notas summary::before{content:'▸';font-size:11px;transition:transform .15s}
+.notas[open] summary::before{transform:rotate(90deg)}
+.notas .imp{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--mut)}
+.notas ul{margin:3px 0 8px;padding-left:17px}
+.notas li{margin:2px 0}
+.notas .pro li::marker{content:'+  '}
+.notas .con li::marker{content:'–  '}
+.notas .ojo li::marker{content:'!  '}
+.notas .ojo{color:var(--ink)}
+.notas h4{margin:7px 0 1px;font-size:11.5px;text-transform:uppercase;
+ letter-spacing:.055em;color:var(--mut);font-weight:600}
+.notas b{font-weight:600}
+.notas .serv{color:var(--mut);margin-top:6px}
+.notas .baja{color:#b4472e;font-weight:600}
+"""
+
+# El marcado se arma en JS porque `notas.json` se carga en el navegador, igual
+# que favoritos.json: así se puede corregir una nota sin regenerar la página.
+NOTAS_JS = """
+let NOTAS={};
+const mdB=s=>E(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+const listaN=(t,c,xs)=>xs&&xs.length
+ ?`<h4>${t}</h4><ul class="${c}">${xs.map(x=>`<li>${mdB(x)}</li>`).join('')}</ul>`:'';
+const SERVN={escuela:'escuela',salud:'salud',farmacia:'farmacia',
+             super:'super',banco:'banco',policia:'policía'};
+function servTxt(s){
+ if(!s)return '';
+ const p=Object.keys(SERVN).filter(k=>s[k]&&s[k].length)
+  .map(k=>`${SERVN[k]} ${s[k][0][1]} km`);
+ return p.length?`<p class="serv">Cerca: ${p.join(' · ')}</p>`:'';
+}
+function notaDe(r){
+ const n=NOTAS[r[2]];
+ if(!n)return '';
+ const i=n.imp||{};
+ const imp=i.anual_usd
+  ?`<span class="imp">imp. USD ${i.anual_usd[0]}-${i.anual_usd[2]}/año · compra USD ${i.compra_usd.toLocaleString('es-AR')}</span>`
+  :'';
+ return `<details class="notas"><summary>Qué mirar${n.baja?' <span class="baja">· dado de baja</span>':''}${imp}</summary>
+ ${listaN('A favor','pro',n.pros)}${listaN('En contra','con',n.contras)}${listaN('Preguntá','ojo',n.ojo)}
+ ${servTxt(n.serv)}
+ <p class="serv">El impuesto provincial se calcula sobre la <b>valuación fiscal</b>, no sobre el precio:
+ el rango supone que es entre el 20% y el 50% del precio. El número real está en el cedulón, pediselo
+ al vendedor. No incluye la tasa municipal, que en la sierra suele pesar más.</p>
+ </details>`;
+}
+fetch('notas.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(o=>{
+ if(!o)return;
+ NOTAS=o;
+ draw();          // ya se dibujó sin notas: se vuelve a dibujar con ellas
+}).catch(()=>{});
+"""
+
+
 def rep(t, a, b, n=1):
     assert t.count(a) == n, (a[:70], t.count(a))
     return t.replace(a, b)
@@ -89,6 +148,18 @@ def main():
                " try{sessionStorage.setItem('favrecarga','1')}catch(e){}\n"
                " location.reload();\n"
                "});")
+
+    # --- notas por aviso: pros, contras, qué mirar e impuestos -------------
+    # `notas.json` se arma con tools/notas_favoritos.py. Va en un bloque plegado
+    # dentro de la ficha: la lista tiene que seguir leyéndose de un vistazo, y
+    # treinta y tres fichas con diez renglones cada una no se leen.
+    t = rep(t, "<p class=\"note\">${E(r[7])}</p>",
+               "<p class=\"note\">${E(r[7])}</p>${notaDe(r)}")
+
+    t = rep(t, "const card=r=>`<article class=\"card\"",
+               NOTAS_JS + "\nconst card=r=>`<article class=\"card\"")
+
+    t = rep(t, "</style>", NOTAS_CSS + "\n</style>")
 
     # textos
     t = rep(t, "<title>Búsqueda de propiedades · Argentina</title>",
