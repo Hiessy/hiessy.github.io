@@ -866,7 +866,12 @@ document.getElementById('clr').onclick=()=>{
 // tenerlos guardados. Se recuerda, como el resto de los filtros.
 let soloFav=false;
 try{soloFav=!!localStorage.getItem('hiessy:solofav')}catch(e){}
-document.getElementById('solofav').onclick=()=>{
+// Con `if`, porque en favoritos.html el botón no existe —ahí todos los avisos
+// son favoritos y no filtraría nada—. Sin el guarda, esta línea tiraba
+// TypeError y se llevaba puesto **todo el arranque que viene después**,
+// incluido el draw(): la página quedaba en blanco.
+const bSoloFav=document.getElementById('solofav');
+if(bSoloFav)bSoloFav.onclick=()=>{
  soloFav=!soloFav;
  try{soloFav?localStorage.setItem('hiessy:solofav','1')
             :localStorage.removeItem('hiessy:solofav')}catch(e){}
