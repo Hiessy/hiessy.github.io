@@ -64,10 +64,18 @@ def pueblo_de(r, valle):
             continue
         if plain(label) in donde or slug.replace("-", " ") in donde:
             return slug, label
-    # Localidad desconocida: la dirección termina en ", Nombre del lugar".
+    # Localidad que no conocemos. La cola de la dirección suele ser un **barrio**
+    # y no un pueblo —"Francia 100, Centro", "Av 9 De Julio 400, Malvinas"— y la
+    # URL de Argenprop repite ese mismo nombre, así que el pueblo no está en
+    # ningún lado. Un pill por cada uno llenaba el filtro de zonas con barrios:
+    # 53 pueblos, 19 de ellos cosas como "Centro" o "La Quinta".
+    #
+    # Lo que **sí** sabemos con certeza es el valle, así que van todos a un
+    # bucket por valle. El barrio no se pierde: sigue escrito en la dirección
+    # que muestra la ficha.
     cola = (r.get("addr") or "").split(",")[-1].strip()
     if 3 <= len(cola) <= 34 and not any(ch.isdigit() for ch in cola):
-        return "otros-" + plain(cola).replace(" ", "-"), cola.title()
+        return "otros-" + plain(valle), f"Otros · {valle}"
     return "", ""
 
 
