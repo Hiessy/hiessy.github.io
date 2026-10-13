@@ -34,9 +34,16 @@ def main():
                    rf"\g<1>{n}\g<2>", t, count=1)
     assert k == 1, "no encontré el conteo del encabezado"
 
-    hoy = datetime.date.today()
-    t, k = re.subn(r"Relevado en \w+ de \d{4}",
-                   f"Relevado en {MESES[hoy.month - 1]} de {hoy.year}", t, count=1)
+    # Fecha y hora exactas de esta construcción. El mes solo no alcanzaba: con
+    # barridos cada pocos días, "octubre de 2026" no distingue entre datos de
+    # hoy y de hace dos semanas, que es justo lo que uno quiere saber antes de
+    # llamar por un aviso. El sufijo es opcional en el patrón para que ande
+    # también sobre una página que todavía no lo tenga.
+    ahora = datetime.datetime.now()
+    sello = (f"Relevado en {MESES[ahora.month - 1]} de {ahora.year} · "
+             f"actualizado el {ahora:%d/%m/%Y} a las {ahora:%H:%M}")
+    t, k = re.subn(r"Relevado en \w+ de \d{4}(?: · actualizado el [^·<]*)?",
+                   sello, t, count=1)
     assert k == 1, "no encontré la fecha del pie"
 
     io.open(PAGE, "w", encoding="utf-8", newline="").write(t)

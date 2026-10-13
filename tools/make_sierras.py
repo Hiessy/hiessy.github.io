@@ -121,6 +121,10 @@ def main():
     sinlote = mil(sum(1 for r in rows if not r[18]))
     ap = mil(sum(1 for r in rows if r[14] == "Argenprop"))
     hoy = datetime.date.today()
+    # El mes solo no alcanza: con barridos cada pocos días, "octubre de 2026" no
+    # distingue datos de hoy de datos de hace dos semanas, que es justo lo que
+    # importa antes de llamar por un aviso.
+    ahora = datetime.datetime.now()
 
     i, j = t.index('<p class="sub">'), t.index("</header>")
     t = t[:i] + f'''<p class="sub">{n} casas de 3 ambientes o más, hasta USD 260.000,
@@ -137,8 +141,10 @@ ficha: que el portal no lo diga no quiere decir que el lote sea chico.</p>
 <b>agua</b> (red, perforación o cisterna), por el <b>gas</b> —en buena parte de los dos valles
 es envasado— y por el estado del dominio: en los loteos viejos de sierra abunda la posesión
 sin título perfecto.</p>
-<p style="margin-top:14px">Relevado en {MESES[hoy.month - 1]} de {hoy.year} · datos de <a
-class="tx" href="https://www.zonaprop.com.ar" target="_blank" rel="noopener">Zonaprop</a> ·
+<p style="margin-top:14px">Relevado en {MESES[hoy.month - 1]} de {hoy.year} · actualizado
+el {ahora:%d/%m/%Y} a las {ahora:%H:%M} · datos de <a
+class="tx" href="https://www.zonaprop.com.ar" target="_blank" rel="noopener">Zonaprop</a> y <a
+class="tx" href="https://www.argenprop.com" target="_blank" rel="noopener">Argenprop</a> ·
 confirmá con la inmobiliaria antes de viajar.</p>
 ''' + t[j:]
 

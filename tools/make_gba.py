@@ -36,7 +36,11 @@ def stats(data):
         # muestra cuánto se equivocaría quien confiara en la palabra
         "muda": sum(1 for r in rows if r[18] >= 100 and not r[12]),
         "chica": sum(1 for r in rows if r[12] and r[18] < 100),
-        "fecha": f"{MESES[hoy.month - 1]} de {hoy.year}",
+        # con la hora: el mes solo no distingue datos de hoy de datos de hace
+        # dos semanas, que es lo que importa antes de llamar por un aviso
+        "fecha": (f"{MESES[hoy.month - 1]} de {hoy.year} · actualizado el "
+                  f"{datetime.datetime.now():%d/%m/%Y} a las "
+                  f"{datetime.datetime.now():%H:%M}"),
     }
 
 
