@@ -15,7 +15,7 @@ Dos consecuencias de que los datos vivan en el navegador:
 
     python tools/make_favoritos.py
 """
-import io, os, re
+import datetime, io, os, re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "index.html")
@@ -443,6 +443,11 @@ son dos navegadores distintos para el navegador, aunque sea la misma página.</p
 <p>Se borran con el <b>♥</b> de la ficha o con "Quitar de favoritos" arriba del mapa.
 Si limpiás los datos del navegador, se van los que no estén en el archivo.</p>
 ''' + t[j:]
+
+    ahora = datetime.datetime.now()
+    # el mismo dato arriba a la derecha, en gris claro (ver .sello en index.html)
+    t = re.sub(r'(<span class="sello"[^>]*>)[^<]*</span>',
+               rf"\g<1>{ahora:%d/%m/%Y %H:%M}</span>", t, count=1)
 
     io.open(DST, "w", encoding="utf-8", newline="").write(t)
     print("escrito", DST, f"{os.path.getsize(DST)/1024:.0f} KB")

@@ -148,6 +148,10 @@ class="tx" href="https://www.argenprop.com" target="_blank" rel="noopener">Argen
 confirmá con la inmobiliaria antes de viajar.</p>
 ''' + t[j:]
 
+    # el mismo dato arriba a la derecha, en gris claro (ver .sello en index.html)
+    t = re.sub(r'(<span class="sello"[^>]*>)[^<]*</span>',
+               rf"\g<1>{ahora:%d/%m/%Y %H:%M}</span>", t, count=1)
+
     io.open(DST, "w", encoding="utf-8", newline="").write(t)
     print("escrito", DST, f"{os.path.getsize(DST)/1048576:.2f} MB |",
           len(rows), "avisos |", len(pueblos), "pueblos")

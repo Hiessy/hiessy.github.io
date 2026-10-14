@@ -46,6 +46,11 @@ def main():
                    sello, t, count=1)
     assert k == 1, "no encontré la fecha del pie"
 
+    # el mismo dato arriba a la derecha, en gris claro
+    t, k = re.subn(r'(<span class="sello"[^>]*>)[^<]*</span>',
+                   rf"\g<1>{ahora:%d/%m/%Y %H:%M}</span>", t, count=1)
+    assert k == 1, "no encontré el sello del encabezado"
+
     io.open(PAGE, "w", encoding="utf-8", newline="").write(t)
     fuentes = {}
     for r in rows:

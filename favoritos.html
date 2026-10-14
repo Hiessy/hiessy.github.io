@@ -7,7 +7,14 @@
 :root{--bg:#faf8f5;--ink:#1c1a17;--mut:#6f675d;--line:#e5ded4;--acc:#8a5a2b;--pick:#b8862f;--card:#fff}
 @media(prefers-color-scheme:dark){:root{--bg:#141311;--ink:#f0ece6;--mut:#9c948a;--line:#2c2926;--acc:#d9a066;--pick:#e0b05a;--card:#1c1a18}}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
-header{max-width:1220px;margin:0 auto;padding:48px 20px 8px}
+header{max-width:1220px;margin:0 auto;padding:48px 20px 8px;position:relative}
+/* El sello de actualización arriba a la derecha, apagado a propósito: el que lo
+   busca lo encuentra y el que no, no se tropieza con él. El pie sigue teniendo
+   la versión larga, con las fuentes. */
+.sello{position:absolute;top:18px;right:20px;font-size:10.5px;color:var(--mut);
+ opacity:.5;letter-spacing:.02em;white-space:nowrap}
+.sello:hover{opacity:.9}
+@media(max-width:620px){.sello{position:static;display:block;margin:0 0 10px;opacity:.55}}
 h1{font-size:clamp(28px,5vw,44px);line-height:1.1;margin:0 0 12px;letter-spacing:-.02em}
 .sub{color:var(--mut);max-width:64ch;margin:0 0 8px}
 .bar{position:sticky;top:0;z-index:9;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);margin-top:26px}
@@ -283,6 +290,7 @@ body.noscroll{overflow:hidden}
  <a href="favoritos.html" class="tab fav on">Favoritos <em id="favn"></em></a>
 </nav>
 <header>
+<span class="sello" id="sello" title="Cuándo se armó esta página">13/10/2026 21:49</span>
 <h1>Favoritos<br>lo que fuimos marcando</h1>
 <p class="sub">Los avisos marcados con el <b>♥</b> en CABA norte, zona norte
 y sierras de Córdoba. Se guardan en este navegador: no viajan a ningún servidor y
