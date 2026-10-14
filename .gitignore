@@ -1,3 +1,6 @@
 .work/
 __pycache__/
 .idea/
+
+# configuración local del MCP de MercadoLibre: no va al sitio publicado
+.mcp.json
