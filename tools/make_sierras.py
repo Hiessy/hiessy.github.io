@@ -126,6 +126,9 @@ def main():
     lote = {k: mil(sum(1 for r in rows if r[18] >= k)) for k in (300, 600, 1000)}
     sinlote = mil(sum(1 for r in rows if not r[18]))
     ap = mil(sum(1 for r in rows if r[14] == "Argenprop"))
+    mls = [r for r in rows if r[14] == "MercadoLibre"]
+    ml, ml_dorm, ml_lote = (mil(len(mls)), mil(sum(1 for r in mls if r[11])),
+                            mil(sum(1 for r in mls if r[18])))
     hoy = datetime.date.today()
     # El mes solo no alcanza: con barridos cada pocos días, "octubre de 2026" no
     # distingue datos de hoy de datos de hace dos semanas, que es justo lo que
@@ -143,6 +146,11 @@ Córdoba ni las Sierras Chicas.</p>
 <p><b>{sinlote} avisos no declaran el lote</b> —Argenprop no publica superficie total acá, así
 que son casi todos sus {ap}—. Con un mínimo de terreno puesto entran igual, marcados en la
 ficha: que el portal no lo diga no quiere decir que el lote sea chico.</p>
+<p>Los <b>{ml} de MercadoLibre</b> se buscaron con el filtro de <b>3 dormitorios o más</b>
+puesto en su página, así que todos lo cumplen. Pero la tarjeta del listado casi siempre
+muestra ambientes y no dormitorios: sólo <b>{ml_dorm}</b> dicen cuántos dormitorios tienen y
+sólo <b>{ml_lote}</b> dicen cuánto mide el terreno. En los demás figuran en cero, que acá
+quiere decir <b>no hay dato</b> y no cero dormitorios.</p>
 <p><b>Terreno libre</b> es lote menos superficie cubierta. Antes de viajar preguntá por el
 <b>agua</b> (red, perforación o cisterna), por el <b>gas</b> —en buena parte de los dos valles
 es envasado— y por el estado del dominio: en los loteos viejos de sierra abunda la posesión

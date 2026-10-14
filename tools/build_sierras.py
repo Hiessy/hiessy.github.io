@@ -187,7 +187,13 @@ def main():
                          0, pueblo,
                          r.get("amb", 0), r.get("dorm", 0), 0, valle,
                          "MercadoLibre", lat, lng,
-                         m2_of(r), 0, feats_of(r.get("d", "")),
+                         m2_of(r),
+                         # terreno libre = total menos cubierto, y sólo cuando la
+                         # tarjeta declara el total (21 de 454). Antes iba un 0
+                         # fijo y ninguno podía pasar el filtro de terreno
+                         # aunque el aviso dijera cuánto mide.
+                         max((r.get("tot") or 0) - (r.get("cub") or 0), 0),
+                         feats_of(r.get("d", "")),
                          2 if lat else 0])
             ml_n += 1
     print("MercadoLibre:", ml_n)
