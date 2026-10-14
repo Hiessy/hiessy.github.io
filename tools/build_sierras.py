@@ -163,6 +163,35 @@ def main():
                 ap_n += 1
     print("Argenprop:", ap_n)
 
+    # --- MercadoLibre ------------------------------------------------------
+    # Buscado a mano en el navegador con los filtros "3 dormitorios o más" y
+    # "Con jardín" puestos en la propia página; `ml_sierras.py` convierte eso.
+    # No publica coordenadas en el listado, así que el pin sale de geocodificar
+    # el pueblo y queda marcado como aproximado de pueblo (nivel 2).
+    ml = os.path.join(D, "ml_sierras_rows.json")
+    ml_n = 0
+    if os.path.exists(ml):
+        for r in json.load(open(ml, encoding="utf-8")):
+            if r["id"] in seen or is_dead(r.get("url", ""), dead):
+                continue
+            motivo = descartar(r.get("d"), r.get("addr"))
+            if motivo:
+                fuera[motivo] = fuera.get(motivo, 0) + 1
+                continue
+            seen.add(r["id"])
+            pueblo, valle = r["loc"], r["valle"]
+            lat, lng = coords_for(r.get("addr"), pueblo, geo_cache)
+            rows.append([VALLES.index(valle), r["img"], r["url"],
+                         f"{r['price']:,}".replace(",", "."), r["price"],
+                         r["addr"], specs(r), note(r.get("d", "")) or r.get("d", "")[:100],
+                         0, pueblo,
+                         r.get("amb", 0), r.get("dorm", 0), 0, valle,
+                         "MercadoLibre", lat, lng,
+                         m2_of(r), 0, feats_of(r.get("d", "")),
+                         2 if lat else 0])
+            ml_n += 1
+    print("MercadoLibre:", ml_n)
+
     print("descartados:", fuera or "ninguno", "| dados de baja:", bajas)
     rows, dups = dedupe(rows)
     print("repetidos sacados", dups)
