@@ -1,4 +1,4 @@
-"""Mete `.work/D.js` en `index.html` y actualiza los números del texto.
+"""Mete `.work/D.js` en `caba-norte.html` y actualiza los números del texto.
 
 Este paso se venía haciendo a mano y por eso el encabezado quedó viejo: decía
 "1.258 casas y PH" con 1.366 publicadas, y el pie seguía diciendo "relevado en
@@ -12,7 +12,7 @@ calcula desde el dataset, que es el único que sabe la verdad.
 import datetime, io, json, os, re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PAGE = os.path.join(ROOT, "index.html")
+PAGE = os.path.join(ROOT, "caba-norte.html")
 DATA = os.path.join(ROOT, ".work", "D.js")
 
 MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
@@ -55,7 +55,7 @@ def main():
     fuentes = {}
     for r in rows:
         fuentes[r[14]] = fuentes.get(r[14], 0) + 1
-    print(f"index.html: {n} avisos", fuentes,
+    print(f"caba-norte.html: {n} avisos", fuentes,
           "| con pin", sum(1 for r in rows if r[15] and r[16]))
 
 

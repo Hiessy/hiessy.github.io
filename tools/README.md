@@ -1,7 +1,10 @@
 # tools — relevamiento de Zonaprop
 
-Scripts que arman el dataset de `index.html`. No corren en el sitio: se ejecutan
-a mano y el resultado se pega en el array `const D=[...]` de `index.html`.
+Scripts que arman el dataset de `caba-norte.html`. No corren en el sitio: se ejecutan
+a mano y el resultado se pega en el array `const D=[...]` de `caba-norte.html`.
+
+`index.html` es la portada y no lleva avisos: la arma `make_inicio.py`, que cuenta
+los de las otras tres y enlaza a cada una.
 
 Requieren solo la stdlib de Python 3.11 (sin dependencias).
 
@@ -21,7 +24,7 @@ doce botones y no veinte).
 ## La segunda página
 
 `gba-norte.html` (Bella Vista, San Miguel, Olivos, La Lucila, Martínez) no es un
-archivo a mano: se genera desde `index.html`, así las dos comparten CSS y JS.
+archivo a mano: se genera desde `caba-norte.html`, así las dos comparten CSS y JS.
 
 ```bash
 python tools/gba_norte.py --max 260000   # relevar
@@ -281,11 +284,12 @@ El orden no es arbitrario:
   pisan. Las dos etapas van en serie, y un lock en `.work/run_all.lock` impide
   que se corran dos `run_all.py` a la vez. El lock solo aplica a las etapas de
   red: `--pages` se puede correr aunque haya un barrido en curso.
-- **`build` corre dos veces** — `deadlinks.py` necesita `index.html` armado para
+- **`build` corre dos veces** — `deadlinks.py` necesita `caba-norte.html` armado para
   saber qué verificar, y `build2.py` necesita el resultado de `deadlinks.py` para
   descartar las bajas. Armar, verificar, armar de nuevo.
 - **`gba` y `sierras` van al final**, porque las dos páginas se generan desde
-  `index.html`.
+  `caba-norte.html`. Y después de ellas va `inicio`, que cuenta los avisos de las
+  tres para armar la portada.
 
 ## Widget de avance (`progress_widget.py`)
 
@@ -335,10 +339,10 @@ Se corre por página, y **hay tres**:
 ```bash
 python tools/deadlinks.py --page sierras.html   --limit 2500
 python tools/deadlinks.py --page gba-norte.html --limit 2500
-python tools/deadlinks.py                       # index.html, el default
+python tools/deadlinks.py                       # caba-norte.html, el default
 ```
 
-> Dos agujeros que estuvieron mucho tiempo: `deadlinks.py` tenía `index.html`
+> Dos agujeros que estuvieron mucho tiempo: `deadlinks.py` tenía la página de CABA
 > **hardcodeado**, así que la zona norte y las sierras nunca se verificaron. Y
 > filtraba por `r[14] == "Zonaprop"`, pero en `sierras.html` esa columna guarda el
 > **valle**: apuntándolo ahí no matcheaba ninguna fila, no revisaba nada e
@@ -361,8 +365,8 @@ listando.
 
 La primera pasada sobre las sierras, que nunca se habían verificado, encontró
 **443 avisos dados de baja sobre 2.464: el 18%**. En CABA, que se verifica en cada
-corrida, son 7 sobre ~1.200. Esa diferencia es lo que costó tener `index.html`
-hardcodeado.
+corrida, son 7 sobre ~1.200. Esa diferencia es lo que costó tener una sola página
+hardcodeada.
 
 Tarda: 1,4 s entre pedidos por cortesía, o sea ~57 min para 2.400 avisos. Conviene
 darle `--deadline` holgado o correrlo en dos tandas; lo ya verificado se saltea.
@@ -420,7 +424,7 @@ python tools/scrape.py --force
    de texto y devolvía números equivocados.
 4. `build2.py` — mergea los 192 originales con el barrido, samplea por zona según
    `CAP` y escribe `.work/D.js`.
-5. `inject.py` — mete `D.js` en `index.html` **y recalcula los números del texto**.
+5. `inject.py` — mete `D.js` en `caba-norte.html` **y recalcula los números del texto**.
    Este paso se hacía a mano: el encabezado decía "1.258 casas y PH" con 1.365
    publicadas y el pie seguía diciendo "agosto" en septiembre. Todo número o fecha
    que aparezca en la prosa sale del dataset. `make_gba.py` hace lo mismo del otro lado.

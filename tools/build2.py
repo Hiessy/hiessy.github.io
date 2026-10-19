@@ -1,4 +1,4 @@
-"""Merge the original 192 curated listings with the new sweep and rewrite index.html's data array.
+"""Merge the original 192 curated listings with the new sweep and rewrite the data array of `caba-norte.html`.
 
 Row shape (unchanged prefix, two new trailing fields):
   0 region  1 img  2 slug  3 priceStr  4 priceNum  5 address

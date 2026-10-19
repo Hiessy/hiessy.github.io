@@ -140,9 +140,11 @@ def main():
         return
     limit = arg("--limit", 250)
     delay = arg("--delay", 1.4)
-    # `--page`: deadlinks miraba solo index.html, así que los avisos de la zona
-    # norte y de las sierras nunca se verificaban. Son tres páginas.
-    pagina = arg("--page", "index.html")
+    # `--page`: deadlinks miraba solo la página de CABA, así que los avisos de la
+    # zona norte y de las sierras nunca se verificaban. Son tres páginas.
+    # El default es `caba-norte.html`: `index.html` ahora es la portada y no
+    # tiene avisos, así que apuntar ahí no verificaría nada.
+    pagina = arg("--page", "caba-norte.html")
     # Sin `--fuente` se revisan todas las filas. Importa en sierras.html, donde la
     # columna 14 guarda el valle y no el portal: pidiendo "Zonaprop" no
     # coincidía ninguna y el barrido no hacía nada, sin avisar.

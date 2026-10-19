@@ -1,4 +1,4 @@
-"""Genera `sierras.html` a partir de `index.html`.
+"""Genera `sierras.html` a partir de `caba-norte.html`.
 
 Tercera pestaña, mismo CSS y mismo JS que las otras dos. Lo que cambia:
 
@@ -14,7 +14,7 @@ Tercera pestaña, mismo CSS y mismo JS que las otras dos. Lo que cambia:
 import datetime, io, json, os, re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC = os.path.join(ROOT, "index.html")
+SRC = os.path.join(ROOT, "caba-norte.html")
 DST = os.path.join(ROOT, "sierras.html")
 DATA = os.path.join(ROOT, ".work", "DS.js")
 
@@ -38,8 +38,8 @@ def main():
     t = "\n".join(lines)
 
     # pestaña activa
-    t = rep(t, '<a href="index.html" class="tab on">CABA norte</a>',
-               '<a href="index.html" class="tab">CABA norte</a>')
+    t = rep(t, '<a href="caba-norte.html" class="tab on">CABA norte</a>',
+               '<a href="caba-norte.html" class="tab">CABA norte</a>')
     t = rep(t, '<a href="sierras.html" class="tab">Sierras de Córdoba</a>',
                '<a href="sierras.html" class="tab on">Sierras de Córdoba</a>')
 
@@ -162,7 +162,7 @@ class="tx" href="https://www.argenprop.com" target="_blank" rel="noopener">Argen
 confirmá con la inmobiliaria antes de viajar.</p>
 ''' + t[j:]
 
-    # el mismo dato arriba a la derecha, en gris claro (ver .sello en index.html)
+    # el mismo dato arriba a la derecha, en gris claro (ver .sello en caba-norte.html)
     t = re.sub(r'(<span class="sello"[^>]*>)[^<]*</span>',
                rf"\g<1>{ahora:%d/%m/%Y %H:%M}</span>", t, count=1)
 

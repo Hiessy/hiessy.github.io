@@ -1,8 +1,8 @@
-"""Genera `gba-norte.html` a partir de `index.html`.
+"""Genera `gba-norte.html` a partir de `caba-norte.html`.
 
 Las dos páginas comparten CSS y JS: en vez de mantener dos copias que se van
 separando, esta se deriva de la otra cambiando solo lo que difiere — los datos,
-los botones de zona, la fila de filtros y los textos. Si se toca `index.html`,
+los botones de zona, la fila de filtros y los textos. Si se toca `caba-norte.html`,
 correr esto de nuevo y las dos quedan al día.
 
     python tools/build_gba.py && python tools/make_gba.py
@@ -10,7 +10,7 @@ correr esto de nuevo y las dos quedan al día.
 import datetime, io, json, os, re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC = os.path.join(ROOT, "index.html")
+SRC = os.path.join(ROOT, "caba-norte.html")
 DST = os.path.join(ROOT, "gba-norte.html")
 DATA = os.path.join(ROOT, ".work", "DG.js")
 
@@ -60,8 +60,8 @@ def main():
     t = "\n".join(lines)
 
     # pestaña activa
-    t = rep(t, '<a href="index.html" class="tab on">CABA norte</a>',
-               '<a href="index.html" class="tab">CABA norte</a>')
+    t = rep(t, '<a href="caba-norte.html" class="tab on">CABA norte</a>',
+               '<a href="caba-norte.html" class="tab">CABA norte</a>')
     t = rep(t, '<a href="gba-norte.html" class="tab">Zona norte con patio</a>',
                '<a href="gba-norte.html" class="tab on">Zona norte con patio</a>')
 
@@ -126,7 +126,7 @@ confirmá con la inmobiliaria antes de viajar.</p>
 ''' + t[j:]
 
     ahora = datetime.datetime.now()
-    # el mismo dato arriba a la derecha, en gris claro (ver .sello en index.html)
+    # el mismo dato arriba a la derecha, en gris claro (ver .sello en caba-norte.html)
     t = re.sub(r'(<span class="sello"[^>]*>)[^<]*</span>',
                rf"\g<1>{ahora:%d/%m/%Y %H:%M}</span>", t, count=1)
 

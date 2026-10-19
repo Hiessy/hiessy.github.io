@@ -4,10 +4,13 @@ Sitio estático publicado con GitHub Pages en <https://hiessy.github.io>.
 
 ## Contenido
 
-Tres búsquedas, una pestaña cada una. Los números son del relevamiento de
-septiembre de 2026 y cambian en cada barrido.
+La portada ([`index.html`](index.html)) presenta las tres búsquedas y enlaza a
+cada una; es corta y no lleva dataset adentro, así entrar al sitio no significa
+bajar un mega de avisos. Después hay una pestaña por búsqueda. Los números de
+abajo son de un relevamiento viejo y cambian en cada barrido: los que valen son
+los de la portada, que se recalculan solos.
 
-### 1. CABA norte — [`index.html`](index.html)
+### 1. CABA norte — [`caba-norte.html`](caba-norte.html)
 
 **1.292** PH y casas de 3 ambientes o más hasta USD 260.000, en los doce barrios de
 la franja **Edenor**: Villa Urquiza, Villa Pueyrredón, Palermo, Saavedra, Parque Chas,
@@ -58,7 +61,10 @@ sumando el barrio Villa del Lago, que tiene búsqueda propia.
 
 Las páginas 2 y 3 **se generan desde la primera** (`tools/make_gba.py` y
 `tools/make_sierras.py`), así las tres comparten CSS y JS y no se van separando. Si se
-toca `index.html`, correr los dos generadores de nuevo.
+toca `caba-norte.html`, correr los dos generadores de nuevo.
+
+La portada va aparte (`tools/make_inicio.py`): no copia nada de las otras, pero **les
+cuenta los avisos** para no tener números escritos a mano que envejecen.
 
 **Los avisos vendidos o reservados se descartan** en las tres. Siguen publicados con un
 cartel al principio del título (`*RESERVADO*`, `Reservado!!`, `- Vendido -`), y se
@@ -77,7 +83,9 @@ de CABA se siguen relevando pero no se publican: están en `.work/` y vuelven co
 
 ## Estructura
 
-- `index.html` / `gba-norte.html` / `sierras.html` — páginas completas: markup, CSS
+- `index.html` — portada: presenta las tres búsquedas con sus números y enlaza a
+  cada una. 8 KB, sin dataset. La genera `tools/make_inicio.py`.
+- `caba-norte.html` / `gba-norte.html` / `sierras.html` — páginas completas: markup, CSS
   y JS embebidos,
   sin dependencias ni build. Filtros por barrio o localidad, dormitorios (2 / 3 / 4+),
   jardín, superficie y fuente; la de CABA suma "solo picks" y la de zona norte, el
@@ -137,7 +145,7 @@ falló y cómo reintentarlo. Detalles en [tools/README.md](tools/README.md).
 La página en sí no tiene build ni dependencias. Alcanza con abrir el archivo en el navegador:
 
 ```bash
-start index.html
+start index.html        # la portada; las búsquedas cuelgan de ahí
 ```
 
 Cualquier cambio se publica al hacer push a `main`.

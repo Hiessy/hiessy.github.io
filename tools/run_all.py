@@ -21,11 +21,11 @@ Tres cosas que el orden tiene que respetar, y por eso este archivo existe:
    pisan: una corrida dejó Calamuchita en 0 después de haber juntado 34 avisos.
    Acá las dos etapas de Argenprop van una después de la otra, y un lock impide
    que se corran dos `run_all.py` a la vez.
-2. **`build` va dos veces.** `deadlinks.py` necesita `index.html` armado para
+2. **`build` va dos veces.** `deadlinks.py` necesita `caba-norte.html` armado para
    saber qué avisos hay que verificar, y `build2.py` necesita el resultado de
    `deadlinks.py` para descartar los dados de baja. Primero se arma, después se
    verifica, después se arma de nuevo.
-3. **Las páginas 2 y 3 se generan desde `index.html`**, así que `build-final`
+3. **Las páginas 2 y 3 se generan desde `caba-norte.html`**, así que `build-final`
    tiene que terminar antes que `gba` y `sierras`.
 """
 import os, subprocess, sys, time
@@ -59,13 +59,13 @@ STAGES = [
     ("geocode", "Geocodificar las direcciones nuevas de Argenprop",
      [["geocode.py"]], 2400),
 
-    ("build", "Armar index.html (primera pasada, para que deadlinks sepa qué mirar)",
+    ("build", "Armar caba-norte.html (primera pasada, para que deadlinks sepa qué mirar)",
      [["build2.py"], ["inject.py"]], 900),
 
     ("deadlinks", "Verificar que los avisos publicados sigan vivos (410 = baja)",
      [["deadlinks.py", "--limit", "1400", "--deadline", "2400"]], 2700),
 
-    ("build-final", "Rearmar index.html descartando los dados de baja",
+    ("build-final", "Rearmar caba-norte.html descartando los dados de baja",
      [["build2.py"], ["inject.py"]], 900),
 
     ("gba", "Armar y escribir gba-norte.html",
@@ -73,9 +73,14 @@ STAGES = [
 
     ("sierras", "Armar y escribir sierras.html",
      [["build_sierras.py"], ["make_sierras.py"]], 900),
+
+    # Va última: cuenta los avisos de las tres páginas, así que necesita
+    # que ya estén escritas o los números de la portada salen viejos.
+    ("inicio", "Rearmar la portada con los números de las tres búsquedas",
+     [["make_inicio.py"]], 120),
 ]
 
-PAGES = {"build-final", "gba", "sierras"}      # lo que no toca la red
+PAGES = {"build-final", "gba", "sierras", "inicio"}   # lo que no toca la red
 
 
 def corr(nombre):
