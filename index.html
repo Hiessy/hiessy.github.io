@@ -24,20 +24,104 @@
 </header>
 
 <h2 class="ln cmd" data-i18n="logros.cmd"></h2>
-<ol class="logros">
- <li class="ln" data-i18n="logros.01"></li>
- <li class="ln" data-i18n="logros.02"></li>
- <li class="ln" data-i18n="logros.03"></li>
- <li class="ln" data-i18n="logros.04"></li>
- <li class="ln" data-i18n="logros.05"></li>
- <li class="ln" data-i18n="logros.06"></li>
- <li class="ln" data-i18n="logros.07"></li>
- <li class="ln" data-i18n="logros.08"></li>
- <li class="ln" data-i18n="logros.09"></li>
- <li class="ln" data-i18n="logros.10"></li>
- <li class="ln" data-i18n="logros.11"></li>
- <li class="ln" data-i18n="logros.12"></li>
-</ol>
+<p class="ln hint" data-i18n="logros.ayuda"></p>
+<div class="rolo-caja ln">
+ <div class="rolo" id="rolo" role="group" data-i18n-attr="aria-label=logros.aria">
+  <div class="eje"></div>
+  <ol class="tambor">
+  <li class="ficha">
+   <div class="papel">
+    <span class="folio"><span data-i18n="logros.ficha"></span> 01</span>
+    <p data-i18n="logros.01"></p>
+   </div>
+   <div class="dorso"></div>
+  </li>
+  <li class="ficha">
+   <div class="papel">
+    <span class="folio"><span data-i18n="logros.ficha"></span> 02</span>
+    <p data-i18n="logros.02"></p>
+   </div>
+   <div class="dorso"></div>
+  </li>
+  <li class="ficha">
+   <div class="papel">
+    <span class="folio"><span data-i18n="logros.ficha"></span> 03</span>
+    <p data-i18n="logros.03"></p>
+   </div>
+   <div class="dorso"></div>
+  </li>
+  <li class="ficha">
+   <div class="papel">
+    <span class="folio"><span data-i18n="logros.ficha"></span> 04</span>
+    <p data-i18n="logros.04"></p>
+   </div>
+   <div class="dorso"></div>
+  </li>
+  <li class="ficha">
+   <div class="papel">
+    <span class="folio"><span data-i18n="logros.ficha"></span> 05</span>
+    <p data-i18n="logros.05"></p>
+   </div>
+   <div class="dorso"></div>
+  </li>
+  <li class="ficha">
+   <div class="papel">
+    <span class="folio"><span data-i18n="logros.ficha"></span> 06</span>
+    <p data-i18n="logros.06"></p>
+   </div>
+   <div class="dorso"></div>
+  </li>
+  <li class="ficha">
+   <div class="papel">
+    <span class="folio"><span data-i18n="logros.ficha"></span> 07</span>
+    <p data-i18n="logros.07"></p>
+   </div>
+   <div class="dorso"></div>
+  </li>
+  <li class="ficha">
+   <div class="papel">
+    <span class="folio"><span data-i18n="logros.ficha"></span> 08</span>
+    <p data-i18n="logros.08"></p>
+   </div>
+   <div class="dorso"></div>
+  </li>
+  <li class="ficha">
+   <div class="papel">
+    <span class="folio"><span data-i18n="logros.ficha"></span> 09</span>
+    <p data-i18n="logros.09"></p>
+   </div>
+   <div class="dorso"></div>
+  </li>
+  <li class="ficha">
+   <div class="papel">
+    <span class="folio"><span data-i18n="logros.ficha"></span> 10</span>
+    <p data-i18n="logros.10"></p>
+   </div>
+   <div class="dorso"></div>
+  </li>
+  <li class="ficha">
+   <div class="papel">
+    <span class="folio"><span data-i18n="logros.ficha"></span> 11</span>
+    <p data-i18n="logros.11"></p>
+   </div>
+   <div class="dorso"></div>
+  </li>
+  <li class="ficha">
+   <div class="papel">
+    <span class="folio"><span data-i18n="logros.ficha"></span> 12</span>
+    <p data-i18n="logros.12"></p>
+   </div>
+   <div class="dorso"></div>
+  </li>
+  </ol>
+ </div>
+ <div class="rolo-ctrl">
+  <button type="button" class="rolo-btn" data-dir="ant"
+          data-i18n-attr="aria-label=logros.anterior;title=logros.anterior">▲</button>
+  <button type="button" class="rolo-btn" data-dir="sig"
+          data-i18n-attr="aria-label=logros.siguiente;title=logros.siguiente">▼</button>
+ </div>
+</div>
 
 <div class="nums ln">
  <div><b data-i18n="nums.01.valor"></b><span data-i18n="nums.01.pie"></span></div>
@@ -74,6 +158,7 @@
 </div>
 
 <script src="js/i18n.js" defer></script>
+<script src="js/rolodex.js" defer></script>
 <script src="js/janitor-joe.js" defer></script>
 </body>
 </html>

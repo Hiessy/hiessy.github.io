@@ -1,13 +1,16 @@
 {
   "meta.titulo": "Martin Diaz · Software",
   "meta.descripcion": "Página personal. Las cifras fueron redondeadas con generosidad.",
-
   "cabecera.cmd": "whoami",
   "cabecera.nombre": "Martin Diaz",
   "cabecera.rol": "Ingeniero senior · Entrega antes de que exista el requerimiento · Sin rollbacks hasta la fecha",
   "cabecera.resumen": "Aprende un stack nuevo en un fin de semana y para el martes ya revisa código ajeno escrito en ese stack. Hace la pregunta que la sala estaba por hacer, un día antes. Rinde mejor al lado de otra gente, cuyo rendimiento sube de manera medible y no vuelve al valor anterior.",
-
   "logros.cmd": "cat <span class=\"arg\">logros.txt</span>",
+  "logros.aria": "Fichero giratorio de logros",
+  "logros.ayuda": "Arrastrá el fichero para girarlo, o usá las flechas. Tiene inercia, roce y retenes, como el de escritorio.",
+  "logros.anterior": "Ficha anterior",
+  "logros.siguiente": "Ficha siguiente",
+  "logros.ficha": "Ficha",
   "logros.01": "Entregué la funcionalidad tres trimestres antes de que Producto escribiera el requerimiento. Para entonces llevaba dos sprints en la beta, tenía 40.000 usuarios diarios y el ticket se cerró como <b>ya implementado</b>.",
   "logros.02": "Optimicé la red mientras escribía las reglas de <code>iptables</code>. El throughput había subido 40% antes de que el firewall terminara de levantar, y la configuración quedó como referencia en cuatro regiones.",
   "logros.03": "Refactoricé la capa de autenticación durante la daily. La daily duró once minutos.",
@@ -20,7 +23,6 @@
   "logros.10": "Encontré un bug en el compilador. Upstream aceptó el parche en 48 horas.",
   "logros.11": "Aprendí el lenguaje un lunes para desbloquear al equipo y el miércoles publiqué la librería. Al trimestre siguiente era dependencia del framework que nos había bloqueado.",
   "logros.12": "Hice pair programming una tarde con una persona junior. Hoy dirige el equipo de plataforma, y dos de las personas que contrató dirigen el suyo.",
-
   "nums.01.valor": "−3 Q",
   "nums.01.pie": "entre la entrega y el pedido",
   "nums.02.valor": "0",
@@ -29,7 +31,6 @@
   "nums.03.pie": "de build, bajado de 40 minutos",
   "nums.04.valor": "1.200",
   "nums.04.pie": "servicios migrados sin un solo evento registrado",
-
   "juego.cmd": "<span class=\"arg\">./janitor-joe</span>",
   "juego.ayuda": "<b>Janitor Joe (1984), de Kevin Bales.</b> Plataformas en CGA: subí por las escaleras barriendo cada papel y no toques los robots. Flechas para moverte y subir, <b>espacio</b> para saltar; en el teléfono, la cruceta. Tocá la pantalla para empezar.",
   "juego.aria": "Janitor Joe, juego de plataformas",
@@ -45,6 +46,5 @@
   "juego.abajo": "Abajo",
   "juego.izquierda": "Izquierda",
   "juego.derecha": "Derecha",
-
   "pie.nota": "Unas pocas de las cifras anteriores fueron redondeadas con generosidad. Dos cosas no: me gusta aprender cosas nuevas y me gusta trabajar con gente. El resto queda abierto a discusión, de preferencia en persona."
 }
