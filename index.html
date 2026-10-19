@@ -4,66 +4,97 @@
 <meta name="description" content="Página personal. Los logros son mentira, el entusiasmo no.">
 <style>
 *{box-sizing:border-box}
-:root{--bg:#faf8f5;--ink:#1c1a17;--mut:#6f675d;--line:#e5ded4;--acc:#8a5a2b;--pick:#b8862f;--card:#fff;
- --wall:#e2dacd;--suelo:#fdfcfa;--mugre:#d8cdb9}
-@media(prefers-color-scheme:dark){:root{--bg:#141311;--ink:#f0ece6;--mut:#9c948a;--line:#2c2926;
- --acc:#d9a066;--pick:#e0b05a;--card:#1c1a18;--wall:#302c27;--suelo:#1a1816;--mugre:#3b352d}}
-body{margin:0;background:var(--bg);color:var(--ink);
+/* Oscuro fijo, no sigue al sistema: la página imita el puesto de trabajo de
+   madrugada —monitores encendidos, lámpara cálida de costado—, y en claro eso
+   no existe. El resto del sitio sí respeta la preferencia del sistema. */
+:root{--bg:#0a0b0d;--ink:#f4f2f0;--mut:#8b8782;--line:#23262e;
+ --acc:#ff5a30;--amb:#ffb347;--card:#111318;
+ --wall:#1b1f27;--suelo:#0d0f13;--mugre:#2e3340}
+html{background:var(--bg)}
+body{margin:0;color:var(--ink);
  font:16px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
- -webkit-font-smoothing:antialiased}
-.wrap{max-width:760px;margin:0 auto;padding:0 20px}
-/* --- idioma: dos botoncitos arriba a la derecha ------------------------- */
-.lang{position:absolute;top:16px;right:20px;display:flex;gap:4px}
-.lang button{font:inherit;font-size:11.5px;letter-spacing:.04em;padding:4px 9px;cursor:pointer;
- border:1px solid var(--line);background:var(--card);color:var(--mut);border-radius:999px}
-.lang button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.lang button:hover{border-color:var(--acc)}
+ -webkit-font-smoothing:antialiased;
+ /* el resplandor de los monitores arriba a la derecha y la lámpara a la izquierda */
+ background:
+  radial-gradient(1000px 680px at 80% -12%,rgba(255,90,48,.17),transparent 62%),
+  radial-gradient(760px 520px at 6% -4%,rgba(255,179,71,.08),transparent 60%),
+  var(--bg);
+ background-attachment:fixed}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+/* --- idioma ------------------------------------------------------------- */
+.lang{position:absolute;top:18px;right:20px;display:flex;gap:5px}
+.lang button{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+ font-size:11px;letter-spacing:.1em;padding:5px 10px;cursor:pointer;
+ border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:4px}
+.lang button.on{border-color:var(--acc);color:var(--acc);background:rgba(255,90,48,.09)}
+.lang button:hover{color:var(--ink);border-color:var(--acc)}
 @media(max-width:620px){.lang{position:static;justify-content:flex-end;padding:14px 20px 0}}
-header{padding:64px 0 10px;position:relative}
-@media(max-width:620px){header{padding:18px 0 6px}}
-h1{font-size:clamp(32px,7vw,54px);line-height:1.05;margin:0 0 10px;letter-spacing:-.03em}
-.role{margin:0 0 14px;font-size:clamp(15px,2.6vw,19px);color:var(--acc);font-weight:600;
- letter-spacing:-.01em;line-height:1.3}
-.sub{margin:0;color:var(--mut);max-width:58ch}
-h2{font-size:12.5px;color:var(--mut);letter-spacing:.08em;text-transform:uppercase;
- margin:48px 0 16px;font-weight:600}
-/* --- logros ------------------------------------------------------------- */
-ol.logros{margin:0;padding:0;list-style:none;counter-reset:l}
-ol.logros li{counter-increment:l;position:relative;padding:11px 0 11px 42px;
- border-bottom:1px solid var(--line);font-size:14.5px;line-height:1.55}
+/* --- cabecera ----------------------------------------------------------- */
+header{padding:76px 0 12px;position:relative}
+@media(max-width:620px){header{padding:20px 0 8px}}
+.prompt{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+ font-size:12px;color:var(--mut);letter-spacing:.04em;margin:0 0 16px}
+.prompt b{color:var(--acc);font-weight:400}
+h1{font-size:clamp(42px,10vw,96px);line-height:.92;margin:0 0 18px;
+ letter-spacing:-.035em;font-weight:900;text-transform:uppercase;
+ text-shadow:0 0 42px rgba(255,90,48,.3)}
+.role{margin:0 0 18px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+ font-size:clamp(12px,2.1vw,14px);color:var(--amb);letter-spacing:.06em;
+ text-transform:uppercase;line-height:1.5}
+.sub{margin:0;color:var(--mut);max-width:62ch;font-size:15px}
+h2{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+ font-size:11.5px;color:var(--mut);letter-spacing:.16em;text-transform:uppercase;
+ margin:56px 0 18px;font-weight:400;display:flex;align-items:center;gap:12px}
+h2::after{content:"";flex:1;height:1px;background:var(--line)}
+/* --- logros: lista de terminal ------------------------------------------ */
+ol.logros{margin:0;padding:0;list-style:none;counter-reset:l;
+ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+ol.logros li{counter-increment:l;position:relative;padding:13px 0 13px 46px;
+ border-bottom:1px solid var(--line);font-size:13.5px;line-height:1.68;color:#d7d3cf}
 ol.logros li:last-child{border-bottom:0}
-ol.logros li::before{content:counter(l,decimal-leading-zero);position:absolute;left:0;top:12px;
- font-size:11px;color:var(--mut);font-variant-numeric:tabular-nums;letter-spacing:.04em}
-ol.logros code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.88em;
- background:var(--line);padding:1px 5px;border-radius:4px}
+ol.logros li::before{content:counter(l,decimal-leading-zero);position:absolute;left:0;top:14px;
+ font-size:11.5px;color:var(--acc);letter-spacing:.06em}
+ol.logros li:hover{color:var(--ink)}
+ol.logros b{color:var(--amb);font-weight:600}
+ol.logros code{font-size:.92em;background:rgba(255,90,48,.1);color:var(--acc);
+ padding:1px 5px;border-radius:3px}
 /* --- numeritos ---------------------------------------------------------- */
-.nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;
- padding:20px 0 0;border-top:1px solid var(--line);margin-top:10px}
-.nums div b{display:block;font-size:26px;letter-spacing:-.02em;font-variant-numeric:tabular-nums;
- line-height:1.1;color:var(--acc)}
-.nums div span{font-size:12px;color:var(--mut);line-height:1.35;display:block;margin-top:3px}
+.nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(154px,1fr));gap:20px;
+ padding:26px 0 0;border-top:1px solid var(--line);margin-top:12px}
+.nums div b{display:block;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+ font-size:30px;letter-spacing:-.02em;line-height:1.1;color:var(--acc);font-weight:700}
+.nums div span{font-size:11.5px;color:var(--mut);line-height:1.45;display:block;margin-top:6px}
 /* --- el juego ----------------------------------------------------------- */
-.hint{margin:0 0 14px;font-size:13.5px;color:var(--mut)}
-.marco{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;
- display:flex;flex-direction:column;align-items:center;gap:10px}
-canvas{width:100%;max-width:480px;aspect-ratio:13/11;display:block;border-radius:8px;
+.hint{margin:0 0 16px;font-size:13.5px;color:var(--mut);max-width:70ch}
+.hint b{color:var(--ink)}
+.marco{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;
+ display:flex;flex-direction:column;align-items:center;gap:12px;
+ box-shadow:0 0 70px rgba(255,90,48,.07) inset}
+canvas{width:100%;max-width:480px;aspect-ratio:13/11;display:block;border-radius:6px;
  touch-action:none;cursor:pointer;outline:none}
 canvas:focus-visible{box-shadow:0 0 0 2px var(--acc)}
-.hud{display:flex;gap:16px;width:100%;max-width:480px;font-size:12.5px;color:var(--mut);
- font-variant-numeric:tabular-nums;justify-content:center;flex-wrap:wrap}
-.hud b{color:var(--ink);font-weight:650}
-/* cruceta: en el teléfono no hay flechas */
-.dpad{display:grid;grid-template-columns:repeat(3,44px);grid-template-rows:repeat(2,44px);gap:6px;
+.hud{display:flex;gap:18px;width:100%;max-width:480px;justify-content:center;flex-wrap:wrap;
+ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+ font-size:11.5px;color:var(--mut);letter-spacing:.08em;text-transform:uppercase}
+.hud b{color:var(--acc);font-weight:700}
+.dpad{display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(2,46px);gap:6px;
  justify-content:center}
 .dpad button{font:inherit;font-size:17px;border:1px solid var(--line);background:var(--bg);
- color:var(--ink);border-radius:9px;cursor:pointer;-webkit-user-select:none;user-select:none}
-.dpad button:active{background:var(--line)}
+ color:var(--ink);border-radius:7px;cursor:pointer;-webkit-user-select:none;user-select:none}
+.dpad button:active{background:rgba(255,90,48,.16);border-color:var(--acc)}
 .dpad .u{grid-column:2;grid-row:1}.dpad .l{grid-column:1;grid-row:2}
 .dpad .d{grid-column:2;grid-row:2}.dpad .r{grid-column:3;grid-row:2}
 @media(hover:hover) and (pointer:fine){.dpad{display:none}}
-footer{margin:56px 0 0;padding:22px 0 72px;border-top:1px solid var(--line);
- color:var(--mut);font-size:13px;line-height:1.65}
+footer{margin:64px 0 0;padding:24px 0 80px;border-top:1px solid var(--line);
+ color:var(--mut);font-size:12.5px;line-height:1.7}
 footer b{color:var(--ink)}
+@media(max-width:620px){
+ .wrap{padding:0 16px}
+ .sub{font-size:14.5px}
+ ol.logros li{padding-left:34px;font-size:13px}
+ footer{padding-bottom:64px}
+}
 </style></head><body>
 
 <div class="lang">
@@ -72,44 +103,49 @@ footer b{color:var(--ink)}
 
 <div class="wrap">
 <header>
+ <p class="prompt" data-es="<b>~/hiessy</b> $ whoami" data-en="<b>~/hiessy</b> $ whoami"></p>
  <h1>Martin Diaz</h1>
- <p class="role" data-es="Ingeniero senior · Entrega antes de que se escriba el requerimiento"
-    data-en="Senior engineer · Delivers before the requirement is written"></p>
+ <p class="role" data-es="Ingeniero senior · Entrega antes de que exista el requerimiento · Sin rollbacks hasta la fecha"
+    data-en="Senior engineer · Ships before the requirement exists · No rollbacks to date"></p>
  <p class="sub"
-    data-es="Aprende un stack nuevo en un fin de semana y para el martes lo domina. Hace la pregunta que todos iban a hacer, un día antes. Prefiere trabajar al lado de otra gente, que reporta mejoras medibles en su propio rendimiento."
-    data-en="Learns a new stack over a weekend and is fluent by Tuesday. Asks the question everyone else was about to ask, one day earlier. Prefers working alongside other people, who report measurable improvements in their own output."></p>
+    data-es="Aprende un stack nuevo en un fin de semana y para el martes ya revisa código ajeno escrito en ese stack. Hace la pregunta que la sala estaba por hacer, un día antes. Rinde mejor al lado de otra gente, cuyo rendimiento sube de manera medible y no vuelve al valor anterior."
+    data-en="Learns a new stack over a weekend and is reviewing other people’s code in it by Tuesday. Asks the question the room was about to ask, one day earlier. Works best alongside other people, whose throughput measurably improves and does not return to baseline afterwards."></p>
 </header>
 
 <h2 data-es="Logros seleccionados, verificados de manera independiente"
     data-en="Selected achievements, independently verified"></h2>
 <ol class="logros">
-<li data-es="Entregué la funcionalidad antes de que Producto la pidiera. Para cuando se escribió el requerimiento, ya llevaba dos sprints en la beta y los usuarios habían dejado de reportarla como faltante."
-    data-en="Shipped the feature before Product asked for it. By the time the requirement was written it had been in the beta for two sprints and users had stopped reporting it as missing."></li>
-<li data-es="Optimicé la red mientras cargaba las reglas de iptables. El throughput ya había subido 40% antes de que terminara de levantar el firewall."
-    data-en="Optimized the network while loading the iptables rules. Throughput was already up 40% before the firewall finished coming online."></li>
-<li data-es="Identifiqué la causa raíz leyendo el stack trace, antes de que terminaran de subir los logs."
-    data-en="Identified the root cause from the stack trace, before the logs had finished uploading."></li>
-<li data-es="Migré el clúster sin una sola caída. El monitoreo no registró un solo evento. Nadie se enteró hasta que llegó la factura 60% más baja."
-    data-en="Migrated the cluster with zero downtime. Monitoring recorded no event at all. Nobody noticed until the invoice arrived 60% lower."></li>
-<li data-es="Revisé un pull request de 4.000 líneas y encontré la única condición de carrera. Todavía no se había producido."
-    data-en="Reviewed a 4,000-line pull request and found the single race condition. It had not occurred yet."></li>
-<li data-es="Bajé el build de 40 minutos a 90 segundos, y después pedí disculpas por los 90 segundos."
-    data-en="Cut the build from 40 minutes to 90 seconds, then apologized for the remaining 90 seconds."></li>
-<li data-es="Escribí la documentación primero. La implementación le coincidió exactamente. Le sigue coincidiendo."
-    data-en="Wrote the documentation first. The implementation matched it exactly. It still matches."></li>
-<li data-es="Aprendí el lenguaje un lunes para desbloquear al equipo. El miércoles publiqué la librería. Hoy es dependencia de aquello que nos bloqueaba."
-    data-en="Learned the language on a Monday to unblock the team. Shipped the library on Wednesday. It is now a dependency of the thing that had blocked us."></li>
-<li data-es="Hice pair programming una tarde con una persona junior. Hoy dirige el equipo de plataforma."
-    data-en="Paired with a junior for one afternoon. They now run the platform team."></li>
-<li data-es="Anticipé la caída, la resolví antes de que ocurriera y el post mortem se quedó sin nada que escribir."
-    data-en="Predicted the outage, resolved it before it happened, and left the post-mortem with nothing to write."></li>
+<li data-es="Entregué la funcionalidad tres trimestres antes de que Producto escribiera el requerimiento. Para entonces llevaba dos sprints en la beta, tenía 40.000 usuarios diarios y el ticket se cerró como <b>ya implementado</b>."
+    data-en="Shipped the feature three quarters before Product wrote the requirement. By then it had been in the beta for two sprints, had 40,000 daily users, and the ticket was closed as <b>already done</b>."></li>
+<li data-es="Optimicé la red mientras escribía las reglas de <code>iptables</code>. El throughput había subido 40% antes de que el firewall terminara de levantar, y la configuración quedó como referencia en cuatro regiones."
+    data-en="Optimized the network while writing the <code>iptables</code> rules. Throughput was up 40% before the firewall finished coming online, and the configuration was adopted as the reference across four regions."></li>
+<li data-es="Refactoricé la capa de autenticación durante la daily. La daily duró once minutos."
+    data-en="Refactored the authentication layer during the stand-up. The stand-up ran eleven minutes."></li>
+<li data-es="Identifiqué la causa raíz leyendo el stack trace mientras todavía subían los logs, parcheé en la misma llamada y el incidente bajó de severidad antes de que terminara de publicarse el status page."
+    data-en="Identified the root cause from the stack trace while the logs were still uploading, patched it on the call, and the incident was downgraded before the status page finished publishing."></li>
+<li data-es="Migré 1.200 servicios entre dos nubes sin una sola caída. El monitoreo no registró un solo evento. Se enteró primero Finanzas, cuando llegó la factura 60% más baja."
+    data-en="Migrated 1,200 services across two clouds with zero downtime. Monitoring recorded no event at all. Finance noticed first, when the invoice arrived 60% lower."></li>
+<li data-es="Revisé un pull request de 4.000 líneas de una sentada y encontré la única condición de carrera, que no se había disparado en tres años de producción."
+    data-en="Reviewed a 4,000-line pull request in one sitting and found the single race condition, which had not fired once in three years of production."></li>
+<li data-es="Bajé el build de 40 minutos a 9 segundos, y después reescribí la caché para que el segundo build no tardara nada."
+    data-en="Cut the build from 40 minutes to 9 seconds, then rewrote the cache layer so the second build took no time at all."></li>
+<li data-es="Bajé la latencia p99 un 94% borrando código. Saldo neto del cambio: <b>−3.100 líneas</b>."
+    data-en="Reduced p99 latency by 94% by deleting code. Net change: <b>−3,100 lines</b>."></li>
+<li data-es="Escribí la documentación primero. La implementación le coincidió exactamente. Cuatro años y nueve releases después le sigue coincidiendo, diagramas incluidos."
+    data-en="Wrote the documentation first. The implementation matched it exactly. Four years and nine releases later it still matches, diagrams included."></li>
+<li data-es="Encontré un bug en el compilador. Upstream aceptó el parche en 48 horas."
+    data-en="Found a bug in the compiler. Upstream merged the patch in 48 hours."></li>
+<li data-es="Aprendí el lenguaje un lunes para desbloquear al equipo y el miércoles publiqué la librería. Al trimestre siguiente era dependencia del framework que nos había bloqueado."
+    data-en="Learned the language on a Monday to unblock the team and shipped the library on Wednesday. By the next quarter it was a dependency of the framework that had blocked us."></li>
+<li data-es="Hice pair programming una tarde con una persona junior. Hoy dirige el equipo de plataforma, y dos de las personas que contrató dirigen el suyo."
+    data-en="Paired with a junior for one afternoon. They now run the platform team, and two of the people they hired run their own."></li>
 </ol>
 
 <div class="nums">
- <div><b>−3 d</b><span data-es="entre la entrega y el pedido" data-en="between shipping and being asked"></span></div>
+ <div><b>−3 Q</b><span data-es="entre la entrega y el pedido" data-en="between shipping and being asked"></span></div>
  <div><b>0</b><span data-es="rollbacks necesarios hasta la fecha" data-en="rollbacks required to date"></span></div>
- <div><b>90 s</b><span data-es="de build, bajado de 40 minutos" data-en="build time, down from 40 minutes"></span></div>
- <div><b>1</b><span data-es="tarde de pair programming antes de que dirigiera el equipo" data-en="afternoon of pairing before they ran the team"></span></div>
+ <div><b>9 s</b><span data-es="de build, bajado de 40 minutos" data-en="build time, down from 40 minutes"></span></div>
+ <div><b>1.200</b><span data-es="servicios migrados sin un solo evento registrado" data-en="services migrated with no recorded event"></span></div>
 </div>
 
 <h2 data-es="Una herramienta de productividad" data-en="A productivity tool"></h2>
@@ -132,8 +168,8 @@ footer b{color:var(--ink)}
 </div>
 
 <footer>
- <p data-es="Algo de lo anterior está levemente exagerado. Dos cosas no: me gusta aprender cosas nuevas y me gusta trabajar con gente. El resto queda abierto a discusión, de preferencia en persona."
-    data-en="Some of the above is mildly exaggerated. Two things are not: I like learning new things and I like working with people. The rest is open to discussion, ideally in person."></p>
+ <p data-es="Unas pocas de las cifras anteriores fueron redondeadas con generosidad. Dos cosas no: me gusta aprender cosas nuevas y me gusta trabajar con gente. El resto queda abierto a discusión, de preferencia en persona."
+    data-en="A small number of the figures above have been rounded generously. Two things have not: I like learning new things and I like working with people. The rest is open to discussion, ideally in person."></p>
 </footer>
 </div>
 
