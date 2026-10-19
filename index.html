@@ -1,99 +1,126 @@
 <!doctype html><html lang="es"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Martin Diaz · Software</title>
-<meta name="description" content="Página personal. Los logros son mentira, el entusiasmo no.">
+<meta name="description" content="Página personal. Las cifras fueron redondeadas con generosidad.">
 <style>
 *{box-sizing:border-box}
-/* Oscuro fijo, no sigue al sistema: la página imita el puesto de trabajo de
-   madrugada —monitores encendidos, lámpara cálida de costado—, y en claro eso
+/* Oscuro fijo, no sigue al sistema: la página imita un puesto de trabajo de
+   madrugada —monitores encendidos, lámpara cálida de costado— y en claro eso
    no existe. El resto del sitio sí respeta la preferencia del sistema. */
-:root{--bg:#0a0b0d;--ink:#f4f2f0;--mut:#8b8782;--line:#23262e;
- --acc:#ff5a30;--amb:#ffb347;--card:#111318;
- --wall:#1b1f27;--suelo:#0d0f13;--mugre:#2e3340}
+:root{--bg:#0a0b0d;--ink:#f4f2f0;--mut:#847f79;--line:#1e2128;
+ --acc:#ff5a30;--amb:#ffb347;--card:#0e1014;
+ /* CGA de 1984, paleta 1 en alta intensidad: es la del Janitor Joe original */
+ --cga-cy:#55ffff;--cga-mg:#ff55ff;--cga-wh:#ffffff;
+ /* La canaleta de los marcadores, en px y no en `ch`: `ch` se mide contra el
+    font-size del propio elemento, así que el h1 de 74px se indentaba siete
+    caracteres *suyos* —más de 300px— y se despegaba de todo lo demás. */
+ --gut:58px}
 html{background:var(--bg)}
 body{margin:0;color:var(--ink);
- font:16px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
- -webkit-font-smoothing:antialiased;
- /* el resplandor de los monitores arriba a la derecha y la lámpara a la izquierda */
+ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+ font-size:14px;line-height:1.7;-webkit-font-smoothing:antialiased;
  background:
   radial-gradient(1000px 680px at 80% -12%,rgba(255,90,48,.17),transparent 62%),
   radial-gradient(760px 520px at 6% -4%,rgba(255,179,71,.08),transparent 60%),
   var(--bg);
  background-attachment:fixed}
-.wrap{max-width:820px;margin:0 auto;padding:0 20px}
-code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+/* --- la grilla del terminal ---------------------------------------------
+   Todo el texto arranca en la misma columna y corta en el mismo ancho. Lo
+   único que vive a la izquierda de esa columna son los marcadores —el `$`,
+   el `[01]`, el `#`—, que ocupan la canaleta. Antes cada bloque tenía su
+   propio margen y su propio `max-width`, así que ni los bordes izquierdos ni
+   los derechos coincidían: se leía torcido. */
+.wrap{max-width:84ch;margin:0 auto;padding:0 20px}
+.ln{position:relative;padding-left:var(--gut);margin:0}
+.ln::before{position:absolute;left:0;top:0;white-space:pre}
+/* línea de comando */
+.cmd{color:var(--ink);margin:0}
+.cmd::before{content:"$";color:var(--acc)}
+.cmd .arg{color:var(--amb)}
+
 /* --- idioma ------------------------------------------------------------- */
 .lang{position:absolute;top:18px;right:20px;display:flex;gap:5px}
-.lang button{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
- font-size:11px;letter-spacing:.1em;padding:5px 10px;cursor:pointer;
- border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:4px}
+.lang button{font:inherit;font-size:11px;letter-spacing:.1em;padding:4px 10px;cursor:pointer;
+ border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:3px}
 .lang button.on{border-color:var(--acc);color:var(--acc);background:rgba(255,90,48,.09)}
 .lang button:hover{color:var(--ink);border-color:var(--acc)}
-@media(max-width:620px){.lang{position:static;justify-content:flex-end;padding:14px 20px 0}}
+@media(max-width:640px){.lang{position:static;justify-content:flex-end;padding:14px 20px 0}}
+
 /* --- cabecera ----------------------------------------------------------- */
-header{padding:76px 0 12px;position:relative}
-@media(max-width:620px){header{padding:20px 0 8px}}
-.prompt{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
- font-size:12px;color:var(--mut);letter-spacing:.04em;margin:0 0 16px}
-.prompt b{color:var(--acc);font-weight:400}
-h1{font-size:clamp(42px,10vw,96px);line-height:.92;margin:0 0 18px;
- letter-spacing:-.035em;font-weight:900;text-transform:uppercase;
- text-shadow:0 0 42px rgba(255,90,48,.3)}
-.role{margin:0 0 18px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
- font-size:clamp(12px,2.1vw,14px);color:var(--amb);letter-spacing:.06em;
- text-transform:uppercase;line-height:1.5}
-.sub{margin:0;color:var(--mut);max-width:62ch;font-size:15px}
-h2{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
- font-size:11.5px;color:var(--mut);letter-spacing:.16em;text-transform:uppercase;
- margin:56px 0 18px;font-weight:400;display:flex;align-items:center;gap:12px}
-h2::after{content:"";flex:1;height:1px;background:var(--line)}
-/* --- logros: lista de terminal ------------------------------------------ */
-ol.logros{margin:0;padding:0;list-style:none;counter-reset:l;
- font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-ol.logros li{counter-increment:l;position:relative;padding:13px 0 13px 46px;
- border-bottom:1px solid var(--line);font-size:13.5px;line-height:1.68;color:#d7d3cf}
+header{padding:72px 0 0}
+@media(max-width:640px){header{padding:18px 0 0}}
+h1{font-size:clamp(34px,8.4vw,74px);line-height:1;margin:14px 0 14px;
+ letter-spacing:-.03em;font-weight:800;text-transform:uppercase;
+ text-shadow:0 0 42px rgba(255,90,48,.32)}
+.role{color:var(--amb);text-transform:uppercase;letter-spacing:.05em;font-size:12.5px;
+ line-height:1.65;margin:0 0 16px}
+.sub{color:var(--mut);margin:0;font-size:13.5px}
+
+h2{font-size:14px;font-weight:400;margin:54px 0 20px}
+
+/* --- logros ------------------------------------------------------------- */
+ol.logros{margin:0;padding:0;list-style:none;counter-reset:l}
+ol.logros li{counter-increment:l;padding-top:11px;padding-bottom:11px;
+ border-bottom:1px solid var(--line);font-size:13.5px;line-height:1.72;color:#cdc9c5}
 ol.logros li:last-child{border-bottom:0}
-ol.logros li::before{content:counter(l,decimal-leading-zero);position:absolute;left:0;top:14px;
- font-size:11.5px;color:var(--acc);letter-spacing:.06em}
+ol.logros li::before{content:"[" counter(l,decimal-leading-zero) "]";
+ color:var(--acc);top:11px;font-size:13px}
 ol.logros li:hover{color:var(--ink)}
 ol.logros b{color:var(--amb);font-weight:600}
-ol.logros code{font-size:.92em;background:rgba(255,90,48,.1);color:var(--acc);
- padding:1px 5px;border-radius:3px}
+ol.logros code{font:inherit;background:rgba(255,90,48,.12);color:var(--acc);padding:0 4px;border-radius:2px}
+
 /* --- numeritos ---------------------------------------------------------- */
-.nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(154px,1fr));gap:20px;
- padding:26px 0 0;border-top:1px solid var(--line);margin-top:12px}
-.nums div b{display:block;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
- font-size:30px;letter-spacing:-.02em;line-height:1.1;color:var(--acc);font-weight:700}
-.nums div span{font-size:11.5px;color:var(--mut);line-height:1.45;display:block;margin-top:6px}
+.nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(16ch,1fr));gap:22px;
+ /* el atajo `padding` pisaba el padding-left de `.ln` y este bloque quedaba
+    58px a la izquierda del resto; va la canaleta explícita */
+ padding:26px 0 0 var(--gut);border-top:1px solid var(--line);margin:14px 0 0}
+.nums div b{display:block;font-size:27px;line-height:1.1;color:var(--acc);font-weight:700;
+ letter-spacing:-.02em}
+.nums div span{font-size:11.5px;color:var(--mut);line-height:1.5;display:block;margin-top:6px}
+
 /* --- el juego ----------------------------------------------------------- */
-.hint{margin:0 0 16px;font-size:13.5px;color:var(--mut);max-width:70ch}
+.hint{color:var(--mut);font-size:13px;margin:0 0 18px;line-height:1.7}
 .hint b{color:var(--ink)}
-.marco{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;
- display:flex;flex-direction:column;align-items:center;gap:12px;
- box-shadow:0 0 70px rgba(255,90,48,.07) inset}
-canvas{width:100%;max-width:480px;aspect-ratio:13/11;display:block;border-radius:6px;
- touch-action:none;cursor:pointer;outline:none}
-canvas:focus-visible{box-shadow:0 0 0 2px var(--acc)}
-.hud{display:flex;gap:18px;width:100%;max-width:480px;justify-content:center;flex-wrap:wrap;
- font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
- font-size:11.5px;color:var(--mut);letter-spacing:.08em;text-transform:uppercase}
-.hud b{color:var(--acc);font-weight:700}
-.dpad{display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(2,46px);gap:6px;
- justify-content:center}
-.dpad button{font:inherit;font-size:17px;border:1px solid var(--line);background:var(--bg);
- color:var(--ink);border-radius:7px;cursor:pointer;-webkit-user-select:none;user-select:none}
-.dpad button:active{background:rgba(255,90,48,.16);border-color:var(--acc)}
-.dpad .u{grid-column:2;grid-row:1}.dpad .l{grid-column:1;grid-row:2}
-.dpad .d{grid-column:2;grid-row:2}.dpad .r{grid-column:3;grid-row:2}
-@media(hover:hover) and (pointer:fine){.dpad{display:none}}
-footer{margin:64px 0 0;padding:24px 0 80px;border-top:1px solid var(--line);
- color:var(--mut);font-size:12.5px;line-height:1.7}
-footer b{color:var(--ink)}
-@media(max-width:620px){
+.marco{margin-left:var(--gut);background:#000;border:1px solid var(--line);border-radius:4px;
+ padding:14px;display:flex;flex-direction:column;align-items:center;gap:12px}
+canvas{width:100%;max-width:440px;aspect-ratio:320/200;display:block;
+ image-rendering:pixelated;touch-action:none;cursor:pointer;outline:none;
+ background:#000;border:1px solid #1b1d22}
+canvas:focus-visible{border-color:var(--acc)}
+.hud{display:flex;gap:16px;width:100%;max-width:440px;justify-content:center;flex-wrap:wrap;
+ font-size:11px;color:var(--mut);letter-spacing:.1em;text-transform:uppercase}
+.hud b{color:var(--cga-cy);font-weight:700}
+/* en el teléfono no hay teclado: cruceta de tres y botón de salto */
+.pad{display:flex;gap:10px;align-items:center}
+.cruz{display:grid;grid-template-columns:repeat(3,42px);grid-template-rows:repeat(2,42px);gap:5px}
+.pad button{font:inherit;font-size:15px;border:1px solid var(--line);background:#0a0b0d;
+ color:var(--ink);border-radius:5px;cursor:pointer;-webkit-user-select:none;user-select:none;
+ touch-action:none}
+.pad button:active,.pad button.on{background:rgba(255,90,48,.2);border-color:var(--acc)}
+.cruz .u{grid-column:2;grid-row:1}.cruz .l{grid-column:1;grid-row:2}
+.cruz .d{grid-column:2;grid-row:2}.cruz .r{grid-column:3;grid-row:2}
+.salto{width:72px;height:89px;line-height:1.2;font-size:11px;letter-spacing:.08em}
+@media(hover:hover) and (pointer:fine){.pad{display:none}}
+@media(max-width:640px){.marco{margin-left:0}}
+
+/* --- pie ---------------------------------------------------------------- */
+footer{margin:56px 0 0;padding:22px 0 26px;border-top:1px solid var(--line)}
+.nota{color:var(--mut);font-size:12.5px;line-height:1.75}
+.nota::before{content:"#";color:var(--line)}
+.nota b{color:var(--ink)}
+/* el cursor que queda titilando al final, como una consola esperando */
+.fin{padding-bottom:70px}
+.cur{display:inline-block;width:.62em;height:1.05em;background:var(--acc);
+ vertical-align:-.18em;animation:bl 1.1s steps(1,end) infinite}
+@keyframes bl{50%{opacity:0}}
+@media(prefers-reduced-motion:reduce){.cur{animation:none}}
+
+@media(max-width:640px){
  .wrap{padding:0 16px}
- .sub{font-size:14.5px}
- ol.logros li{padding-left:34px;font-size:13px}
- footer{padding-bottom:64px}
+ :root{--gut:42px}
+ body{font-size:13.5px}
+ h1{margin:10px 0 12px}
 }
 </style></head><body>
 
@@ -103,55 +130,56 @@ footer b{color:var(--ink)}
 
 <div class="wrap">
 <header>
- <p class="prompt" data-es="<b>~/hiessy</b> $ whoami" data-en="<b>~/hiessy</b> $ whoami"></p>
- <h1>Martin Diaz</h1>
- <p class="role" data-es="Ingeniero senior · Entrega antes de que exista el requerimiento · Sin rollbacks hasta la fecha"
+ <p class="ln cmd">whoami</p>
+ <h1 class="ln">Martin Diaz</h1>
+ <p class="ln role"
+    data-es="Ingeniero senior · Entrega antes de que exista el requerimiento · Sin rollbacks hasta la fecha"
     data-en="Senior engineer · Ships before the requirement exists · No rollbacks to date"></p>
- <p class="sub"
+ <p class="ln sub"
     data-es="Aprende un stack nuevo en un fin de semana y para el martes ya revisa código ajeno escrito en ese stack. Hace la pregunta que la sala estaba por hacer, un día antes. Rinde mejor al lado de otra gente, cuyo rendimiento sube de manera medible y no vuelve al valor anterior."
     data-en="Learns a new stack over a weekend and is reviewing other people’s code in it by Tuesday. Asks the question the room was about to ask, one day earlier. Works best alongside other people, whose throughput measurably improves and does not return to baseline afterwards."></p>
 </header>
 
-<h2 data-es="Logros seleccionados, verificados de manera independiente"
-    data-en="Selected achievements, independently verified"></h2>
+<h2 class="ln cmd" data-es="cat <span class=&quot;arg&quot;>logros.txt</span>"
+    data-en="cat <span class=&quot;arg&quot;>achievements.txt</span>"></h2>
 <ol class="logros">
-<li data-es="Entregué la funcionalidad tres trimestres antes de que Producto escribiera el requerimiento. Para entonces llevaba dos sprints en la beta, tenía 40.000 usuarios diarios y el ticket se cerró como <b>ya implementado</b>."
+<li class="ln" data-es="Entregué la funcionalidad tres trimestres antes de que Producto escribiera el requerimiento. Para entonces llevaba dos sprints en la beta, tenía 40.000 usuarios diarios y el ticket se cerró como <b>ya implementado</b>."
     data-en="Shipped the feature three quarters before Product wrote the requirement. By then it had been in the beta for two sprints, had 40,000 daily users, and the ticket was closed as <b>already done</b>."></li>
-<li data-es="Optimicé la red mientras escribía las reglas de <code>iptables</code>. El throughput había subido 40% antes de que el firewall terminara de levantar, y la configuración quedó como referencia en cuatro regiones."
+<li class="ln" data-es="Optimicé la red mientras escribía las reglas de <code>iptables</code>. El throughput había subido 40% antes de que el firewall terminara de levantar, y la configuración quedó como referencia en cuatro regiones."
     data-en="Optimized the network while writing the <code>iptables</code> rules. Throughput was up 40% before the firewall finished coming online, and the configuration was adopted as the reference across four regions."></li>
-<li data-es="Refactoricé la capa de autenticación durante la daily. La daily duró once minutos."
+<li class="ln" data-es="Refactoricé la capa de autenticación durante la daily. La daily duró once minutos."
     data-en="Refactored the authentication layer during the stand-up. The stand-up ran eleven minutes."></li>
-<li data-es="Identifiqué la causa raíz leyendo el stack trace mientras todavía subían los logs, parcheé en la misma llamada y el incidente bajó de severidad antes de que terminara de publicarse el status page."
+<li class="ln" data-es="Identifiqué la causa raíz leyendo el stack trace mientras todavía subían los logs, parcheé en la misma llamada y el incidente bajó de severidad antes de que terminara de publicarse el status page."
     data-en="Identified the root cause from the stack trace while the logs were still uploading, patched it on the call, and the incident was downgraded before the status page finished publishing."></li>
-<li data-es="Migré 1.200 servicios entre dos nubes sin una sola caída. El monitoreo no registró un solo evento. Se enteró primero Finanzas, cuando llegó la factura 60% más baja."
+<li class="ln" data-es="Migré 1.200 servicios entre dos nubes sin una sola caída. El monitoreo no registró un solo evento. Se enteró primero Finanzas, cuando llegó la factura 60% más baja."
     data-en="Migrated 1,200 services across two clouds with zero downtime. Monitoring recorded no event at all. Finance noticed first, when the invoice arrived 60% lower."></li>
-<li data-es="Revisé un pull request de 4.000 líneas de una sentada y encontré la única condición de carrera, que no se había disparado en tres años de producción."
+<li class="ln" data-es="Revisé un pull request de 4.000 líneas de una sentada y encontré la única condición de carrera, que no se había disparado en tres años de producción."
     data-en="Reviewed a 4,000-line pull request in one sitting and found the single race condition, which had not fired once in three years of production."></li>
-<li data-es="Bajé el build de 40 minutos a 9 segundos, y después reescribí la caché para que el segundo build no tardara nada."
+<li class="ln" data-es="Bajé el build de 40 minutos a 9 segundos, y después reescribí la caché para que el segundo build no tardara nada."
     data-en="Cut the build from 40 minutes to 9 seconds, then rewrote the cache layer so the second build took no time at all."></li>
-<li data-es="Bajé la latencia p99 un 94% borrando código. Saldo neto del cambio: <b>−3.100 líneas</b>."
+<li class="ln" data-es="Bajé la latencia p99 un 94% borrando código. Saldo neto del cambio: <b>−3.100 líneas</b>."
     data-en="Reduced p99 latency by 94% by deleting code. Net change: <b>−3,100 lines</b>."></li>
-<li data-es="Escribí la documentación primero. La implementación le coincidió exactamente. Cuatro años y nueve releases después le sigue coincidiendo, diagramas incluidos."
+<li class="ln" data-es="Escribí la documentación primero. La implementación le coincidió exactamente. Cuatro años y nueve releases después le sigue coincidiendo, diagramas incluidos."
     data-en="Wrote the documentation first. The implementation matched it exactly. Four years and nine releases later it still matches, diagrams included."></li>
-<li data-es="Encontré un bug en el compilador. Upstream aceptó el parche en 48 horas."
+<li class="ln" data-es="Encontré un bug en el compilador. Upstream aceptó el parche en 48 horas."
     data-en="Found a bug in the compiler. Upstream merged the patch in 48 hours."></li>
-<li data-es="Aprendí el lenguaje un lunes para desbloquear al equipo y el miércoles publiqué la librería. Al trimestre siguiente era dependencia del framework que nos había bloqueado."
+<li class="ln" data-es="Aprendí el lenguaje un lunes para desbloquear al equipo y el miércoles publiqué la librería. Al trimestre siguiente era dependencia del framework que nos había bloqueado."
     data-en="Learned the language on a Monday to unblock the team and shipped the library on Wednesday. By the next quarter it was a dependency of the framework that had blocked us."></li>
-<li data-es="Hice pair programming una tarde con una persona junior. Hoy dirige el equipo de plataforma, y dos de las personas que contrató dirigen el suyo."
+<li class="ln" data-es="Hice pair programming una tarde con una persona junior. Hoy dirige el equipo de plataforma, y dos de las personas que contrató dirigen el suyo."
     data-en="Paired with a junior for one afternoon. They now run the platform team, and two of the people they hired run their own."></li>
 </ol>
 
-<div class="nums">
+<div class="nums ln">
  <div><b>−3 Q</b><span data-es="entre la entrega y el pedido" data-en="between shipping and being asked"></span></div>
  <div><b>0</b><span data-es="rollbacks necesarios hasta la fecha" data-en="rollbacks required to date"></span></div>
  <div><b>9 s</b><span data-es="de build, bajado de 40 minutos" data-en="build time, down from 40 minutes"></span></div>
  <div><b>1.200</b><span data-es="servicios migrados sin un solo evento registrado" data-en="services migrated with no recorded event"></span></div>
 </div>
 
-<h2 data-es="Una herramienta de productividad" data-en="A productivity tool"></h2>
-<p class="hint"
-   data-es="<b>Janitor Joe, edición producción.</b> Trapeá cada baldosa mientras los bugs andan sueltos. El récord lo tiene el dueño del sitio, dato que no fue verificado de manera independiente. Flechas o WASD; en el teléfono, la cruceta. Tocá el tablero para empezar."
-   data-en="<b>Janitor Joe, production edition.</b> Mop every tile while the bugs roam free. The high score belongs to the owner of this site, a claim that has not been independently verified. Arrows or WASD; on a phone, the pad. Tap the board to start."></p>
+<h2 class="ln cmd"><span class="arg">./janitor-joe</span></h2>
+<p class="ln hint"
+   data-es="<b>Janitor Joe (1984), de Kevin Bales.</b> Plataformas en CGA: subí por las escaleras barriendo cada papel y no toques los robots. Flechas para moverte y subir, <b>espacio</b> para saltar; en el teléfono, la cruceta. Tocá la pantalla para empezar."
+   data-en="<b>Janitor Joe (1984), by Kevin Bales.</b> CGA platforms: climb the ladders sweeping up every scrap and do not touch the robots. Arrows to move and climb, <b>space</b> to jump; on a phone, the pad. Tap the screen to start."></p>
 <div class="marco">
  <canvas id="g" tabindex="0" aria-label="Janitor Joe"></canvas>
  <div class="hud">
@@ -159,24 +187,28 @@ footer b{color:var(--ink)}
   <span data-es="Puntos" data-en="Score"></span>&nbsp;<b id="hpts">0</b>
   <span data-es="Vidas" data-en="Lives"></span>&nbsp;<b id="hvid">3</b>
  </div>
- <div class="dpad">
-  <button class="u" data-dir="u" aria-label="arriba">↑</button>
-  <button class="l" data-dir="l" aria-label="izquierda">←</button>
-  <button class="d" data-dir="d" aria-label="abajo">↓</button>
-  <button class="r" data-dir="r" aria-label="derecha">→</button>
+ <div class="pad">
+  <div class="cruz">
+   <button class="u" data-k="u" aria-label="arriba">↑</button>
+   <button class="l" data-k="l" aria-label="izquierda">←</button>
+   <button class="d" data-k="d" aria-label="abajo">↓</button>
+   <button class="r" data-k="r" aria-label="derecha">→</button>
+  </div>
+  <button class="salto" data-k="j" aria-label="saltar" data-es="SALTO" data-en="JUMP"></button>
  </div>
 </div>
 
 <footer>
- <p data-es="Unas pocas de las cifras anteriores fueron redondeadas con generosidad. Dos cosas no: me gusta aprender cosas nuevas y me gusta trabajar con gente. El resto queda abierto a discusión, de preferencia en persona."
+ <p class="ln nota"
+    data-es="Unas pocas de las cifras anteriores fueron redondeadas con generosidad. Dos cosas no: me gusta aprender cosas nuevas y me gusta trabajar con gente. El resto queda abierto a discusión, de preferencia en persona."
     data-en="A small number of the figures above have been rounded generously. Two things have not: I like learning new things and I like working with people. The rest is open to discussion, ideally in person."></p>
 </footer>
+<p class="ln cmd fin"><span class="cur"></span></p>
 </div>
 
 <script>
 // --- idioma ---------------------------------------------------------------
 // Cada texto viaja en `data-es` y `data-en`; acá sólo se elige cuál se muestra.
-// Arranca en el idioma del navegador y recuerda lo que elijas.
 const LK='hiessy:idioma';
 let idioma='es';
 function pintarIdioma(l){
@@ -189,13 +221,11 @@ function pintarIdioma(l){
  bes.classList.toggle('on',l==='es');
  ben.classList.toggle('on',l==='en');
  try{localStorage.setItem(LK,l)}catch(e){}
- dibujar();                            // los carteles del juego también cambian
+ if(typeof pisos!=='undefined')dibujar();
 }
-// Se llama al final del script, no acá: `pintarIdioma` termina en `dibujar()`,
-// y las variables del juego son `let` declaradas más abajo. Invocarlo antes
-// moría con "Cannot access 'sucio' before initialization" —ni el `if(!sucio)`
-// salva, que leer un `let` en su zona muerta ya tira— y se llevaba puesto todo
-// el resto del script, juego incluido.
+// Se llama al final: `pintarIdioma` termina en `dibujar()` y las variables del
+// juego son `let` declaradas más abajo. Llamarlo antes moría con "Cannot access
+// ... before initialization" y se llevaba puesto el resto del script.
 function idiomaInicial(){
  let l=null;
  try{l=localStorage.getItem(LK)}catch(e){}
@@ -206,204 +236,241 @@ bes.onclick=()=>pintarIdioma('es');
 ben.onclick=()=>pintarIdioma('en');
 
 // --- Janitor Joe ----------------------------------------------------------
-// Homenaje al de MS-DOS del 84: pasillos, bichos que te persiguen y el piso
-// para dejar limpio. Acá el piso es producción y los bichos son los bugs.
-const MAPA=[
- "#############",
- "#...........#",
- "#.##.###.##.#",
- "#...........#",
- "#.#.#####.#.#",
- "#.#.......#.#",
- "#.#.#####.#.#",
- "#...........#",
- "#.##.###.##.#",
- "#...........#",
- "#############"];
-const COLS=MAPA[0].length, FILAS=MAPA.length;
-const pared=(f,c)=>f<0||c<0||f>=FILAS||c>=COLS||MAPA[f][c]==='#';
+// El original (Kevin Bales, 1984) es un plataformas CGA de 320×200 parecido al
+// Donkey Kong: se salta, se sube por escaleras y los enemigos son robots. Esto
+// es esa idea en chico, con la paleta CGA 1 de alta intensidad —cian, magenta
+// y blanco sobre negro—, que es la que usaba el juego.
+const W=320,H=200;
+const SUELO=188;
+// Las plataformas alternan de lado, como en el original, y cada escalera cae
+// dentro del tramo de las dos que une.
+const pisos=[
+ {y:SUELO,x0:0,  x1:320},
+ {y:154,  x0:40, x1:300},
+ {y:120,  x0:20, x1:280},
+ {y:86,   x0:40, x1:300},
+ {y:52,   x0:20, x1:280}];
+const escaleras=[
+ {x:266,y0:154,y1:SUELO},
+ {x:54, y0:120,y1:154},
+ {x:246,y0:86, y1:120},
+ {x:60, y0:52, y1:86}];
+const ANCHO_ESC=11, JW=9, JH=14, RW=11, RH=11;
+const GRAV=430, VEL=62, SALTO=168, TREPA=52;
 
 const cv=document.getElementById('g'), cx=cv.getContext('2d');
 const hlvl=document.getElementById('hlvl'), hpts=document.getElementById('hpts'),
       hvid=document.getElementById('hvid');
 
-let celda=20, sucio, joe, bugs, dir, pedido, nivel, puntos, vidas, estado, tJoe, tBug;
-// estado: 'listo' (esperando el primer toque) | 'juega' | 'muerto' | 'fin'
+let esc=1, papeles, joe, robots, nivel, puntos, vidas, estado, invuln;
+// estado: 'listo' | 'juega' | 'muerto' | 'fin'
+const teclas={l:false,r:false,u:false,d:false,j:false};
 
 function medir(){
  const w=cv.clientWidth||320;
  const dpr=Math.min(window.devicePixelRatio||1,2);
- cv.width=Math.round(w*dpr);
- cv.height=Math.round(w*(FILAS/COLS)*dpr);
- cx.setTransform(dpr,0,0,dpr,0,0);
- celda=w/COLS;
+ cv.width=Math.round(w*dpr); cv.height=Math.round(w*(H/W)*dpr);
+ esc=(w*dpr)/W;
+ cx.setTransform(esc,0,0,esc,0,0);
+ cx.imageSmoothingEnabled=false;
  dibujar();
 }
 
-function ensuciar(){
- sucio=new Set();
- for(let f=0;f<FILAS;f++)for(let c=0;c<COLS;c++)if(!pared(f,c))sucio.add(f+','+c);
+function enEscalera(x,pies){
+ for(const e of escaleras)
+  if(Math.abs(x-e.x)<ANCHO_ESC/2 && pies>=e.y0-2 && pies<=e.y1+2)return e;
+ return null;
 }
-function posiciones(){
- joe={f:1,c:1};
- sucio.delete('1,1');
- // los bugs salen de las otras tres esquinas, lejos de Joe
- bugs=[{f:1,c:COLS-2},{f:FILAS-2,c:1},{f:FILAS-2,c:COLS-2}]
-      .slice(0,Math.min(3,1+nivel)).map(b=>({...b}));
- dir=null;pedido=null;tJoe=0;tBug=0;
-}
-function nuevaPartida(){
- nivel=1;puntos=0;vidas=3;ensuciar();posiciones();estado='listo';marcador();dibujar();
-}
-function nivelNuevo(){
- nivel++;ensuciar();posiciones();estado='juega';marcador();
-}
-function marcador(){hlvl.textContent=nivel;hpts.textContent=puntos;hvid.textContent=vidas;}
-
-function mover(p,d){
- const f=p.f+(d==='d'?1:d==='u'?-1:0), c=p.c+(d==='r'?1:d==='l'?-1:0);
- return pared(f,c)?null:{f,c};
+function pisoDe(x,pies){
+ for(const p of pisos)
+  if(x>=p.x0&&x<=p.x1&&Math.abs(pies-p.y)<1.5)return p;
+ return null;
 }
 
-function pasoJoe(){
- if(pedido){const n=mover(joe,pedido);if(n){dir=pedido;pedido=null;}}
- if(!dir)return;
- const n=mover(joe,dir);
- if(!n){dir=null;return;}
- joe=n;
- const k=joe.f+','+joe.c;
- if(sucio.has(k)){sucio.delete(k);puntos+=10;marcador();}
- if(!sucio.size){puntos+=100;nivelNuevo();}
-}
-
-function pasoBugs(){
- for(const b of bugs){
-  // persecución simple: probar primero el eje donde más lejos está Joe
-  const op=[];
-  if(b.f<joe.f)op.push('d');else if(b.f>joe.f)op.push('u');
-  if(b.c<joe.c)op.push('r');else if(b.c>joe.c)op.push('l');
-  if(Math.abs(b.c-joe.c)>Math.abs(b.f-joe.f))op.reverse();
-  // un poco de azar: si no, quedan trabados contra la misma pared para siempre
-  if(Math.random()<.25)op.push(...['u','d','l','r'].sort(()=>Math.random()-.5));
-  else op.push(...['u','d','l','r']);
-  for(const d of op){const n=mover(b,d);if(n){b.f=n.f;b.c=n.c;break;}}
+function sembrar(){
+ // papeles repartidos por las plataformas, sin caer encima de una escalera
+ papeles=[];
+ for(const p of pisos){
+  const n=Math.max(3,Math.round((p.x1-p.x0)/48));
+  for(let i=0;i<n;i++){
+   const x=p.x0+12+i*((p.x1-p.x0-24)/(n-1||1));
+   if(escaleras.some(e=>Math.abs(x-e.x)<10))continue;
+   papeles.push({x:Math.round(x),y:p.y});
+  }
  }
 }
+function colocar(){
+ joe={x:16,y:SUELO,vy:0,trepa:false,mira:1};
+ // un robot por plataforma alta, hasta donde deje el nivel
+ robots=[];
+ const cand=[1,2,3,4];
+ for(let i=0;i<Math.min(cand.length,1+nivel);i++){
+  const p=pisos[cand[i]];
+  robots.push({x:(p.x0+p.x1)/2+(i%2?30:-30),y:p.y,dir:i%2?1:-1,p:cand[i]});
+ }
+ invuln=1.1;
+}
+function nuevaPartida(){nivel=1;puntos=0;vidas=3;sembrar();colocar();estado='listo';marcador();dibujar();}
+function nivelNuevo(){nivel++;puntos+=150;sembrar();colocar();marcador();}
+function marcador(){hlvl.textContent=nivel;hpts.textContent=puntos;hvid.textContent=vidas;}
 
-function choque(){return bugs.some(b=>b.f===joe.f&&b.c===joe.c);}
+function pasoJoe(dt){
+ const e=enEscalera(joe.x,joe.y);
+ // --- trepar
+ if(e&&(teclas.u||teclas.d)){
+  joe.trepa=true; joe.vy=0;
+  joe.y+=(teclas.u?-1:1)*TREPA*dt;
+  joe.x+=(e.x-joe.x)*Math.min(1,dt*12);        // se centra en la escalera
+  if(joe.y<e.y0)joe.y=e.y0;
+  if(joe.y>e.y1)joe.y=e.y1;
+  if(joe.y<=e.y0+.5||joe.y>=e.y1-.5){const p=pisoDe(joe.x,joe.y);if(p)joe.trepa=false;}
+  return;
+ }
+ if(joe.trepa&&!e)joe.trepa=false;
+ if(joe.trepa)return;
+ // --- caminar
+ const dir=(teclas.r?1:0)-(teclas.l?1:0);
+ if(dir){joe.x+=dir*VEL*dt;joe.mira=dir;}
+ joe.x=Math.max(JW/2,Math.min(W-JW/2,joe.x));
+ // --- saltar y caer
+ const antes=joe.y;
+ const apoyado=pisoDe(joe.x,joe.y)&&Math.abs(joe.vy)<1;
+ if(teclas.j&&apoyado)joe.vy=-SALTO;
+ joe.vy+=GRAV*dt;
+ joe.y+=joe.vy*dt;
+ if(joe.vy>0){                                  // sólo se aterriza cayendo
+  for(const p of pisos){
+   if(joe.x<p.x0||joe.x>p.x1)continue;
+   if(antes<=p.y&&joe.y>=p.y){joe.y=p.y;joe.vy=0;break;}
+  }
+ }
+ if(joe.y>SUELO){joe.y=SUELO;joe.vy=0;}
+}
 
+function pasoRobots(dt){
+ for(const r of robots){
+  const p=pisos[r.p];
+  r.x+=r.dir*(34+nivel*7)*dt;
+  if(r.x<p.x0+6){r.x=p.x0+6;r.dir=1}
+  if(r.x>p.x1-6){r.x=p.x1-6;r.dir=-1}
+ }
+}
+function choque(){
+ if(invuln>0)return false;
+ return robots.some(r=>Math.abs(r.x-joe.x)<(JW+RW)/2-2&&Math.abs(r.y-joe.y)<Math.max(JH,RH)-3);
+}
+function barrer(){
+ for(let i=papeles.length-1;i>=0;i--){
+  const b=papeles[i];
+  if(Math.abs(b.x-joe.x)<7&&Math.abs(b.y-joe.y)<6){papeles.splice(i,1);puntos+=10;marcador();}
+ }
+ if(!papeles.length)nivelNuevo();
+}
 function perder(){
  vidas--;marcador();
  if(vidas<=0){estado='fin';}
- else{estado='muerto';setTimeout(()=>{if(estado==='muerto'){posiciones();estado='juega';}},900);}
+ else{estado='muerto';setTimeout(()=>{if(estado==='muerto'){colocar();estado='juega';}},900);}
 }
 
 // --- dibujo ---------------------------------------------------------------
-function cartel(txt,sub){
- cx.fillStyle='rgba(0,0,0,.62)';
- cx.fillRect(0,0,COLS*celda,FILAS*celda);
- cx.fillStyle='#fff';cx.textAlign='center';cx.textBaseline='middle';
- cx.font='700 '+Math.round(celda*1.05)+'px ui-sans-serif,system-ui,sans-serif';
- cx.fillText(txt,COLS*celda/2,FILAS*celda/2-celda*.35);
- if(sub){
-  cx.font=''+Math.round(celda*.62)+'px ui-sans-serif,system-ui,sans-serif';
-  cx.fillStyle='rgba(255,255,255,.85)';
-  cx.fillText(sub,COLS*celda/2,FILAS*celda/2+celda*.75);
- }
+function rect(x,y,w,h,c){cx.fillStyle=c;cx.fillRect(Math.round(x),Math.round(y),w,h);}
+function cartel(a,b){
+ cx.fillStyle='rgba(0,0,0,.72)';cx.fillRect(0,0,W,H);
+ cx.textAlign='center';cx.textBaseline='middle';
+ cx.fillStyle='var'===''?'':'#55ffff';
+ cx.font='bold 17px ui-monospace,Menlo,Consolas,monospace';
+ cx.fillText(a,W/2,H/2-9);
+ if(b){cx.fillStyle='#ff55ff';cx.font='10px ui-monospace,Menlo,Consolas,monospace';
+       cx.fillText(b,W/2,H/2+11);}
 }
 function dibujar(){
- if(!sucio)return;
- const st=getComputedStyle(document.documentElement);
- const cPared=st.getPropertyValue('--wall')||'#e2dacd';
- const cSuelo=st.getPropertyValue('--suelo')||'#fff';
- const cMugre=st.getPropertyValue('--mugre')||'#d8cdb9';
- cx.clearRect(0,0,COLS*celda,FILAS*celda);
- for(let f=0;f<FILAS;f++)for(let c=0;c<COLS;c++){
-  const x=c*celda,y=f*celda;
-  if(pared(f,c)){cx.fillStyle=cPared;cx.fillRect(x,y,celda+.5,celda+.5);}
-  else{
-   cx.fillStyle=cSuelo;cx.fillRect(x,y,celda+.5,celda+.5);
-   if(sucio.has(f+','+c)){            // baldosa sin trapear
-    cx.fillStyle=cMugre;cx.beginPath();
-    cx.arc(x+celda/2,y+celda/2,celda*.13,0,6.284);cx.fill();
-   }
-  }
+ if(typeof papeles==='undefined'||!papeles)return;
+ cx.fillStyle='#000';cx.fillRect(0,0,W,H);
+ // escaleras: largueros y peldaños, en cian
+ for(const e of escaleras){
+  rect(e.x-ANCHO_ESC/2,e.y0,1,e.y1-e.y0,'#55ffff');
+  rect(e.x+ANCHO_ESC/2-1,e.y0,1,e.y1-e.y0,'#55ffff');
+  for(let y=e.y0+3;y<e.y1-1;y+=5)rect(e.x-ANCHO_ESC/2,y,ANCHO_ESC,1,'#55ffff');
  }
- cx.textAlign='center';cx.textBaseline='middle';
- cx.font=Math.round(celda*.78)+'px serif';
- for(const b of bugs)cx.fillText('🐛',b.c*celda+celda/2,b.f*celda+celda/2+celda*.04);
- cx.fillText(estado==='muerto'?'💥':'🧹',joe.c*celda+celda/2,joe.f*celda+celda/2+celda*.04);
- const T={
-  listo:{es:['Tocá para empezar','flechas · WASD · cruceta'],
-         en:['Tap to start','arrows · WASD · pad']},
-  fin:{es:['Se acabó','tocá para volver a empezar'],
-       en:['Game over','tap to play again']}};
+ // plataformas: una línea blanca con la sombra cian abajo
+ for(const p of pisos){
+  rect(p.x0,p.y,p.x1-p.x0,2,'#ffffff');
+  rect(p.x0,p.y+2,p.x1-p.x0,1,'#1a6a6a');
+ }
+ // papeles
+ for(const b of papeles){rect(b.x-1,b.y-4,3,2,'#ff55ff');rect(b.x,b.y-2,1,1,'#ff55ff');}
+ // robots: cuadrado con ojos y patas
+ for(const r of robots){
+  const x=r.x-RW/2,y=r.y-RH;
+  rect(x,y,RW,RH-3,'#ff55ff');
+  rect(x+2,y+2,2,2,'#000');rect(x+RW-4,y+2,2,2,'#000');
+  rect(x+1,r.y-3,3,3,'#ff55ff');rect(x+RW-4,r.y-3,3,3,'#ff55ff');
+ }
+ // Joe: cuerpo blanco, cabeza cian y el palo de escoba del lado que mira
+ if(estado!=='muerto'&&!(invuln>0&&Math.floor(invuln*12)%2)){
+  const x=joe.x-JW/2,y=joe.y-JH;
+  rect(x+2,y,5,4,'#55ffff');                 // cabeza
+  rect(x+1,y+4,7,6,'#ffffff');               // torso
+  rect(x+1,y+10,3,4,'#55ffff');rect(x+5,y+10,3,4,'#55ffff');   // piernas
+  const s=joe.mira>0?x+JW:x-2;
+  rect(s,y+3,2,9,'#ffffff');rect(s-2,y+11,6,2,'#ff55ff');      // escoba
+ }else if(estado==='muerto'){
+  rect(joe.x-6,joe.y-5,12,4,'#ff55ff');
+ }
+ const T={listo:{es:['JANITOR JOE','tocá para empezar'],en:['JANITOR JOE','tap to start']},
+          fin:{es:['SE ACABÓ','tocá para volver a empezar'],en:['GAME OVER','tap to play again']}};
  if(T[estado])cartel(T[estado][idioma][0],T[estado][idioma][1]);
 }
 
 // --- bucle ----------------------------------------------------------------
-// Va con `setInterval` y no con `requestAnimationFrame`: el juego avanza de a
-// casilleros cada 135 ms, así que no necesita 60 fps, y rAF no corre en pestañas
-// de fondo ni en algunos visores embebidos —queda congelado sin avisar—. Con el
-// timer anda igual en todos lados; para no gastar batería al pedo, se pausa solo
-// cuando la pestaña no se ve.
+// `setInterval` y no `requestAnimationFrame`: rAF no corre en pestañas de fondo
+// ni en algunos visores embebidos y el juego queda congelado sin un solo error
+// en consola. Se pausa solo cuando la pestaña no se ve.
 let ult=0;
 function tic(t){
- const dt=Math.min(t-ult,250);ult=t;     // volver de una pestaña oculta no teletransporta a nadie
+ const dt=Math.min((t-ult)/1000,.05); ult=t;
  if(estado==='juega'){
-  tJoe+=dt;tBug+=dt;
-  const vJoe=135, vBug=Math.max(170,330-nivel*28);   // los bugs se avivan por nivel
-  while(tJoe>=vJoe){tJoe-=vJoe;pasoJoe();if(estado!=='juega')break;}
+  if(invuln>0)invuln-=dt;
+  pasoJoe(dt); pasoRobots(dt); barrer();
   if(estado==='juega'&&choque())perder();
-  while(estado==='juega'&&tBug>=vBug){tBug-=vBug;pasoBugs();if(choque()){perder();break;}}
-  dibujar();
  }
+ dibujar();
 }
-
-// --- controles ------------------------------------------------------------
-const TECLAS={ArrowUp:'u',ArrowDown:'d',ArrowLeft:'l',ArrowRight:'r',
-              w:'u',s:'d',a:'l',d:'r',W:'u',S:'d',A:'l',D:'r'};
-// El listener va en el canvas y no en window: así las flechas sólo dejan de
-// scrollear la página cuando el tablero tiene el foco, que es cuando estás
-// jugando. Secuestrar las flechas de toda la página sería bastante grosero.
-cv.addEventListener('keydown',e=>{
- const d=TECLAS[e.key];
- if(!d)return;
- e.preventDefault();
- if(estado==='listo'||estado==='fin'){arrancar();}
- pedido=d;
-});
-function arrancar(){
- if(estado==='fin'||estado==='listo'){
-  if(estado==='fin')nuevaPartida();
-  estado='juega';ult=performance.now();tJoe=0;tBug=0;
- }
- cv.focus({preventScroll:true});
-}
-cv.addEventListener('pointerdown',e=>{e.preventDefault();arrancar();});
-for(const b of document.querySelectorAll('.dpad button')){
- b.addEventListener('pointerdown',e=>{e.preventDefault();arrancar();pedido=b.dataset.dir;});
-}
-// deslizar con el dedo sobre el tablero también mueve
-let tq=null;
-cv.addEventListener('touchstart',e=>{tq=e.touches[0];},{passive:true});
-cv.addEventListener('touchmove',e=>{
- if(!tq)return;
- const t=e.touches[0],dx=t.clientX-tq.clientX,dy=t.clientY-tq.clientY;
- if(Math.abs(dx)<18&&Math.abs(dy)<18)return;
- pedido=Math.abs(dx)>Math.abs(dy)?(dx>0?'r':'l'):(dy>0?'d':'u');
- tq=t;
-},{passive:true});
-
-new ResizeObserver(medir).observe(cv);
-matchMedia('(prefers-color-scheme:dark)').addEventListener?.('change',dibujar);
 let reloj=null;
 function correr(on){
- if(on&&!reloj){ult=performance.now();reloj=setInterval(()=>tic(performance.now()),33);}
+ if(on&&!reloj){ult=performance.now();reloj=setInterval(()=>tic(performance.now()),1000/50);}
  else if(!on&&reloj){clearInterval(reloj);reloj=null;}
 }
 document.addEventListener('visibilitychange',()=>correr(!document.hidden));
 
-nuevaPartida();medir();idiomaInicial();correr(!document.hidden);
+// --- controles ------------------------------------------------------------
+const MAPA={ArrowLeft:'l',ArrowRight:'r',ArrowUp:'u',ArrowDown:'d',' ':'j',
+            a:'l',d:'r',w:'u',s:'d',A:'l',D:'r',W:'u',S:'d'};
+function arrancar(){
+ if(estado==='fin')nuevaPartida();
+ if(estado==='listo'||estado==='fin'){estado='juega';ult=performance.now();}
+ cv.focus({preventScroll:true});
+}
+// El teclado se escucha en el canvas y no en window: las flechas y el espacio
+// sólo dejan de scrollear la página cuando el tablero tiene el foco.
+cv.addEventListener('keydown',e=>{
+ const k=MAPA[e.key]; if(!k)return;
+ e.preventDefault(); if(estado!=='juega')arrancar(); teclas[k]=true;
+});
+cv.addEventListener('keyup',e=>{const k=MAPA[e.key];if(k){e.preventDefault();teclas[k]=false;}});
+cv.addEventListener('blur',()=>{for(const k in teclas)teclas[k]=false;});
+cv.addEventListener('pointerdown',e=>{e.preventDefault();arrancar();});
+for(const b of document.querySelectorAll('.pad button')){
+ const k=b.dataset.k;
+ const on=e=>{e.preventDefault();arrancar();teclas[k]=true;b.classList.add('on');};
+ const off=e=>{e.preventDefault();teclas[k]=false;b.classList.remove('on');};
+ b.addEventListener('pointerdown',on);
+ b.addEventListener('pointerup',off);
+ b.addEventListener('pointerleave',off);
+ b.addEventListener('pointercancel',off);
+}
+
+new ResizeObserver(medir).observe(cv);
+nuevaPartida(); medir(); idiomaInicial(); correr(!document.hidden);
 </script>
 </body></html>
