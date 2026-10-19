@@ -21,6 +21,9 @@ otra cosa y se llama distinto en la leyenda.
 import io, json, math, os, sys, time, urllib.parse, urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Las páginas publicadas viven en `casas/`; la raíz del sitio es la
+# presentación personal y no tiene nada de esto.
+SITIO = os.path.join(ROOT, "casas")
 UA = {"User-Agent": "hiessy.github.io property map (github.com/Hiessy)"}
 R = 6371.0
 DELAY = 1.2                      # política de Nominatim: 1 req/s
@@ -75,7 +78,7 @@ def buscar(q, lat, lng, d=0.11):
 
 
 def main():
-    fav = json.load(io.open(os.path.join(ROOT, "favoritos.json"), encoding="utf-8"))
+    fav = json.load(io.open(os.path.join(SITIO, "favoritos.json"), encoding="utf-8"))
     centros = []
     for v in fav.values():
         r = v.get("r") or []
@@ -107,7 +110,7 @@ def main():
           f"(~{len(centros)*len(BUSQUEDAS)*DELAY/60:.0f} min)", flush=True)
 
     out = {}
-    salida = os.path.join(ROOT, "pois.json")
+    salida = os.path.join(SITIO, "pois.json")
     if os.path.exists(salida):
         out = json.load(io.open(salida, encoding="utf-8"))
     # Qué zonas ya se barrieron, para poder cortar y seguir después: son ~30

@@ -1,144 +1,372 @@
 <!doctype html><html lang="es"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Búsqueda de casa · Argentina</title>
-<meta name="description" content="7.020 casas y PH hasta USD 260.000 en el norte de CABA, el conurbano norte y las sierras de Córdoba, relevados en Zonaprop, Argenprop y MercadoLibre.">
+<title>Martin Diaz · Software</title>
+<meta name="description" content="Página personal. Los logros son mentira, el entusiasmo no.">
 <style>
 *{box-sizing:border-box}
-:root{--bg:#faf8f5;--ink:#1c1a17;--mut:#6f675d;--line:#e5ded4;--acc:#8a5a2b;--pick:#b8862f;--card:#fff}
-@media(prefers-color-scheme:dark){:root{--bg:#141311;--ink:#f0ece6;--mut:#9c948a;--line:#2c2926;--acc:#d9a066;--pick:#e0b05a;--card:#1c1a18}}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
-header{max-width:1220px;margin:0 auto;padding:48px 20px 8px;position:relative}
-.sello{position:absolute;top:18px;right:20px;font-size:10.5px;color:var(--mut);
- opacity:.5;letter-spacing:.02em;white-space:nowrap}
-.sello:hover{opacity:.9}
-@media(max-width:620px){.sello{position:static;display:block;margin:0 0 10px;opacity:.55}}
-h1{font-size:clamp(28px,5vw,44px);line-height:1.1;margin:0 0 14px;letter-spacing:-.02em}
-.sub{color:var(--mut);max-width:64ch;margin:0}
-.tabs{max-width:1220px;margin:0 auto;padding:20px 20px 0;display:flex;gap:8px}
-.tab{font-size:13.5px;padding:8px 15px;border:1px solid var(--line);border-radius:999px;
- text-decoration:none;color:var(--mut);background:var(--card);white-space:nowrap}
-.tab:hover{border-color:var(--acc);color:var(--ink)}
-.tab.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.tab.fav em{font-style:normal;font-variant-numeric:tabular-nums;color:var(--pick)}
-.tab.fav em:not(:empty){margin-left:5px;font-weight:600}
-@media(max-width:720px){.tabs{padding:14px 16px 0;overflow-x:auto;scrollbar-width:none}
- .tabs::-webkit-scrollbar{display:none}}
-main{max-width:1220px;margin:0 auto;padding:30px 20px 10px}
-/* El total, grande y arriba: es el dato que contesta "¿cuánto hay acá?" */
-.tot{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
- padding-bottom:26px;margin-bottom:30px;border-bottom:1px solid var(--line)}
-/* `>b` y no `b`: los nombres de los portales van en <b> dentro del <span> y con
-   el selector suelto salían a 56px cada uno. */
-.tot>b{font-size:clamp(34px,7vw,56px);line-height:1;letter-spacing:-.03em;
- font-variant-numeric:tabular-nums;font-weight:680}
-.tot span{color:var(--mut);font-size:14px;max-width:46ch}
-.tot span b{color:var(--ink);font-weight:600}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
-/* Cada búsqueda es una tarjeta-enlace entera: el blanco también es clickeable. */
-.cd{display:flex;flex-direction:column;gap:9px;padding:22px 21px 20px;
- background:var(--card);border:1px solid var(--line);border-radius:14px;
- text-decoration:none;color:var(--ink);transition:border-color .15s,transform .15s}
-.cd:hover{border-color:var(--acc);transform:translateY(-2px)}
-.cd .n{font-variant-numeric:tabular-nums;font-size:30px;line-height:1;
- letter-spacing:-.02em;font-weight:680;color:var(--acc)}
-.cd h2{margin:0;font-size:17.5px;letter-spacing:-.01em}
-.cd p{margin:0;font-size:13.5px;color:var(--mut);line-height:1.5}
-.cd p b{color:var(--ink);font-weight:600}
-.cd .fu{margin-top:auto;padding-top:11px;display:flex;gap:6px;flex-wrap:wrap}
-.cd .fu i{font-style:normal;font-size:11px;color:var(--mut);padding:3px 8px;
- border:1px solid var(--line);border-radius:999px;white-space:nowrap}
-/* La tarjeta de favoritos no es una búsqueda: va en dorado y sin fuentes. */
-.cd.fav .n{color:var(--pick)}
-.como{max-width:1220px;margin:0 auto;padding:40px 20px 0}
-.como h3{font-size:13px;color:var(--mut);letter-spacing:.06em;text-transform:uppercase;
- margin:0 0 14px;font-weight:600}
-.como ul{margin:0;padding:0;list-style:none;display:grid;
- grid-template-columns:repeat(auto-fit,minmax(248px,1fr));gap:16px 26px}
-.como li{font-size:13.5px;color:var(--mut);line-height:1.55;
- padding-left:14px;border-left:2px solid var(--line)}
-.como li b{color:var(--ink);font-weight:600}
-footer{max-width:1220px;margin:48px auto 0;padding:26px 20px 70px;color:var(--mut);
- font-size:13px;line-height:1.65;border-top:1px solid var(--line)}
-footer p{margin:0 0 10px;max-width:72ch}
-footer b{color:var(--ink)} a.tx{color:var(--acc)}
-@media(max-width:720px){
- header{padding:26px 16px 4px}
- .sub{font-size:14.5px}
- main{padding:22px 16px 6px}
- .como{padding:30px 16px 0}
- footer{padding:22px 16px 56px}
-}
+:root{--bg:#faf8f5;--ink:#1c1a17;--mut:#6f675d;--line:#e5ded4;--acc:#8a5a2b;--pick:#b8862f;--card:#fff;
+ --wall:#e2dacd;--suelo:#fdfcfa;--mugre:#d8cdb9}
+@media(prefers-color-scheme:dark){:root{--bg:#141311;--ink:#f0ece6;--mut:#9c948a;--line:#2c2926;
+ --acc:#d9a066;--pick:#e0b05a;--card:#1c1a18;--wall:#302c27;--suelo:#1a1816;--mugre:#3b352d}}
+body{margin:0;background:var(--bg);color:var(--ink);
+ font:16px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+ -webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:0 20px}
+/* --- idioma: dos botoncitos arriba a la derecha ------------------------- */
+.lang{position:absolute;top:16px;right:20px;display:flex;gap:4px}
+.lang button{font:inherit;font-size:11.5px;letter-spacing:.04em;padding:4px 9px;cursor:pointer;
+ border:1px solid var(--line);background:var(--card);color:var(--mut);border-radius:999px}
+.lang button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.lang button:hover{border-color:var(--acc)}
+@media(max-width:620px){.lang{position:static;justify-content:flex-end;padding:14px 20px 0}}
+header{padding:64px 0 10px;position:relative}
+@media(max-width:620px){header{padding:18px 0 6px}}
+h1{font-size:clamp(32px,7vw,54px);line-height:1.05;margin:0 0 10px;letter-spacing:-.03em}
+.role{margin:0 0 14px;font-size:clamp(15px,2.6vw,19px);color:var(--acc);font-weight:600;
+ letter-spacing:-.01em;line-height:1.3}
+.sub{margin:0;color:var(--mut);max-width:58ch}
+h2{font-size:12.5px;color:var(--mut);letter-spacing:.08em;text-transform:uppercase;
+ margin:48px 0 16px;font-weight:600}
+/* --- logros ------------------------------------------------------------- */
+ol.logros{margin:0;padding:0;list-style:none;counter-reset:l}
+ol.logros li{counter-increment:l;position:relative;padding:11px 0 11px 42px;
+ border-bottom:1px solid var(--line);font-size:14.5px;line-height:1.55}
+ol.logros li:last-child{border-bottom:0}
+ol.logros li::before{content:counter(l,decimal-leading-zero);position:absolute;left:0;top:12px;
+ font-size:11px;color:var(--mut);font-variant-numeric:tabular-nums;letter-spacing:.04em}
+ol.logros code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.88em;
+ background:var(--line);padding:1px 5px;border-radius:4px}
+/* --- numeritos ---------------------------------------------------------- */
+.nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;
+ padding:20px 0 0;border-top:1px solid var(--line);margin-top:10px}
+.nums div b{display:block;font-size:26px;letter-spacing:-.02em;font-variant-numeric:tabular-nums;
+ line-height:1.1;color:var(--acc)}
+.nums div span{font-size:12px;color:var(--mut);line-height:1.35;display:block;margin-top:3px}
+/* --- el juego ----------------------------------------------------------- */
+.hint{margin:0 0 14px;font-size:13.5px;color:var(--mut)}
+.marco{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;
+ display:flex;flex-direction:column;align-items:center;gap:10px}
+canvas{width:100%;max-width:480px;aspect-ratio:13/11;display:block;border-radius:8px;
+ touch-action:none;cursor:pointer;outline:none}
+canvas:focus-visible{box-shadow:0 0 0 2px var(--acc)}
+.hud{display:flex;gap:16px;width:100%;max-width:480px;font-size:12.5px;color:var(--mut);
+ font-variant-numeric:tabular-nums;justify-content:center;flex-wrap:wrap}
+.hud b{color:var(--ink);font-weight:650}
+/* cruceta: en el teléfono no hay flechas */
+.dpad{display:grid;grid-template-columns:repeat(3,44px);grid-template-rows:repeat(2,44px);gap:6px;
+ justify-content:center}
+.dpad button{font:inherit;font-size:17px;border:1px solid var(--line);background:var(--bg);
+ color:var(--ink);border-radius:9px;cursor:pointer;-webkit-user-select:none;user-select:none}
+.dpad button:active{background:var(--line)}
+.dpad .u{grid-column:2;grid-row:1}.dpad .l{grid-column:1;grid-row:2}
+.dpad .d{grid-column:2;grid-row:2}.dpad .r{grid-column:3;grid-row:2}
+@media(hover:hover) and (pointer:fine){.dpad{display:none}}
+footer{margin:56px 0 0;padding:22px 0 72px;border-top:1px solid var(--line);
+ color:var(--mut);font-size:13px;line-height:1.65}
+footer b{color:var(--ink)}
 </style></head><body>
-<nav class="tabs">
- <a href="index.html" class="tab on">Inicio</a>
- <a href="caba-norte.html" class="tab">CABA norte</a>
- <a href="gba-norte.html" class="tab">Zona norte con patio</a>
- <a href="sierras.html" class="tab">Sierras de Córdoba</a>
- <a href="favoritos.html" class="tab fav">Favoritos <em id="favn"></em></a>
-</nav>
+
+<div class="lang">
+ <button id="bes" class="on">ES</button><button id="ben">EN</button>
+</div>
+
+<div class="wrap">
 <header>
-<span class="sello" title="Cuándo se armó esta portada">18/10/2026 23:34</span>
-<h1>Tres zonas,<br>una búsqueda de casa</h1>
-<p class="sub">Casas y PH de tres ambientes o más, hasta USD 260.000, en el norte de
-CABA, el conurbano norte y las sierras de Córdoba. Todo relevado de los portales,
-sacados los repetidos y los avisos dados de baja, y puesto en un mapa.</p>
+ <h1>Martin Diaz</h1>
+ <p class="role" data-es="Arquitecto Supremo de Apagarlo y Volverlo a Prender"
+    data-en="Supreme Grand Architect of Turning It Off and On Again"></p>
+ <p class="sub"
+    data-es="Insoportablemente curioso, agresivamente amistoso y físicamente incapaz de dejar de aprender cosas nuevas. Programo de a dos con cualquiera: desconocidos incluidos, vos incluido, ahora mismo."
+    data-en="Unbearably curious, aggressively friendly and physically unable to stop learning new things. Will pair-program with anyone: strangers included, you included, right now."></p>
 </header>
-<main>
-<div class="tot">
- <b>7.020</b>
- <span>avisos en pie hoy, de <b>Zonaprop</b> (5.755), <b>Argenprop</b> (903), <b>MercadoLibre</b> (362).</span>
+
+<h2 data-es="Logros seleccionados" data-en="Selected accomplishments"></h2>
+<ol class="logros">
+<li data-es="Bajé un algoritmo de O(n²) a O(n). Después a O(1). Después a O(−1): ahora los usuarios reciben el resultado antes de pedirlo."
+    data-en="Reduced an O(n²) algorithm to O(n). Then to O(1). Then to O(−1): users now receive the result before they ask for it."></li>
+<li data-es="Arreglé 14.000.000 de bugs. Escribí 14.000.001. Saldo ampliamente positivo si uno no se pone a contar."
+    data-en="Fixed 14,000,000 bugs. Wrote 14,000,001. Comfortably net positive, provided nobody counts."></li>
+<li data-es="Centré un <code>div</code> a la primera. Hubo testigos. Algunos todavía no se recuperaron."
+    data-en="Centered a <code>div</code> on the first try. There were witnesses. Some have not recovered."></li>
+<li data-es="Migré un monolito a microservicios, después de vuelta a monolito, y finalmente a un solo archivo llamado <code>final_FINAL_v3_ok.py</code>."
+    data-en="Migrated a monolith to microservices, then back to a monolith, then into a single file named <code>final_FINAL_v3_ok.py</code>."></li>
+<li data-es="Llegué al 100% de cobertura de tests borrando todos los que fallaban. El que quedó está verdísimo."
+    data-en="Reached 100% test coverage by deleting every test that failed. The survivor is extremely green."></li>
+<li data-es="Le enseñé a programar a un patito de goma. Hoy revisa mis pull requests. Es duro pero justo."
+    data-en="Taught a rubber duck to code. It now reviews my pull requests. Harsh, but fair."></li>
+<li data-es="Resolví un conflicto de merge tan grande que durante unos minutos tuvo campo gravitatorio propio."
+    data-en="Resolved a merge conflict so large it briefly developed its own gravitational field."></li>
+<li data-es="Leí toda la documentación de internet. Dos veces. Entendí como el 6%. Aprendí muchísimo igual."
+    data-en="Read the entire documentation of the internet. Twice. Understood roughly 6%. Learned a tremendous amount anyway."></li>
+<li data-es="Campeón mundial invicto de «en mi máquina anda» desde 2011."
+    data-en="Undefeated world champion of “it works on my machine” since 2011."></li>
+<li data-es="Mentoreé a 400 juniors. 399 son hoy mi jefe. Estoy genuinamente orgulloso de cada uno."
+    data-en="Mentored 400 juniors. 399 are now my boss. I am genuinely proud of every one of them."></li>
+</ol>
+
+<div class="nums">
+ <div><b>47.812</b><span data-es="cafés convertidos en código" data-en="coffees converted into code"></span></div>
+ <div><b>∞</b><span data-es="pestañas abiertas en este momento" data-en="tabs open at this exact moment"></span></div>
+ <div><b>9.431</b><span data-es="veces que dije «es un cambio chiquito»" data-en="times I said “it’s a quick fix”"></span></div>
+ <div><b>2.847.199</b><span data-es="puntos y coma colocados a mano" data-en="semicolons placed by hand"></span></div>
 </div>
-<div class="grid">
-<a class="cd" href="caba-norte.html">
- <span class="n">1.272</span>
- <h2>CABA norte</h2>
- <p>Los doce barrios de la franja <b>Edenor</b>, al norte de la ciudad: Villa Urquiza, Coghlan, Saavedra, Núñez y alrededores. PH y casas de tres ambientes o más.</p>
- <span class="fu"><i>Zonaprop 1.068</i><i>Argenprop 204</i></span>
-</a>
-<a class="cd" href="gba-norte.html">
- <span class="n">2.780</span>
- <h2>Zona norte con patio</h2>
- <p>El conurbano norte: Olivos, La Lucila, Florida, Martínez, San Fernando, Tigre, Bella Vista, San Miguel y Maschwitz. Acá el filtro que manda es el <b>terreno libre</b>, lote menos superficie cubierta.</p>
- <span class="fu"><i>Zonaprop 2.608</i><i>Argenprop 172</i></span>
-</a>
-<a class="cd" href="sierras.html">
- <span class="n">2.968</span>
- <h2>Sierras de Córdoba</h2>
- <p>Los valles de <b>Punilla</b> y <b>Calamuchita</b>, sin la ciudad de Córdoba ni las Sierras Chicas. El mapa suma escuelas, hospitales y comercios, la producción agroecológica y el catastro minero de la provincia.</p>
- <span class="fu"><i>Zonaprop 2.079</i><i>Argenprop 527</i><i>MercadoLibre 362</i></span>
-</a>
-<a class="cd fav" href="favoritos.html">
- <span class="n">33</span>
- <h2>Favoritos</h2>
- <p>Lo marcado con el ♥ en cualquiera de las tres búsquedas, con las notas de cada casa y una estimación de impuestos. Se guarda en este navegador; los 33 de acá son los que viajan con el sitio.</p>
-</a>
+
+<h2 data-es="Janitor Joe: edición producción" data-en="Janitor Joe: production edition"></h2>
+<p class="hint"
+   data-es="Producción está inmunda y los bugs andan sueltos. Trapeá cada baldosa sin que te toquen. Flechas o WASD; en el teléfono, la cruceta. Tocá el tablero para empezar."
+   data-en="Production is filthy and the bugs are loose. Mop every tile without getting touched. Arrows or WASD; on a phone, the pad. Tap the board to start."></p>
+<div class="marco">
+ <canvas id="g" tabindex="0" aria-label="Janitor Joe"></canvas>
+ <div class="hud">
+  <span data-es="Nivel" data-en="Level"></span>&nbsp;<b id="hlvl">1</b>
+  <span data-es="Puntos" data-en="Score"></span>&nbsp;<b id="hpts">0</b>
+  <span data-es="Vidas" data-en="Lives"></span>&nbsp;<b id="hvid">3</b>
+ </div>
+ <div class="dpad">
+  <button class="u" data-dir="u" aria-label="arriba">↑</button>
+  <button class="l" data-dir="l" aria-label="izquierda">←</button>
+  <button class="d" data-dir="d" aria-label="abajo">↓</button>
+  <button class="r" data-dir="r" aria-label="derecha">→</button>
+ </div>
 </div>
-</main>
-<section class="como">
-<h3>Cómo está hecho</h3>
-<ul>
-<li><b>Un aviso, una vez.</b> El mismo inmueble suele estar publicado en dos o tres
-portales con precios distintos. Se detectan y se deja uno solo.</li>
-<li><b>Lo dado de baja se saca.</b> Cada tanto se revisan los enlaces publicados: lo
-que el portal contesta como caído sale de la página, así no quedan avisos fantasma.</li>
-<li><b>Cero no es cero.</b> Cuando la tarjeta del portal no dice los dormitorios o el
-lote, acá figura en cero y el pie de cada página aclara cuántos son. No se completa a
-ojo lo que el aviso no declara.</li>
-<li><b>Todo en el mapa.</b> Las direcciones sin coordenadas se geocodifican; el pin
-distingue si salió de la altura exacta, de la calle o del centro del pueblo.</li>
-</ul>
-</section>
+
 <footer>
-<p>Esto es una búsqueda propia, no un portal ni una inmobiliaria: no hay nada en venta
-acá. Los avisos son de <a class="tx" href="https://www.zonaprop.com.ar" target="_blank"
-rel="noopener">Zonaprop</a>, <a class="tx" href="https://www.argenprop.com"
-target="_blank" rel="noopener">Argenprop</a> y <a class="tx"
-href="https://www.mercadolibre.com.ar" target="_blank" rel="noopener">MercadoLibre</a>,
-y cada ficha enlaza al original. <b>Confirmá precio y disponibilidad con la
-inmobiliaria antes de viajar</b>: entre un barrido y el siguiente las cosas se venden.</p>
-<p>Relevado en octubre de 2026 · portada armada el
-18/10/2026 a las 23:34 · el código que arma todo esto está en <a
-class="tx" href="https://github.com/hiessy/hiessy.github.io" target="_blank"
-rel="noopener">GitHub</a>.</p>
+ <p data-es="Todo lo de arriba es una mentira descarada, menos lo de que me gusta aprender, reírme mucho y trabajar con gente. Eso es verdad."
+    data-en="Everything above is a shameless lie, except the part about liking to learn, laughing a lot and working with people. That part is true."></p>
 </footer>
+</div>
+
+<script>
+// --- idioma ---------------------------------------------------------------
+// Cada texto viaja en `data-es` y `data-en`; acá sólo se elige cuál se muestra.
+// Arranca en el idioma del navegador y recuerda lo que elijas.
+const LK='hiessy:idioma';
+let idioma='es';
+function pintarIdioma(l){
+ idioma=l;
+ document.documentElement.lang=l;
+ for(const el of document.querySelectorAll('[data-es]')){
+  const v=el.getAttribute('data-'+l);
+  if(v!==null)el.innerHTML=v;          // sólo texto nuestro, no entra nada de afuera
+ }
+ bes.classList.toggle('on',l==='es');
+ ben.classList.toggle('on',l==='en');
+ try{localStorage.setItem(LK,l)}catch(e){}
+ dibujar();                            // los carteles del juego también cambian
+}
+// Se llama al final del script, no acá: `pintarIdioma` termina en `dibujar()`,
+// y las variables del juego son `let` declaradas más abajo. Invocarlo antes
+// moría con "Cannot access 'sucio' before initialization" —ni el `if(!sucio)`
+// salva, que leer un `let` en su zona muerta ya tira— y se llevaba puesto todo
+// el resto del script, juego incluido.
+function idiomaInicial(){
+ let l=null;
+ try{l=localStorage.getItem(LK)}catch(e){}
+ if(l!=='es'&&l!=='en')l=(navigator.language||'es').toLowerCase().startsWith('es')?'es':'en';
+ pintarIdioma(l);
+}
+bes.onclick=()=>pintarIdioma('es');
+ben.onclick=()=>pintarIdioma('en');
+
+// --- Janitor Joe ----------------------------------------------------------
+// Homenaje al de MS-DOS del 84: pasillos, bichos que te persiguen y el piso
+// para dejar limpio. Acá el piso es producción y los bichos son los bugs.
+const MAPA=[
+ "#############",
+ "#...........#",
+ "#.##.###.##.#",
+ "#...........#",
+ "#.#.#####.#.#",
+ "#.#.......#.#",
+ "#.#.#####.#.#",
+ "#...........#",
+ "#.##.###.##.#",
+ "#...........#",
+ "#############"];
+const COLS=MAPA[0].length, FILAS=MAPA.length;
+const pared=(f,c)=>f<0||c<0||f>=FILAS||c>=COLS||MAPA[f][c]==='#';
+
+const cv=document.getElementById('g'), cx=cv.getContext('2d');
+const hlvl=document.getElementById('hlvl'), hpts=document.getElementById('hpts'),
+      hvid=document.getElementById('hvid');
+
+let celda=20, sucio, joe, bugs, dir, pedido, nivel, puntos, vidas, estado, tJoe, tBug;
+// estado: 'listo' (esperando el primer toque) | 'juega' | 'muerto' | 'fin'
+
+function medir(){
+ const w=cv.clientWidth||320;
+ const dpr=Math.min(window.devicePixelRatio||1,2);
+ cv.width=Math.round(w*dpr);
+ cv.height=Math.round(w*(FILAS/COLS)*dpr);
+ cx.setTransform(dpr,0,0,dpr,0,0);
+ celda=w/COLS;
+ dibujar();
+}
+
+function ensuciar(){
+ sucio=new Set();
+ for(let f=0;f<FILAS;f++)for(let c=0;c<COLS;c++)if(!pared(f,c))sucio.add(f+','+c);
+}
+function posiciones(){
+ joe={f:1,c:1};
+ sucio.delete('1,1');
+ // los bugs salen de las otras tres esquinas, lejos de Joe
+ bugs=[{f:1,c:COLS-2},{f:FILAS-2,c:1},{f:FILAS-2,c:COLS-2}]
+      .slice(0,Math.min(3,1+nivel)).map(b=>({...b}));
+ dir=null;pedido=null;tJoe=0;tBug=0;
+}
+function nuevaPartida(){
+ nivel=1;puntos=0;vidas=3;ensuciar();posiciones();estado='listo';marcador();dibujar();
+}
+function nivelNuevo(){
+ nivel++;ensuciar();posiciones();estado='juega';marcador();
+}
+function marcador(){hlvl.textContent=nivel;hpts.textContent=puntos;hvid.textContent=vidas;}
+
+function mover(p,d){
+ const f=p.f+(d==='d'?1:d==='u'?-1:0), c=p.c+(d==='r'?1:d==='l'?-1:0);
+ return pared(f,c)?null:{f,c};
+}
+
+function pasoJoe(){
+ if(pedido){const n=mover(joe,pedido);if(n){dir=pedido;pedido=null;}}
+ if(!dir)return;
+ const n=mover(joe,dir);
+ if(!n){dir=null;return;}
+ joe=n;
+ const k=joe.f+','+joe.c;
+ if(sucio.has(k)){sucio.delete(k);puntos+=10;marcador();}
+ if(!sucio.size){puntos+=100;nivelNuevo();}
+}
+
+function pasoBugs(){
+ for(const b of bugs){
+  // persecución simple: probar primero el eje donde más lejos está Joe
+  const op=[];
+  if(b.f<joe.f)op.push('d');else if(b.f>joe.f)op.push('u');
+  if(b.c<joe.c)op.push('r');else if(b.c>joe.c)op.push('l');
+  if(Math.abs(b.c-joe.c)>Math.abs(b.f-joe.f))op.reverse();
+  // un poco de azar: si no, quedan trabados contra la misma pared para siempre
+  if(Math.random()<.25)op.push(...['u','d','l','r'].sort(()=>Math.random()-.5));
+  else op.push(...['u','d','l','r']);
+  for(const d of op){const n=mover(b,d);if(n){b.f=n.f;b.c=n.c;break;}}
+ }
+}
+
+function choque(){return bugs.some(b=>b.f===joe.f&&b.c===joe.c);}
+
+function perder(){
+ vidas--;marcador();
+ if(vidas<=0){estado='fin';}
+ else{estado='muerto';setTimeout(()=>{if(estado==='muerto'){posiciones();estado='juega';}},900);}
+}
+
+// --- dibujo ---------------------------------------------------------------
+function cartel(txt,sub){
+ cx.fillStyle='rgba(0,0,0,.62)';
+ cx.fillRect(0,0,COLS*celda,FILAS*celda);
+ cx.fillStyle='#fff';cx.textAlign='center';cx.textBaseline='middle';
+ cx.font='700 '+Math.round(celda*1.05)+'px ui-sans-serif,system-ui,sans-serif';
+ cx.fillText(txt,COLS*celda/2,FILAS*celda/2-celda*.35);
+ if(sub){
+  cx.font=''+Math.round(celda*.62)+'px ui-sans-serif,system-ui,sans-serif';
+  cx.fillStyle='rgba(255,255,255,.85)';
+  cx.fillText(sub,COLS*celda/2,FILAS*celda/2+celda*.75);
+ }
+}
+function dibujar(){
+ if(!sucio)return;
+ const st=getComputedStyle(document.documentElement);
+ const cPared=st.getPropertyValue('--wall')||'#e2dacd';
+ const cSuelo=st.getPropertyValue('--suelo')||'#fff';
+ const cMugre=st.getPropertyValue('--mugre')||'#d8cdb9';
+ cx.clearRect(0,0,COLS*celda,FILAS*celda);
+ for(let f=0;f<FILAS;f++)for(let c=0;c<COLS;c++){
+  const x=c*celda,y=f*celda;
+  if(pared(f,c)){cx.fillStyle=cPared;cx.fillRect(x,y,celda+.5,celda+.5);}
+  else{
+   cx.fillStyle=cSuelo;cx.fillRect(x,y,celda+.5,celda+.5);
+   if(sucio.has(f+','+c)){            // baldosa sin trapear
+    cx.fillStyle=cMugre;cx.beginPath();
+    cx.arc(x+celda/2,y+celda/2,celda*.13,0,6.284);cx.fill();
+   }
+  }
+ }
+ cx.textAlign='center';cx.textBaseline='middle';
+ cx.font=Math.round(celda*.78)+'px serif';
+ for(const b of bugs)cx.fillText('🐛',b.c*celda+celda/2,b.f*celda+celda/2+celda*.04);
+ cx.fillText(estado==='muerto'?'💥':'🧹',joe.c*celda+celda/2,joe.f*celda+celda/2+celda*.04);
+ const T={
+  listo:{es:['Tocá para empezar','flechas · WASD · cruceta'],
+         en:['Tap to start','arrows · WASD · pad']},
+  fin:{es:['Se acabó','tocá para volver a empezar'],
+       en:['Game over','tap to play again']}};
+ if(T[estado])cartel(T[estado][idioma][0],T[estado][idioma][1]);
+}
+
+// --- bucle ----------------------------------------------------------------
+// Va con `setInterval` y no con `requestAnimationFrame`: el juego avanza de a
+// casilleros cada 135 ms, así que no necesita 60 fps, y rAF no corre en pestañas
+// de fondo ni en algunos visores embebidos —queda congelado sin avisar—. Con el
+// timer anda igual en todos lados; para no gastar batería al pedo, se pausa solo
+// cuando la pestaña no se ve.
+let ult=0;
+function tic(t){
+ const dt=Math.min(t-ult,250);ult=t;     // volver de una pestaña oculta no teletransporta a nadie
+ if(estado==='juega'){
+  tJoe+=dt;tBug+=dt;
+  const vJoe=135, vBug=Math.max(170,330-nivel*28);   // los bugs se avivan por nivel
+  while(tJoe>=vJoe){tJoe-=vJoe;pasoJoe();if(estado!=='juega')break;}
+  if(estado==='juega'&&choque())perder();
+  while(estado==='juega'&&tBug>=vBug){tBug-=vBug;pasoBugs();if(choque()){perder();break;}}
+  dibujar();
+ }
+}
+
+// --- controles ------------------------------------------------------------
+const TECLAS={ArrowUp:'u',ArrowDown:'d',ArrowLeft:'l',ArrowRight:'r',
+              w:'u',s:'d',a:'l',d:'r',W:'u',S:'d',A:'l',D:'r'};
+// El listener va en el canvas y no en window: así las flechas sólo dejan de
+// scrollear la página cuando el tablero tiene el foco, que es cuando estás
+// jugando. Secuestrar las flechas de toda la página sería bastante grosero.
+cv.addEventListener('keydown',e=>{
+ const d=TECLAS[e.key];
+ if(!d)return;
+ e.preventDefault();
+ if(estado==='listo'||estado==='fin'){arrancar();}
+ pedido=d;
+});
+function arrancar(){
+ if(estado==='fin'||estado==='listo'){
+  if(estado==='fin')nuevaPartida();
+  estado='juega';ult=performance.now();tJoe=0;tBug=0;
+ }
+ cv.focus({preventScroll:true});
+}
+cv.addEventListener('pointerdown',e=>{e.preventDefault();arrancar();});
+for(const b of document.querySelectorAll('.dpad button')){
+ b.addEventListener('pointerdown',e=>{e.preventDefault();arrancar();pedido=b.dataset.dir;});
+}
+// deslizar con el dedo sobre el tablero también mueve
+let tq=null;
+cv.addEventListener('touchstart',e=>{tq=e.touches[0];},{passive:true});
+cv.addEventListener('touchmove',e=>{
+ if(!tq)return;
+ const t=e.touches[0],dx=t.clientX-tq.clientX,dy=t.clientY-tq.clientY;
+ if(Math.abs(dx)<18&&Math.abs(dy)<18)return;
+ pedido=Math.abs(dx)>Math.abs(dy)?(dx>0?'r':'l'):(dy>0?'d':'u');
+ tq=t;
+},{passive:true});
+
+new ResizeObserver(medir).observe(cv);
+matchMedia('(prefers-color-scheme:dark)').addEventListener?.('change',dibujar);
+let reloj=null;
+function correr(on){
+ if(on&&!reloj){ult=performance.now();reloj=setInterval(()=>tic(performance.now()),33);}
+ else if(!on&&reloj){clearInterval(reloj);reloj=null;}
+}
+document.addEventListener('visibilitychange',()=>correr(!document.hidden));
+
+nuevaPartida();medir();idiomaInicial();correr(!document.hidden);
+</script>
 </body></html>

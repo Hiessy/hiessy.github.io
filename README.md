@@ -2,10 +2,19 @@
 
 Sitio estático publicado con GitHub Pages en <https://hiessy.github.io>.
 
-## Contenido
+La raíz es una **página personal** ([`index.html`](index.html)): bilingüe, con un
+juego al final y una lista de logros que son todos mentira a propósito. No tiene
+nada que ver con lo de abajo y no se genera con ningún script.
 
-La portada ([`index.html`](index.html)) presenta las tres búsquedas y enlaza a
-cada una; es corta y no lleva dataset adentro, así entrar al sitio no significa
+La **búsqueda de casa** vive en [`casas/`](casas/), o sea
+<https://hiessy.github.io/casas/>. GitHub Pages no da subdominios sobre
+`github.io` —para `casas.hiessy.github.io` haría falta un dominio propio—, así
+que es una subcarpeta.
+
+## Contenido de `casas/`
+
+La portada ([`casas/index.html`](casas/index.html)) presenta las tres búsquedas y
+enlaza a cada una; es corta y no lleva dataset adentro, así entrar no significa
 bajar un mega de avisos. Después hay una pestaña por búsqueda. Los números de
 abajo son de un relevamiento viejo y cambian en cada barrido: los que valen son
 los de la portada, que se recalculan solos.
@@ -83,9 +92,11 @@ de CABA se siguen relevando pero no se publican: están en `.work/` y vuelven co
 
 ## Estructura
 
-- `index.html` — portada: presenta las tres búsquedas con sus números y enlaza a
-  cada una. 8 KB, sin dataset. La genera `tools/make_inicio.py`.
-- `caba-norte.html` / `gba-norte.html` / `sierras.html` — páginas completas: markup, CSS
+- `index.html` — página personal, a mano, sin generador. Los textos van en
+  `data-es` / `data-en` y el botón de idioma elige cuál se muestra.
+- `casas/index.html` — portada de la búsqueda: las tres con sus números y un
+  enlace a cada una. 8 KB, sin dataset. La genera `tools/make_inicio.py`.
+- `casas/caba-norte.html` / `casas/gba-norte.html` / `casas/sierras.html` — páginas completas: markup, CSS
   y JS embebidos,
   sin dependencias ni build. Filtros por barrio o localidad, dormitorios (2 / 3 / 4+),
   jardín, superficie y fuente; la de CABA suma "solo picks" y la de zona norte, el
@@ -145,7 +156,8 @@ falló y cómo reintentarlo. Detalles en [tools/README.md](tools/README.md).
 La página en sí no tiene build ni dependencias. Alcanza con abrir el archivo en el navegador:
 
 ```bash
-start index.html        # la portada; las búsquedas cuelgan de ahí
+start index.html        # la página personal
+start casas\index.html  # la búsqueda de casa
 ```
 
 Cualquier cambio se publica al hacer push a `main`.

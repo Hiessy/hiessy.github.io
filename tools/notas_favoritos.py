@@ -19,6 +19,9 @@ ninguna cuenta. Lo que sí es dato duro: las distancias a servicios
 import io, json, os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Las páginas publicadas viven en `casas/`; la raíz del sitio es la
+# presentación personal y no tiene nada de esto.
+SITIO = os.path.join(ROOT, "casas")
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 from build2 import load_dead, is_dead
 
@@ -358,7 +361,7 @@ def main():
             n["baja"] = True
         out[x["url"]] = n
 
-    json.dump(out, io.open(os.path.join(ROOT, "notas.json"), "w", encoding="utf-8", newline=""),
+    json.dump(out, io.open(os.path.join(SITIO, "notas.json"), "w", encoding="utf-8", newline=""),
               ensure_ascii=False, indent=1, sort_keys=True)
     print(f"notas.json: {len(out)} avisos")
     print(f"  con pros y contras : {sum(1 for v in out.values() if v.get('pros'))}")

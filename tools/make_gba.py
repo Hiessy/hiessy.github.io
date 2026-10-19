@@ -10,8 +10,11 @@ correr esto de nuevo y las dos quedan al día.
 import datetime, io, json, os, re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC = os.path.join(ROOT, "caba-norte.html")
-DST = os.path.join(ROOT, "gba-norte.html")
+# Las páginas publicadas viven en `casas/`; la raíz del sitio es la
+# presentación personal y no tiene nada de esto.
+SITIO = os.path.join(ROOT, "casas")
+SRC = os.path.join(SITIO, "caba-norte.html")
+DST = os.path.join(SITIO, "gba-norte.html")
 DATA = os.path.join(ROOT, ".work", "DG.js")
 
 ZONES = ["Bella Vista", "San Miguel", "Olivos", "La Lucila", "Florida",

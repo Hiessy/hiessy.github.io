@@ -28,6 +28,9 @@ import io, json, os, random, re, sys, time, urllib.error, urllib.request
 D = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".work")
 OUT = os.path.join(D, "alive.json")
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Las páginas publicadas viven en `casas/`; la raíz del sitio es la
+# presentación personal y no tiene nada de esto.
+SITIO = os.path.join(ROOT, "casas")
 
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
@@ -49,7 +52,7 @@ MUERTO = {404, 410}
 
 
 def rows_publicados(pagina):
-    t = io.open(os.path.join(ROOT, pagina), encoding="utf-8").read()
+    t = io.open(os.path.join(SITIO, pagina), encoding="utf-8").read()
     i = t.index("const D=["); j = t.index("];", i)
     return json.loads(t[i + 8:j + 1])
 

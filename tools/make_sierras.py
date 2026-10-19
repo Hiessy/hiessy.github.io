@@ -14,8 +14,11 @@ Tercera pestaña, mismo CSS y mismo JS que las otras dos. Lo que cambia:
 import datetime, io, json, os, re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC = os.path.join(ROOT, "caba-norte.html")
-DST = os.path.join(ROOT, "sierras.html")
+# Las páginas publicadas viven en `casas/`; la raíz del sitio es la
+# presentación personal y no tiene nada de esto.
+SITIO = os.path.join(ROOT, "casas")
+SRC = os.path.join(SITIO, "caba-norte.html")
+DST = os.path.join(SITIO, "sierras.html")
 DATA = os.path.join(ROOT, ".work", "DS.js")
 
 MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",

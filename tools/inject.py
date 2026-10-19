@@ -12,7 +12,10 @@ calcula desde el dataset, que es el único que sabe la verdad.
 import datetime, io, json, os, re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PAGE = os.path.join(ROOT, "caba-norte.html")
+# Las páginas publicadas viven en `casas/`; la raíz del sitio es la
+# presentación personal y no tiene nada de esto.
+SITIO = os.path.join(ROOT, "casas")
+PAGE = os.path.join(SITIO, "caba-norte.html")
 DATA = os.path.join(ROOT, ".work", "D.js")
 
 MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",

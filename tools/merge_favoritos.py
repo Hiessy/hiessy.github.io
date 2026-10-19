@@ -17,7 +17,10 @@ porque el archivo haya pasado por otra computadora.
 import io, json, os, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DST = os.path.join(ROOT, "favoritos.json")
+# Las páginas publicadas viven en `casas/`; la raíz del sitio es la
+# presentación personal y no tiene nada de esto.
+SITIO = os.path.join(ROOT, "casas")
+DST = os.path.join(SITIO, "favoritos.json")
 
 
 def cargar(p):

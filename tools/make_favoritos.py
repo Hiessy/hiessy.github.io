@@ -18,8 +18,11 @@ Dos consecuencias de que los datos vivan en el navegador:
 import datetime, io, os, re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC = os.path.join(ROOT, "caba-norte.html")
-DST = os.path.join(ROOT, "favoritos.html")
+# Las páginas publicadas viven en `casas/`; la raíz del sitio es la
+# presentación personal y no tiene nada de esto.
+SITIO = os.path.join(ROOT, "casas")
+SRC = os.path.join(SITIO, "caba-norte.html")
+DST = os.path.join(SITIO, "favoritos.html")
 
 # Ojo: no redeclarar `FAVK`, que caba-norte.html lo declara más abajo con `const` y
 # dos declaraciones en el mismo scope rompen el script entero.

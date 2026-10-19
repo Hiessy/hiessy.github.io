@@ -22,8 +22,11 @@ semanas.
 import datetime, io, json, os, re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DST = os.path.join(ROOT, "index.html")
-FAVJSON = os.path.join(ROOT, "favoritos.json")
+# Las páginas publicadas viven en `casas/`; la raíz del sitio es la
+# presentación personal y no tiene nada de esto.
+SITIO = os.path.join(ROOT, "casas")
+DST = os.path.join(SITIO, "index.html")
+FAVJSON = os.path.join(SITIO, "favoritos.json")
 
 MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
          "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
@@ -36,7 +39,7 @@ def mil(v):
 
 def leer(pag):
     """(cantidad de avisos, {fuente: cantidad}) de una de las páginas de avisos."""
-    t = io.open(os.path.join(ROOT, pag), encoding="utf-8").read()
+    t = io.open(os.path.join(SITIO, pag), encoding="utf-8").read()
     linea = next(l for l in t.split("\n") if l.startswith("const D=[["))
     filas = json.loads(linea[len("const D="):].rstrip(";"))
     fuentes = {}

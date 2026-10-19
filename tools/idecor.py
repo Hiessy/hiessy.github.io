@@ -26,6 +26,9 @@ Lo que se trae, y por qué cada cosa:
 import io, json, os, urllib.parse, urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Las páginas publicadas viven en `casas/`; la raíz del sitio es la
+# presentación personal y no tiene nada de esto.
+SITIO = os.path.join(ROOT, "casas")
 WFS = "https://idecor-ws.mapascordoba.gob.ar/geoserver/idecor/wfs"
 UA = {"User-Agent": "hiessy.github.io property map (github.com/Hiessy)"}
 
@@ -132,7 +135,7 @@ def main():
         total = d.get("totalFeatures") or d.get("numberMatched") or len(d.get("features", []))
         print(f"{capa:42} {dentro_n:>4} de {total} dentro de los valles", flush=True)
 
-    dst = os.path.join(ROOT, "mineria.json")
+    dst = os.path.join(SITIO, "mineria.json")
     json.dump(out, io.open(dst, "w", encoding="utf-8", newline=""),
               ensure_ascii=False, separators=(",", ":"))
     from collections import Counter
