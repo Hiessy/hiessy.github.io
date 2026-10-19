@@ -92,8 +92,27 @@ de CABA se siguen relevando pero no se publican: están en `.work/` y vuelven co
 
 ## Estructura
 
-- `index.html` — página personal, a mano, sin generador. Los textos van en
-  `data-es` / `data-en` y el botón de idioma elige cuál se muestra.
+- `index.html` — página personal. **Sólo estructura**: ni un texto visible, ni
+  estilos, ni lógica adentro.
+  - `css/portada.css` — los estilos.
+  - `js/i18n.js` — carga `i18n/<idioma>.json` y lo aplica a todo lo que tenga
+    `data-i18n`. Los botones de idioma salen de su lista `IDIOMAS`.
+  - `js/janitor-joe.js` — el juego del final.
+  - `i18n/es.json`, `i18n/en.json` — **todos** los textos visibles, incluidos
+    el `<title>`, la descripción y los `aria-label`.
+
+  Sumar un idioma es un JSON nuevo y una línea en `IDIOMAS`; el HTML no se
+  toca. Antes cada elemento llevaba los dos idiomas encima (`data-es`,
+  `data-en`), que anda con dos y se cae con tres. Hay un control:
+
+  ```bash
+  python .claude/skills/i18n/revisar.py
+  ```
+
+  Compara las claves que pide el sitio contra las que define cada idioma y
+  marca las que faltan, las que están en un idioma y no en otro y las que no
+  usa nadie. Sale con 1 si falta algo. La guía está en
+  [`.claude/skills/i18n/SKILL.md`](.claude/skills/i18n/SKILL.md).
 - `casas/index.html` — portada de la búsqueda: las tres con sus números y un
   enlace a cada una. 8 KB, sin dataset. La genera `tools/make_inicio.py`.
 - `casas/caba-norte.html` / `casas/gba-norte.html` / `casas/sierras.html` — páginas completas: markup, CSS
@@ -155,9 +174,13 @@ falló y cómo reintentarlo. Detalles en [tools/README.md](tools/README.md).
 
 La página en sí no tiene build ni dependencias. Alcanza con abrir el archivo en el navegador:
 
+Las páginas de `casas/` se abren directo con doble clic. **La portada no**: sus
+textos se piden con `fetch` y el navegador no lo permite sobre `file://`, así
+que necesita servirse por HTTP. Si no, la propia página lo avisa arriba de todo.
+
 ```bash
-start index.html        # la página personal
-start casas\index.html  # la búsqueda de casa
+python -m http.server 8123      # después, http://localhost:8123
+start casas\index.html          # la búsqueda de casa sí abre sola
 ```
 
 Cualquier cambio se publica al hacer push a `main`.
