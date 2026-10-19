@@ -212,3 +212,27 @@ footer{margin:56px 0 0;padding:22px 0 26px;border-top:1px solid var(--line)}
    explica por qué en vez de dejar todo en blanco. */
 .aviso{max-width:84ch;margin:16px auto 0;padding:12px 20px;color:var(--amb);
  border:1px solid var(--acc);border-radius:4px;font-size:12.5px;line-height:1.6}
+
+/* --- la shell ------------------------------------------------------------
+   Vive en la pestaña y nada más: no hay servidor del otro lado. El marco imita
+   una ventana de terminal, con el renglón de entrada pegado abajo y la salida
+   scrolleando arriba. */
+.sh{background:#07080a;border:1px solid var(--line);border-radius:6px;
+ padding:12px 14px 10px;font-size:12.5px;line-height:1.62;cursor:text;
+ box-shadow:0 0 50px rgba(255,90,48,.05) inset}
+.sh:focus-within{border-color:rgba(255,90,48,.45)}
+.sh-out{max-height:260px;overflow-y:auto;overflow-wrap:anywhere;
+ scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+.sh-out::-webkit-scrollbar{width:7px}
+.sh-out::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+.sh-ln{margin:0;white-space:pre-wrap;color:#cdc9c5}
+.sh-eco{color:var(--ink)}
+.sh-err{color:#ff7a5c}
+.sh-tenue{color:var(--mut)}
+.sh-help b{color:var(--amb);font-weight:600;display:inline-block;min-width:9ch}
+.sh-linea{display:flex;align-items:baseline;gap:0;margin-top:6px;
+ border-top:1px solid var(--line);padding-top:8px}
+.sh-ps{color:var(--acc);white-space:pre;flex:0 0 auto}
+.sh-in{flex:1 1 auto;min-width:0;font:inherit;color:var(--ink);background:none;
+ border:0;outline:none;padding:0;caret-color:var(--acc)}
+@media(max-width:640px){.sh{font-size:12px}.sh-out{max-height:220px}}

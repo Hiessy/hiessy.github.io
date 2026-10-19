@@ -26,8 +26,12 @@ I18N = os.path.join(RAIZ, "i18n")
 # `data-i18n="clave"` y `data-i18n-attr="attr=clave;otro=clave2"`
 RE_CONT = re.compile(r'data-i18n="([^"]+)"')
 RE_ATTR = re.compile(r'data-i18n-attr="([^"]+)"')
-# I18N.t("clave") desde el JavaScript
-RE_JS = re.compile(r'I18N\.t\(\s*["\']([^"\']+)["\']')
+# Las claves que pide el JavaScript. Además de `I18N.t("x")` valen los atajos
+# `t("x")` y `fmt("x", ...)`, que es como las pide `js/shell.js`: ahí hay
+# decenas de mensajes y escribir `I18N.t` en cada uno no se sostiene. El `\b`
+# evita que enganche `split(`, `sort(` o `filter(`, que también terminan en
+# "t(". Sin esto el control daba catorce huérfanas que sí se estaban usando.
+RE_JS = re.compile(r'(?:\bI18N\.t|\bfmt|\bt)\(\s*["\']([^"\']+)["\']')
 
 
 def sin_comentarios(txt, nombre):
