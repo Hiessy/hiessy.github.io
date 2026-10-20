@@ -99,7 +99,12 @@ def parse(page_html):
         except ValueError:
             continue
         img = ""
-        mi = re.search(r'<img[^>]+src="(https://www\.argenprop\.com/static-content/[^"]+)"', body)
+        # Argenprop carga diferida: sólo las dos primeras tarjetas de cada página
+        # traen `src`, el resto pone la foto en **`data-src`**. Buscando nada más
+        # que `src=` se perdían 18 de cada 20 avisos, que después `ap_partido`
+        # descartaba por "sin foto" sin que nadie se enterara. Se busca la URL,
+        # no el nombre del atributo.
+        mi = re.search(r'(?:data-)?src="(https://www\.argenprop\.com/static-content/[^"]+)"', body)
         if mi:
             img = mi.group(1)
         feats = re.search(r'card__main-features">(.*?)</ul>', body, re.S)
