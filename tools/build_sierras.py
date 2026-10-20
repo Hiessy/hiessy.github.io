@@ -22,13 +22,13 @@ from collections import Counter
 from build2 import note, geo, drop_far_coords, m2_of, feats_of, descartar, load_dead, is_dead
 from dedupe import dedupe
 from geocode import load_cache, coords_for, aprox_for
-from sierras import LOCS, PUNILLA, CALAMUCHITA
+from sierras import LOCS, PUNILLA, CALAMUCHITA, SANTA_MARIA
 
 D = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".work")
 SRC = os.path.join(D, "sierras.json")
 OUT = os.path.join(D, "DS.js")
 
-VALLES = [PUNILLA, CALAMUCHITA]
+VALLES = [PUNILLA, CALAMUCHITA, SANTA_MARIA]
 # los pueblos en el orden en que están en LOCS (norte a sur), sin repetir:
 # `villa-del-lago` comparte etiqueta con Villa Carlos Paz
 PUEBLOS = list(dict.fromkeys(label for _, label, _ in LOCS))

@@ -68,6 +68,7 @@ def main():
                '<span class="lbl">Valle</span>\n'
                '<button class="pill" data-v="Punilla">Punilla <em></em></button>\n'
                '<button class="pill" data-v="Calamuchita">Calamuchita <em></em></button>\n'
+               '<button class="pill" data-v="Santa María">Santa María <em></em></button>\n'
                '<span class="sep"></span>\n'
                '<span class="lbl">Fuente</span>')
 
@@ -120,7 +121,8 @@ def main():
                '<h1>Casas en las sierras de Córdoba<br>Punilla y Calamuchita</h1>')
     t = re.sub(r'<meta name="description" content="[^"]*">',
                '<meta name="description" content="Casas hasta USD 260.000 en los valles de '
-               'Punilla y Calamuchita, Córdoba.">', t, count=1)
+               'Punilla y Calamuchita, más Potrero de Garay y San Clemente, Córdoba.">',
+               t, count=1)
 
     # los separadores de miles se arman de a uno: aplicar un .replace(",", ".")
     # sobre todo el bloque también se comía las comas de las oraciones
@@ -128,6 +130,7 @@ def main():
     n = mil(len(rows))
     puni = mil(sum(1 for r in rows if r[13] == "Punilla"))
     cala = mil(sum(1 for r in rows if r[13] == "Calamuchita"))
+    smar = mil(sum(1 for r in rows if r[13] == "Santa María"))
     lote = {k: mil(sum(1 for r in rows if r[18] >= k)) for k in (300, 600, 1000)}
     sinlote = mil(sum(1 for r in rows if not r[18]))
     ap = mil(sum(1 for r in rows if r[14] == "Argenprop"))
@@ -142,8 +145,9 @@ def main():
 
     i, j = t.index('<p class="sub">'), t.index("</header>")
     t = t[:i] + f'''<p class="sub">{n} casas de 3 ambientes o más, hasta USD 260.000,
-en los valles de <b>Punilla</b> ({puni}) y <b>Calamuchita</b> ({cala}). Sin la ciudad de
-Córdoba ni las Sierras Chicas.</p>
+en los valles de <b>Punilla</b> ({puni}) y <b>Calamuchita</b> ({cala}), más la costa oeste del
+lago Los Molinos —<b>Santa María</b> ({smar}): Potrero de Garay y San Clemente, pegados al
+valle pero de otro departamento—. Sin la ciudad de Córdoba ni las Sierras Chicas.</p>
 ''' + t[j:]
 
     i = t.index("<footer>"); j = t.index("</footer>")

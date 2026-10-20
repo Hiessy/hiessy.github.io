@@ -51,6 +51,11 @@ MAX_AGE_H = 24
 # (slug, etiqueta, valle) — el valle es el filtro grande de la página.
 # Ordenados de norte a sur dentro de cada valle, como se recorren en el mapa.
 PUNILLA, CALAMUCHITA = "Punilla", "Calamuchita"
+# Tercer grupo, chico y pegado al valle pero **fuera** de él: Potrero de Garay y
+# San Clemente son del departamento Santa María, sobre la costa oeste del lago
+# Los Molinos. Van aparte y no metidos dentro de Calamuchita, que sería decir
+# que están donde no están.
+SANTA_MARIA = "Santa María"
 LOCS = [
     ("capilla-del-monte",         "Capilla del Monte",         PUNILLA),
     ("charbonier",                "Charbonier",                PUNILLA),
@@ -103,6 +108,10 @@ LOCS = [
     ("villa-amancay",             "Villa Amancay",             CALAMUCHITA),
     ("villa-del-dique",           "Villa del Dique",           CALAMUCHITA),
     ("amboy",                     "Amboy",                     CALAMUCHITA),
+
+    # Santa María: el lago Los Molinos, por el lado de afuera del valle.
+    ("potrero-de-garay",          "Potrero de Garay",          SANTA_MARIA),
+    ("san-clemente",              "San Clemente",              SANTA_MARIA),
 ]
 
 
