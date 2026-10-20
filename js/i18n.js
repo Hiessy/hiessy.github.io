@@ -25,10 +25,20 @@
 (function () {
   "use strict";
 
+  /* `cod` nombra el archivo de `i18n/` y `bcp` es lo que va en el atributo
+     `lang`. Casi siempre son el mismo, pero «l33t» no es una etiqueta de
+     idioma válida: ponerla en `lang` le miente al navegador y al lector de
+     pantalla. La forma correcta para algo que es inglés con un alfabeto
+     propio es la subetiqueta de uso privado, `en-x-l33t`. */
   var IDIOMAS = [
     { cod: "es", et: "ES", nom: "Castellano" },
-    { cod: "en", et: "EN", nom: "English" }
+    { cod: "en", et: "EN", nom: "English" },
+    { cod: "l33t", et: "1337", nom: "L33t5p34k", bcp: "en-x-l33t" }
   ];
+  function ficha(c) {
+    for (var i = 0; i < IDIOMAS.length; i++) if (IDIOMAS[i].cod === c) return IDIOMAS[i];
+    return null;
+  }
   var POR_DEFECTO = "es";
   var LK = "hiessy:idioma";
 
@@ -91,7 +101,7 @@
       textos = j;
       actual = cod;
       window.I18N.listo = true;
-      document.documentElement.lang = cod;
+      document.documentElement.lang = (ficha(cod) || {}).bcp || cod;
       try { localStorage.setItem(LK, cod); } catch (e) { /* modo privado */ }
       pintar();
       botones();
@@ -112,7 +122,7 @@
         b.type = "button";
         b.textContent = i.et;
         b.title = i.nom;
-        b.setAttribute("lang", i.cod);
+        b.setAttribute("lang", i.bcp || i.cod);
         b.dataset.cod = i.cod;
         b.addEventListener("click", function () { aplicar(i.cod); });
         cont.appendChild(b);
