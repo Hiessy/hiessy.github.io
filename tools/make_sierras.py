@@ -13,6 +13,8 @@ Tercera pestaña, mismo CSS y mismo JS que las otras dos. Lo que cambia:
 """
 import datetime, io, json, os, re
 
+from notas_sierras import CSS as NOTAS_CSS, MARKUP as NOTAS_HTML, JS as NOTAS_JS
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Las páginas publicadas viven en `casas/`; la raíz del sitio es la
 # presentación personal y no tiene nada de esto.
@@ -168,6 +170,37 @@ confirmá con la inmobiliaria antes de viajar.</p>
     # el mismo dato arriba a la derecha, en gris claro (ver .sello en caba-norte.html)
     t = re.sub(r'(<span class="sello"[^>]*>)[^<]*</span>',
                rf"\g<1>{ahora:%d/%m/%Y %H:%M}</span>", t, count=1)
+
+    # --- panel «Qué mirar» -------------------------------------------------
+    # El botón va en cada ficha y el panel es hermano del de Filtros. Lo que
+    # dice se calcula en el navegador a partir de la propia fila; ver
+    # `notas_sierras.py`.
+    t = rep(t, "</style>", NOTAS_CSS + "</style>")
+    t = rep(t,
+        '<div class="scrim" id="scrim" hidden></div>',
+        NOTAS_HTML + "\n" + '<div class="scrim" id="scrim" hidden></div>')
+    # el botón, debajo de la nota de la ficha
+    t = rep(t,
+        '<p class="note">${E(r[7])}</p><p class="src">',
+        '<p class="note">${E(r[7])}</p>${notaDe(r)}<p class="src">')
+    # el clic en el botón abre el panel y **no** sigue hasta el zoom del mapa,
+    # que es lo que hace un clic en cualquier otra parte de la ficha
+    t = rep(t,
+        " g.onclick=e=>{\n  const b=e.target.closest('.pickbtn');",
+        " g.onclick=e=>{\n"
+        "  const q=e.target.closest('.qbtn');\n"
+        "  if(q){e.preventDefault();abrirNota(q.dataset.q);return}\n"
+        "  const b=e.target.closest('.pickbtn');")
+    # el JS va antes de la primera llamada a draw(), que es quien pinta las
+    # fichas: definido después, `notaDe` no existiría todavía
+    t = rep(t, "\nfunction more(){", NOTAS_JS + "\nfunction more(){")
+    # y los extras se piden al primer uso, no al cargar
+    t = rep(t, "document.getElementById('nclose').onclick=cerrarNota;",
+               "document.getElementById('nclose').onclick=cerrarNota;\n"
+               "addEventListener('pointerdown',function p(e){\n"
+               " if(e.target.closest('.qbtn')){traerExtras();"
+               "removeEventListener('pointerdown',p)}\n"
+               "},true);")
 
     io.open(DST, "w", encoding="utf-8", newline="").write(t)
     print("escrito", DST, f"{os.path.getsize(DST)/1048576:.2f} MB |",
