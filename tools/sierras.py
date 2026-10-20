@@ -16,6 +16,20 @@ Otros slugs que parecen de acá y no lo son —todos verificados a mano:
     villa-berna        -> nacional                  villa-alpina  -> nacional
     athos-pampa        -> nacional                  villa-ciudad-parque -> nacional
     villa-carlos-paz-centro -> Rosario              villa-rio-icho-cruz -> nacional
+    santa-monica       -> Mar del Plata             villa-del-parque -> CABA
+    yacanto-de-calamuchita -> Yacanto, San Javier   el-torreon    -> nacional
+    falda-de-los-reartes -> nacional                villa-benegas -> nacional
+    la-cruz-cordoba / los-molinos-cordoba -> toda la provincia
+
+Calamuchita tiene **la mitad de pueblos que Punilla** (14 contra 24) y no por
+olvido: Zonaprop no indexa por separado a Villa Berna, Athos Pampa, Falda de
+los Reartes, El Vergel ni Calmayo, que sí aparecen en los avisos de Argenprop y
+MercadoLibre —esos dos se piden por partido entero y no por pueblo, así que los
+levantan igual—.
+
+Pegados al valle pero **fuera** de él, en el departamento Santa María, hay dos
+slugs que sí funcionan y que hoy no se piden porque el sitio dice Punilla y
+Calamuchita: `potrero-de-garay` (170 avisos) y `san-clemente` (12).
 
 `yacanto` es el caso más traicionero: existe, es de Córdoba y no es del valle
 —Yacanto de San Javier queda del otro lado de la provincia—. El del valle es
@@ -71,6 +85,9 @@ LOCS = [
     ("la-cumbrecita",             "La Cumbrecita",             CALAMUCHITA),
     ("villa-general-belgrano",    "Villa General Belgrano",    CALAMUCHITA),
     ("los-reartes",               "Los Reartes",               CALAMUCHITA),
+    # 57 avisos que faltaban: el pueblo tiene slug propio y largo. El corto,
+    # `villa-ciudad-parque`, cae a la búsqueda nacional (ver la lista de arriba).
+    ("villa-ciudad-parque-los-reartes", "Villa Ciudad Parque Los Reartes", CALAMUCHITA),
     ("villa-ciudad-de-america",   "Villa Ciudad de América",   CALAMUCHITA),
     ("los-molinos",               "Los Molinos",               CALAMUCHITA),
     # Tala Huasi está sobre el Icho Cruz, al sur de Villa Carlos Paz: es
@@ -83,6 +100,7 @@ LOCS = [
     ("villa-quillinzo",           "Villa Quillinzo",           CALAMUCHITA),
     ("embalse",                   "Embalse",                   CALAMUCHITA),
     ("villa-rumipal",             "Villa Rumipal",             CALAMUCHITA),
+    ("villa-amancay",             "Villa Amancay",             CALAMUCHITA),
     ("villa-del-dique",           "Villa del Dique",           CALAMUCHITA),
     ("amboy",                     "Amboy",                     CALAMUCHITA),
 ]
