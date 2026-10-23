@@ -1,0 +1,238 @@
+:root {
+    --neon-blue: #00f3ff;
+    --neon-pink: #bc13fe;
+    --neon-green: #0aff0a;
+    --neon-yellow: #ffdd00;
+    --dark-bg: #0a0a12;
+    --glass: rgba(255, 255, 255, 0.1);
+}
+
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark-bg);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    user-select: none;
+    touch-action: manipulation;
+}
+
+#star-canvas { position: absolute; top: 0; left: 0; z-index: -1; }
+
+.game-wrapper {
+    width: 90%; max-width: 700px;
+    background: rgba(16, 16, 28, 0.85);
+    backdrop-filter: blur(10px);
+    border-radius: 30px;
+    border: 2px solid var(--glass);
+    box-shadow: 0 0 40px rgba(188, 19, 254, 0.2);
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    z-index: 1; /* Ensure wrapper is above canvas */
+}
+#main-container.shake { animation: shake 0.3s ease-in-out; }
+
+h1, h2 { font-family: 'Fredoka One', cursive; margin: 0; text-align: center; }
+
+.screen { display: none; flex-direction: column; align-items: center; gap: 15px; animation: fadeIn 0.5s ease; }
+.active { display: flex; }
+
+/* Start Screen */
+.game-title {
+    font-size: 2.8rem;
+    color: var(--neon-blue);
+    text-shadow: 0 0 20px var(--neon-blue);
+    line-height: 1.1;
+}
+.mission-text { margin-bottom: 20px; }
+
+.level-btn {
+    background: linear-gradient(45deg, #2196F3, #bc13fe);
+    border: none; padding: 15px 30px; width: 100%;
+    color: white; font-size: 1.3rem; font-family: 'Fredoka One', cursive;
+    border-radius: 50px; cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    display: flex; flex-direction: column; align-items: center;
+    position: relative; z-index: 10; /* Ensure clickable */
+}
+.level-btn:hover { transform: scale(1.03); box-shadow: 0 0 20px var(--neon-blue); }
+.level-btn.hue-45 { filter: hue-rotate(45deg); }
+.level-btn.hue-90 { filter: hue-rotate(90deg); }
+.level-desc { font-size: 0.8rem; opacity: 0.9; font-weight: normal; margin-top: 5px; font-family: 'Nunito'; }
+
+.abc-btn-style { background: linear-gradient(45deg, #ffdd00, #ff8c00); color: #0a0a12; text-shadow: none; }
+.abc-btn-style .level-desc { color: #3d2b00; font-weight: bold; }
+
+/* Game Screen HUD */
+.hud { display: flex; justify-content: space-between; width: 100%; font-weight: bold; font-size: 1.2rem; }
+.badge-slot {
+    background: var(--glass); padding: 5px 15px; border-radius: 20px; color: var(--neon-green);
+    transition: all 0.3s ease;
+}
+.level-up-flash {
+    animation: neon-pulse 1s ease-in-out forwards;
+    color: var(--dark-bg) !important;
+    background: var(--neon-yellow) !important;
+    box-shadow: 0 0 30px var(--neon-yellow) !important;
+}
+
+.question-display {
+    font-size: 4rem; font-family: 'Fredoka One', cursive;
+    text-shadow: 0 0 20px var(--neon-blue); margin: 10px 0; text-align: center;
+    pointer-events: none; /* Let clicks pass through text */
+}
+
+.input-display {
+    width: 180px; height: 60px;
+    background: rgba(0,0,0,0.3);
+    border: 3px solid var(--neon-pink);
+    border-radius: 15px; font-size: 2.5rem;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fredoka One', cursive; margin-bottom: 15px;
+    transition: border-color 0.3s;
+    z-index: 5;
+}
+
+/* Progress toward next rank (resets on rank-up) */
+.progress-track { width: 100%; height: 10px; background: #333; border-radius: 5px; overflow: hidden; margin-bottom: 10px; }
+.progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--neon-green), var(--neon-blue)); transition: width 0.3s ease; }
+
+/* Streak flame counter in the HUD */
+#streak-el { color: #ff8c00; font-size: 1rem; margin-left: 6px; }
+
+/* Street court: side-view pixel-art scene, player left, hoop/goal right */
+.court {
+    position: relative;
+    width: 100%; height: 150px;
+    box-sizing: border-box;
+    background: rgba(0,0,0,0.25); border-radius: 15px;
+    border: 1px solid var(--glass);
+    overflow: hidden;
+}
+#court-canvas {
+    display: block;
+    width: 100%; height: 100%;
+    image-rendering: pixelated;
+}
+
+/* Bonus round: questions hide, the court becomes the game */
+.bonus-mode #game-controls,
+.bonus-mode .input-display { display: none; }
+.bonus-mode .court {
+    cursor: pointer;
+    border-color: var(--neon-yellow);
+    box-shadow: 0 0 20px rgba(255, 221, 0, 0.45);
+}
+.bonus-mode .question-display { font-size: 2.2rem; }
+
+/* On fire! (3+ correct in a row) */
+.fire-msg {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%) rotate(-8deg);
+    font-size: 0.78rem; font-family: 'Fredoka One', cursive;
+    color: var(--neon-yellow); text-shadow: 0 0 10px #ff6d00;
+    white-space: nowrap;
+    display: none;
+    z-index: 5;
+}
+.court.on-fire .fire-msg { display: block; animation: fire-pulse 0.7s ease-in-out infinite alternate; }
+.court.on-fire { border-color: #ff6d00; box-shadow: 0 0 15px rgba(255, 109, 0, 0.4); }
+@keyframes fire-pulse {
+    from { transform: translate(-50%, -50%) rotate(-8deg) scale(1); }
+    to   { transform: translate(-50%, -50%) rotate(-8deg) scale(1.15); }
+}
+
+/* Story Panel */
+.story-panel {
+    display: flex; align-items: center; gap: 12px;
+    width: 100%; box-sizing: border-box;
+    background: var(--glass); border-radius: 15px;
+    padding: 8px 14px; min-height: 52px;
+}
+.story-icon { font-size: 2.2rem; }
+.story-caption { font-size: 0.92rem; opacity: 0.9; text-align: left; }
+.story-panel.pop { animation: pop 0.4s ease; }
+
+/* Controls Container */
+#game-controls {
+    width: 100%; max-width: 350px; min-height: 250px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    position: relative;
+    z-index: 20; /* Forces controls above other elements */
+}
+
+/* Math Numpad */
+.numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; }
+.num-btn {
+    background: var(--glass); border: 1px solid rgba(255,255,255,0.2);
+    color: white; font-size: 1.5rem; padding: 15px;
+    border-radius: 15px; cursor: pointer; font-family: 'Fredoka One';
+    transition: background 0.1s;
+    position: relative; z-index: 30;
+}
+.num-btn:active { background: rgba(255,255,255,0.4); transform: scale(0.95); }
+.action-btn { background: var(--neon-pink); border-color: var(--neon-pink); }
+.clear-btn { background: #ff4444; border-color: #ff4444; }
+
+/* ABC Choice Buttons */
+.choice-container {
+    display: flex;
+    flex-direction: row; gap: 15px; width: 100%; justify-content: space-between;
+}
+.choice-btn {
+    background: rgba(255,255,255,0.1);
+    border: 3px solid var(--neon-yellow);
+    color: var(--neon-yellow);
+    font-size: 3rem; padding: 20px 10px;
+    border-radius: 20px; cursor: pointer; font-family: 'Fredoka One';
+    flex: 1; text-align: center;
+    text-shadow: 0 0 15px var(--neon-yellow);
+    box-shadow: inset 0 0 20px rgba(255, 221, 0, 0.2);
+    transition: all 0.2s;
+    position: relative; z-index: 30;
+}
+.choice-btn:active { transform: scale(0.9); background: var(--neon-yellow); color: var(--dark-bg); }
+
+.back-btn { position: absolute; top: 10px; left: 10px; background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; font-size: 1.1rem; font-weight: bold; font-family: 'Nunito', sans-serif; z-index: 100; }
+.music-btn { position: absolute; top: 20px; left: 20px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: white; padding: 8px 14px; border-radius: 20px; cursor: pointer; font-size: 1rem; transition: all 0.2s; z-index: 100; }
+.music-btn:hover { background: rgba(255, 255, 255, 0.3); }
+.lang-btn { position: absolute; top: 20px; right: 20px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: white; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-family: 'Fredoka One'; transition: all 0.2s; z-index: 100; }
+.lang-btn:hover { background: rgba(255, 255, 255, 0.3); }
+
+/* Animations */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-10px);} 75% {transform: translateX(10px);} }
+.pop { animation: pop 0.3s ease; }
+@keyframes pop { 50% { transform: scale(1.2) rotate(5deg); color: var(--neon-green); } }
+
+@keyframes neon-pulse {
+    0% { transform: scale(1); box-shadow: 0 0 10px var(--neon-yellow); }
+    50% { transform: scale(1.1); box-shadow: 0 0 40px var(--neon-yellow), 0 0 80px var(--neon-yellow); }
+    100% { transform: scale(1); box-shadow: 0 0 10px var(--neon-yellow); }
+}
+
+/* Hiding elements based on mode */
+#game-screen.mode-math .choice-container { display: none; }
+#game-screen.mode-abc .numpad,
+#game-screen.mode-abc .input-display { display: none; }
+
+/* Small screens: allow vertical scrolling so the numpad is never cut off */
+@media (max-height: 700px) {
+    body { height: auto; min-height: 100vh; overflow-y: auto; align-items: flex-start; }
+    .game-wrapper { margin: 60px 0 20px; }
+}
+
+/* Narrow screens: shrink the court */
+@media (max-width: 560px) {
+    .court { height: 110px; }
+    .story-caption { font-size: 0.8rem; }
+}

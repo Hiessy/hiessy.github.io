@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Academy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=4">
+</head>
+<body>
+
+    <canvas id="star-canvas"></canvas>
+
+    <button class="music-btn" id="music-btn" onclick="toggleMusic()">🎵</button>
+    <button class="lang-btn" onclick="toggleLanguage()">🇺🇸 EN / 🇪🇸 ES</button>
+
+    <div class="game-wrapper" id="main-container">
+        <!-- START SCREEN -->
+        <div id="start-screen" class="screen active">
+            <h1 id="title-text" class="game-title">SPACE<br>ACADEMY</h1>
+            <p id="mission-text" class="mission-text">Choose your mission:</p>
+
+            <button class="level-btn abc-btn-style" id="btn-abc" onclick="startGame('abc', 0)">
+                🅰️ ABC Astronaut
+                <span class="level-desc">Learn letters & sequences</span>
+            </button>
+
+            <button class="level-btn" id="btn-lvl-1" onclick="startGame('math', 1)">
+                🚀 Math Cadet
+                <span class="level-desc">Numbers up to 10 (Adding)</span>
+            </button>
+
+            <button class="level-btn hue-45" id="btn-lvl-2" onclick="startGame('math', 2)">
+                🪐 Galaxy Ranger
+                <span class="level-desc">Up to 20 (Add & Subtract)</span>
+            </button>
+
+            <button class="level-btn hue-90" id="btn-lvl-3" onclick="startGame('math', 3)">
+                👑 Universe Master
+                <span class="level-desc">Advanced (+ - × ÷)</span>
+            </button>
+        </div>
+
+        <!-- GAME SCREEN -->
+        <div id="game-screen" class="screen">
+            <button class="back-btn" id="btn-exit" onclick="showStartScreen()">← Exit</button>
+
+            <div class="hud">
+                <span><span id="label-score">Score:</span> <span id="score-el">0</span> <span id="streak-el"></span></span>
+                <div class="badge-slot" id="badge-el">🌱 Cadet</div>
+            </div>
+
+            <!-- Progress toward the NEXT rank (resets on each rank-up) -->
+            <div class="progress-track">
+                <div class="progress-fill" id="progress-bar"></div>
+            </div>
+
+            <div class="court" id="court">
+                <canvas id="court-canvas"></canvas>
+                <div class="fire-msg" id="fire-msg">🔥 ON FIRE! 🔥</div>
+            </div>
+
+            <div class="story-panel" id="story-panel">
+                <div class="story-icon" id="story-icon">🧑‍🚀</div>
+                <div class="story-caption" id="story-caption"></div>
+            </div>
+
+            <div class="question-display" id="question-el">Loading...</div>
+
+            <div class="input-display" id="answer-el"></div>
+
+            <div id="game-controls">
+                <div class="choice-container" id="choice-container">
+                    <button class="choice-btn" id="choice-1" onclick="checkLetterAnswer(this)">A</button>
+                    <button class="choice-btn" id="choice-2" onclick="checkLetterAnswer(this)">B</button>
+                    <button class="choice-btn" id="choice-3" onclick="checkLetterAnswer(this)">C</button>
+                </div>
+
+                <div class="numpad">
+                    <button class="num-btn" onclick="typeNum(1)">1</button>
+                    <button class="num-btn" onclick="typeNum(2)">2</button>
+                    <button class="num-btn" onclick="typeNum(3)">3</button>
+                    <button class="num-btn" onclick="typeNum(4)">4</button>
+                    <button class="num-btn" onclick="typeNum(5)">5</button>
+                    <button class="num-btn" onclick="typeNum(6)">6</button>
+                    <button class="num-btn" onclick="typeNum(7)">7</button>
+                    <button class="num-btn" onclick="typeNum(8)">8</button>
+                    <button class="num-btn" onclick="typeNum(9)">9</button>
+                    <button class="num-btn clear-btn" onclick="clearInput()">C</button>
+                    <button class="num-btn" onclick="typeNum(0)">0</button>
+                    <button class="num-btn action-btn" onclick="submitMathAnswer()">GO</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/translations.js?v=4"></script>
+    <script src="js/audio.js?v=3"></script>
+    <script src="js/music.js?v=3"></script>
+    <script src="js/stories.js?v=3"></script>
+    <script src="js/sheets.js?v=3"></script>
+    <script src="js/court.js?v=9"></script>
+    <script src="js/stars.js?v=3"></script>
+    <script src="js/game.js?v=4"></script>
+</body>
+</html>
