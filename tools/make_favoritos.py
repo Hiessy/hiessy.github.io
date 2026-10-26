@@ -44,6 +44,15 @@ DATA = """const D=(()=>{
 
 
 NOTAS_CSS = """
+/* Un favorito que ya no está publicado: se apaga y se avisa, pero no se borra
+   solo. La foto se desatura para que se note de un vistazo. */
+.card.muerto .shot{filter:grayscale(1) brightness(.62)}
+.card.muerto .note,.card.muerto .src{opacity:.55}
+.card.muerto .shot::before{content:"ya no está publicado";position:absolute;
+ z-index:3;left:9px;top:9px;background:#b4472e;color:#fff;font-size:10.5px;
+ font-weight:700;letter-spacing:.03em;padding:4px 8px;border-radius:6px}
+#avbaja{display:block;margin:0 0 14px;color:#b4472e;font-size:13px}
+#avbaja[hidden]{display:none}
 /* El botón vive en la ficha; el contenido se abre en un panel que entra desde
    la derecha, el mismo que usa Filtros. Antes era un <details> dentro de la
    ficha: con treinta y tres avisos, abrir dos ya desarmaba la lista. */
@@ -121,7 +130,35 @@ addEventListener('keydown',e=>{if(e.key==='Escape'&&ndraw.classList.contains('op
 fetch('notas.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(o=>{
  if(!o)return;
  NOTAS=o;
- draw();          // ya se dibuj\u00f3 sin los botones: se vuelve a dibujar con ellos
+ draw(); pintarBajas();   // se redibuja con los botones: hay que volver a marcar
+}).catch(()=>{});
+
+// --- avisos dados de baja -------------------------------------------------
+// Esta p\u00e1gina no tiene dataset propio: arma la lista con lo que hay en
+// localStorage, que es una copia de la fila del d\u00eda en que se toc\u00f3 el
+// coraz\u00f3n. Si el aviso se cay\u00f3 despu\u00e9s, segu\u00eda ac\u00e1 con su precio y su texto
+// viejos y sin ninguna se\u00f1al: reci\u00e9n te enterabas al hacer clic y recibir un
+// 410. `bajas.json` trae los n\u00fameros de aviso verificados como baja. Se
+// marcan, no se borran: un favorito lo sacas vos.
+let BAJAS=null;
+const idDe=u=>{const m=/(?:MLA-?)?(\d{6,})(?:\.html)?$/.exec((u||'').split('?')[0].replace(/\/$/,''));return m?m[1]:null};
+function pintarBajas(){
+ if(!BAJAS)return;
+ let n=0;
+ for(const art of document.querySelectorAll('.card')){
+  const i=idDe(art.dataset.k);
+  if(i&&BAJAS.has(i)){art.classList.add('muerto');n++}
+ }
+ const av=document.getElementById('avbaja');
+ if(av)
+  if(n){av.hidden=false;
+        av.textContent=(n===1?'1 favorito ya no est\u00e1 publicado':n+' favoritos ya no est\u00e1n publicados')+': quedaron marcados.';}
+  else av.hidden=true;
+}
+fetch('bajas.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(a=>{
+ if(!a)return;
+ BAJAS=new Set(a);
+ pintarBajas();
 }).catch(()=>{});
 """
 
@@ -351,6 +388,8 @@ def main():
                '<button class="pill" id="fexp" title="Baja lo marcado en este navegador '
                'para commitearlo en el repo y que se vea también en el sitio publicado y '
                'en el teléfono">Bajar JSON</button>')
+    t = rep(t, '<div class="grid" id="g">',
+               '<p id="avbaja" hidden></p>\n<div class="grid" id="g">')
 
     # `D` se arma de localStorage al cargar, así que lo que traiga `favSync()`
     # después no está en la lista. En las otras tres páginas alcanza con volver a

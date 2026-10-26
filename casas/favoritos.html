@@ -219,6 +219,15 @@ body.noscroll{overflow:hidden}
 .drawer .bar .lbl{width:100%;margin:0 0 3px}
 .drawer .sep,.drawer .sp{display:none}
 
+/* Un favorito que ya no está publicado: se apaga y se avisa, pero no se borra
+   solo. La foto se desatura para que se note de un vistazo. */
+.card.muerto .shot{filter:grayscale(1) brightness(.62)}
+.card.muerto .note,.card.muerto .src{opacity:.55}
+.card.muerto .shot::before{content:"ya no está publicado";position:absolute;
+ z-index:3;left:9px;top:9px;background:#b4472e;color:#fff;font-size:10.5px;
+ font-weight:700;letter-spacing:.03em;padding:4px 8px;border-radius:6px}
+#avbaja{display:block;margin:0 0 14px;color:#b4472e;font-size:13px}
+#avbaja[hidden]{display:none}
 /* El botón vive en la ficha; el contenido se abre en un panel que entra desde
    la derecha, el mismo que usa Filtros. Antes era un <details> dentro de la
    ficha: con treinta y tres avisos, abrir dos ya desarmaba la lista. */
@@ -291,7 +300,7 @@ body.noscroll{overflow:hidden}
  <a href="favoritos.html" class="tab fav on">Favoritos <em id="favn"></em></a>
 </nav>
 <header>
-<span class="sello" id="sello" title="Cuándo se armó esta página">26/10/2026 15:47</span>
+<span class="sello" id="sello" title="Cuándo se armó esta página">26/10/2026 16:32</span>
 <h1>Favoritos<br>lo que fuimos marcando</h1>
 <p class="sub">Los avisos marcados con el <b>♥</b> en CABA norte, zona norte
 y sierras de Córdoba. Se guardan en este navegador: no viajan a ningún servidor y
@@ -364,7 +373,8 @@ no se ven desde otra computadora.</p>
 <p class="pleg" id="pleg" hidden></p>
  <div id="map"></div>
 </aside>
-<main><div class="grid" id="g"></div></main>
+<main><p id="avbaja" hidden></p>
+<div class="grid" id="g"></div></main>
 </div>
 <footer>
 <p>Esta página es una <b>copia del día en que marcaste cada aviso</b>: el precio y la
@@ -517,7 +527,35 @@ addEventListener('keydown',e=>{if(e.key==='Escape'&&ndraw.classList.contains('op
 fetch('notas.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(o=>{
  if(!o)return;
  NOTAS=o;
- draw();          // ya se dibujó sin los botones: se vuelve a dibujar con ellos
+ draw(); pintarBajas();   // se redibuja con los botones: hay que volver a marcar
+}).catch(()=>{});
+
+// --- avisos dados de baja -------------------------------------------------
+// Esta página no tiene dataset propio: arma la lista con lo que hay en
+// localStorage, que es una copia de la fila del día en que se tocó el
+// corazón. Si el aviso se cayó después, seguía acá con su precio y su texto
+// viejos y sin ninguna señal: recién te enterabas al hacer clic y recibir un
+// 410. `bajas.json` trae los números de aviso verificados como baja. Se
+// marcan, no se borran: un favorito lo sacas vos.
+let BAJAS=null;
+const idDe=u=>{const m=/(?:MLA-?)?(\d{6,})(?:\.html)?$/.exec((u||'').split('?')[0].replace(/\/$/,''));return m?m[1]:null};
+function pintarBajas(){
+ if(!BAJAS)return;
+ let n=0;
+ for(const art of document.querySelectorAll('.card')){
+  const i=idDe(art.dataset.k);
+  if(i&&BAJAS.has(i)){art.classList.add('muerto');n++}
+ }
+ const av=document.getElementById('avbaja');
+ if(av)
+  if(n){av.hidden=false;
+        av.textContent=(n===1?'1 favorito ya no está publicado':n+' favoritos ya no están publicados')+': quedaron marcados.';}
+  else av.hidden=true;
+}
+fetch('bajas.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(a=>{
+ if(!a)return;
+ BAJAS=new Set(a);
+ pintarBajas();
 }).catch(()=>{});
 
 const card=r=>`<article class="card" data-k="${E(r[2])}"><div class="thumb"><a class="shot" href="${abs(r[2])?r[2]:UP+r[2]}" target="_blank" rel="noopener">
