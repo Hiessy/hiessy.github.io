@@ -63,6 +63,10 @@ def main():
     t = "\n".join(lines)
 
     # pestaña activa
+    # La zona norte no tiene MercadoLibre: el pill viene en la plantilla desde
+    # que CABA sí la tiene, y acá quedaría un boton que siempre marca cero.
+    t = rep(t, '\n<button class="pill" data-s="MercadoLibre">MercadoLibre <em></em></button>', '')
+
     t = rep(t, '<a href="caba-norte.html" class="tab on">CABA norte</a>',
                '<a href="caba-norte.html" class="tab">CABA norte</a>')
     t = rep(t, '<a href="gba-norte.html" class="tab">Zona norte con patio</a>',

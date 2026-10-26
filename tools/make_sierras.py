@@ -108,11 +108,9 @@ def main():
                "<p class=\"src\">${E(r[9])}${r[14]?' · '+E(r[14]):''}"
                "${ter&&!(r[18]||0)?' · <b>lote no declarado</b>':''}</p>")
 
-    # Tercera fuente, sólo en la sierra: lo que se buscó a mano en MercadoLibre
-    # con los filtros de 3 dormitorios y jardín puestos en su propia página.
-    t = rep(t, '<button class="pill" data-s="Argenprop">Argenprop <em></em></button>',
-               '<button class="pill" data-s="Argenprop">Argenprop <em></em></button>\n'
-               '<button class="pill" data-s="MercadoLibre">MercadoLibre <em></em></button>')
+    # El pill de MercadoLibre ya viene en la plantilla: desde que CABA también
+    # tiene esa fuente está en `caba-norte.html`, y agregarlo acá dejaba dos.
+    assert 'data-s="MercadoLibre"' in t, "falta el pill de MercadoLibre en la plantilla"
 
     # textos
     t = rep(t, "<title>Búsqueda de propiedades · Argentina</title>",

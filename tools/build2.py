@@ -626,6 +626,38 @@ def main():
                                 m2_of(r), patio_of(r), feats_of(r.get("d", ""))])
         print("Argenprop por barrio: +", len(ap_rows) - n_before)
 
+    # --- MercadoLibre, barrio por barrio desde el navegador (`ml_caba.py`).
+    # Ojo con el barrio: la busqueda de MercadoLibre lo ignora —pidiendo
+    # Belgrano vuelven avisos de Rosario y de La Plata—, asi que `ml_caba.py`
+    # ya lo saco de la ubicacion que publica la tarjeta y descarto lo que no
+    # sea uno de los doce de Edenor. Aca llega limpio.
+    mlp = os.path.join(D, "ml_caba_rows.json")
+    if os.path.exists(mlp):
+        n_before = len(ap_rows)
+        for r in json.load(open(mlp, encoding="utf-8")):
+            if is_dead(r.get("url", ""), dead):
+                bajas += 1
+                continue
+            k = dedupe_key(r["price"], r.get("dorm", 0), r.get("addr", ""))
+            if k in seen_key:
+                continue
+            seen_key.add(k)
+            motivo = descartar(r.get("d"), r.get("addr"))
+            if motivo:
+                fuera[motivo] = fuera.get(motivo, 0) + 1
+                continue
+            bar = r.get("loc") or ""
+            ap_rows.append([3, r["img"], r["url"], f"{r['price']:,}".replace(",", "."),
+                            r["price"], r.get("addr") or bar, specs(r),
+                            note(r.get("d", ""), 3) or (r.get("d", "") or "")[:100],
+                            0, bar,
+                            r.get("amb", 0), r.get("dorm", 0),
+                            int(bool(GARDEN.search(r.get("d", "")))),
+                            provider(3, bar), "MercadoLibre",
+                            *coords_for(r.get("addr"), bar, geo_cache),
+                            m2_of(r), patio_of(r), feats_of(r.get("d", ""))])
+        print("MercadoLibre:", len(ap_rows) - n_before)
+
     print("descartados:", fuera or "ninguno")
     print("dados de baja descartados:", bajas)
     allrows = ex + new + ap_rows
