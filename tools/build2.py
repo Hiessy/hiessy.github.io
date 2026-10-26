@@ -335,8 +335,17 @@ from dedupe import dedupe        # pasada final: ver tools/dedupe.py
 
 
 def dedupe_key(price, dorm, addr):
-    a = re.sub(r"[^a-z0-9]", "", (addr or "").lower())[:14]
-    return (price, dorm, a)
+    """Precio + dormitorios + dirección, para juntar el mismo inmueble de dos portales.
+
+    El número de calle va **aparte** del nombre. Recortando la dirección a 14
+    caracteres se lo come cuando el nombre es largo: "Avenida Congreso 3500" y
+    "Avenida Congreso 3100" daban las dos `avenidacongres` y, al coincidir precio
+    y ambientes, el segundo aviso desaparecía sin dejar rastro. Pasa en 563
+    direcciones del relevamiento; propiedades distintas realmente colapsadas, 5.
+    """
+    a = (addr or "").lower()
+    n = re.search(r"\b(\d{2,5})\b", a)
+    return (price, dorm, re.sub(r"[^a-z0-9]", "", a)[:14], n.group(1) if n else "")
 
 
 # Hay avisos geocodificados por el *nombre* de la calle en vez de la dirección:
