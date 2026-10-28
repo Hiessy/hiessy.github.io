@@ -50,6 +50,23 @@ def leer(pag):
     return len(filas), fuentes
 
 
+RUTA = "route.html"
+
+
+def leer_ruta():
+    """Cuántas casas hay en el mapa de la Ruta 38, contadas del propio archivo.
+
+    `route.html` es una página aparte y escrita a mano: no tiene el `const D=[[`
+    de las otras tres, lleva su lista en un `var L = [{ id: 1, ... }]`. Se cuenta
+    igual desde el archivo y no acá, para que al sumar o sacar una casa la
+    portada acompañe sola. Si el archivo no está, la tarjeta no sale.
+    """
+    p = os.path.join(SITIO, RUTA)
+    if not os.path.exists(p):
+        return 0
+    return len(re.findall(r"\{\s*id:\s*\d+\s*,", io.open(p, encoding="utf-8").read()))
+
+
 # El orden es el de las pestañas, y el de la búsqueda: de la ciudad hacia afuera.
 BUSQUEDAS = [
     ("caba-norte.html", "CABA norte",
@@ -165,6 +182,19 @@ def main():
         f'los {mil(fav)} de acá son los que viajan con el sitio.</p>\n'
         f'</a>')
 
+    # El mapa de la ruta no es una búsqueda sino una selección ya hecha, así que
+    # va después de favoritos y sin chips de fuente.
+    n_ruta = leer_ruta()
+    if n_ruta:
+        tarjetas.append(
+            f'<a class="cd ruta" href="{RUTA}">\n'
+            f' <span class="n">{n_ruta}</span>\n'
+            f' <h2>Ruta 38</h2>\n'
+            f' <p>Las casas de <b>Punilla</b> que quedaron en pie después de filtrar, '
+            f'puestas sobre la ruta en orden de norte a sur: de Capilla del Monte a '
+            f'Tala Huasi. Para ver cuánto hay entre una y otra antes de armar el viaje.</p>\n'
+            f'</a>')
+
     fuentes_txt = ", ".join(f"<b>{k}</b> ({mil(v)})" for k, v in
                             sorted(fuentes_tot.items(), key=lambda x: -x[1]))
     hoy = datetime.date.today()
@@ -183,6 +213,7 @@ def main():
  <a href="gba-norte.html" class="tab">Zona norte con patio</a>
  <a href="sierras.html" class="tab">Sierras de Córdoba</a>
  <a href="favoritos.html" class="tab fav">Favoritos <em id="favn"></em></a>
+ <a href="{RUTA}" class="tab">Ruta 38</a>
 </nav>
 <header>
 <span class="sello" title="Cuándo se armó esta portada">{ahora:%d/%m/%Y %H:%M}</span>

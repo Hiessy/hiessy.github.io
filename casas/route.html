@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>*,*::before,*::after{box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Ruta 38 House Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: a to-scale strip map of the Punilla valley (north up) beside a list of numbered listing cards */
+:root {
+  --bg: #EDF0EA;
+  --panel: #F8FAF6;
+  --ink: #1C2520;
+  --muted: #5B6860;
+  --line: #CCD4CB;
+  --terrain: #E1E7DC;
+  --road: #D9861C;
+  --road-casing: #8A5412;
+  --branch: #9C7B4B;
+  --water: #A7CBD9;
+  --water-ink: #3B6A7E;
+  --pin: #B3242C;
+  --pin-ink: #FFFFFF;
+  --hl: #F3E6CF;
+  --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121815; --panel: #1A221E; --ink: #E3E9E4; --muted: #9AA8A0; --line: #2D3933;
+    --terrain: #18211C; --road: #E39A36; --road-casing: #5C3808; --branch: #B8955F;
+    --water: #23465A; --water-ink: #8EC3D6; --pin: #EF5A50; --pin-ink: #1B0E0D; --hl: #2E2716;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121815; --panel: #1A221E; --ink: #E3E9E4; --muted: #9AA8A0; --line: #2D3933;
+  --terrain: #18211C; --road: #E39A36; --road-casing: #5C3808; --branch: #B8955F;
+  --water: #23465A; --water-ink: #8EC3D6; --pin: #EF5A50; --pin-ink: #1B0E0D; --hl: #2E2716;
+  color-scheme: dark;
+}
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.45; }
+.wrap {
+  max-width: 1060px; margin: 0 auto;
+  padding-block: 24px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+header { display: grid; gap: 6px; margin-bottom: 20px; }
+.eyebrow { font-family: var(--display); font-weight: 600; text-transform: uppercase; letter-spacing: .12em; font-size: .8rem; color: var(--muted); }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(1.9rem, 5vw, 2.6rem); line-height: 1.05; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 62ch; }
+.lede strong { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.layout { display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 780px) {
+  .layout { grid-template-columns: minmax(0, 360px) minmax(0, 1fr); align-items: start; }
+  .mapcol { position: sticky; top: max(16px, env(safe-area-inset-top, 0px)); }
+  .mapbox svg { max-height: calc(100vh - 110px); }
+}
+.mapbox { background: var(--terrain); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.mapbox svg { display: block; width: 100%; height: auto; max-height: 88vh; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 10px; font-size: .82rem; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { display: inline-block; }
+.sw-pin { width: 12px; height: 12px; border-radius: 50%; background: var(--pin); }
+.sw-road { width: 22px; height: 5px; border-radius: 3px; background: var(--road); box-shadow: 0 0 0 1.5px var(--road-casing); }
+.sw-branch { width: 22px; height: 0; border-top: 2.5px dashed var(--branch); }
+.sw-water { width: 14px; height: 10px; border-radius: 5px; background: var(--water); }
+.note { font-size: .78rem; color: var(--muted); margin: 8px 0 0; max-width: 60ch; }
+
+/* SVG map */
+.m-label { font-family: var(--display); font-weight: 600; font-size: 10.5px; fill: var(--ink); }
+.m-label.minor { font-weight: 500; font-size: 9px; fill: var(--muted); }
+.m-sub { font-family: var(--body); font-size: 7.5px; fill: var(--muted); }
+.m-price { font-family: var(--display); font-weight: 600; font-size: 9.5px; fill: var(--pin); font-variant-numeric: tabular-nums; }
+.m-range { font-family: var(--display); font-weight: 600; font-size: 8px; letter-spacing: 4px; fill: var(--muted); opacity: .55; }
+.m-water { font-family: var(--body); font-style: italic; font-size: 8.5px; fill: var(--water-ink); }
+.m-tick { stroke: var(--ink); stroke-width: 1.2; }
+.m-leader { stroke: var(--muted); stroke-width: .6; stroke-dasharray: 1.5 2; opacity: .7; }
+.road-casing { fill: none; stroke: var(--road-casing); stroke-width: 6.5; stroke-linecap: round; stroke-linejoin: round; }
+.road { fill: none; stroke: var(--road); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.branch { fill: none; stroke: var(--branch); stroke-width: 2.4; stroke-dasharray: 5 3; stroke-linecap: round; }
+.lake { fill: var(--water); stroke: var(--water-ink); stroke-width: .6; stroke-opacity: .5; }
+.shield rect { fill: var(--panel); stroke: var(--ink); stroke-width: 1; }
+.shield text { font-family: var(--display); font-weight: 700; font-size: 8px; fill: var(--ink); }
+.compass { fill: var(--muted); font-family: var(--display); font-weight: 700; font-size: 9px; }
+.scale line { stroke: var(--ink); stroke-width: 1.2; }
+.scale text { font-family: var(--display); font-size: 8.5px; fill: var(--ink); }
+.pin { cursor: pointer; }
+.pin .dot { transform-box: fill-box; transform-origin: center; transition: transform .15s ease; }
+.pin circle { fill: var(--pin); stroke: var(--terrain); stroke-width: 2; }
+.pin text { font-family: var(--display); font-weight: 700; font-size: 10px; fill: var(--pin-ink); }
+.pin.on .dot, .pin:hover .dot { transform: scale(1.35); }
+.pin:focus { outline: none; }
+.pin:focus-visible circle { stroke: var(--ink); stroke-width: 2.5; }
+
+/* Cards */
+.list { display: grid; gap: 10px; }
+.card {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: start;
+  padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px;
+  background: var(--panel); color: inherit; text-decoration: none;
+  transition: background-color .15s ease, border-color .15s ease;
+}
+.card:hover, .card.on { background: var(--hl); border-color: var(--road); }
+.card:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.num {
+  width: 28px; height: 28px; border-radius: 50%; background: var(--pin); color: var(--pin-ink);
+  display: grid; place-items: center; font-family: var(--display); font-weight: 700; font-size: .95rem;
+}
+.info { min-width: 0; display: grid; gap: 2px; }
+.place { font-family: var(--display); font-weight: 600; font-size: 1.2rem; line-height: 1.15; }
+.addr { color: var(--muted); font-size: .85rem; }
+.price { font-weight: 600; font-variant-numeric: tabular-nums; margin-top: 4px; }
+.price.unk { font-weight: 500; color: var(--muted); }
+.specs { color: var(--muted); font-size: .85rem; font-variant-numeric: tabular-nums; }
+.go { font-family: var(--display); font-weight: 600; font-size: .85rem; color: var(--muted); white-space: nowrap; padding-top: 3px; }
+.card:hover .go, .card.on .go { color: var(--ink); }
+.tag { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 4px; font-family: var(--display); font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; vertical-align: 2px; background: var(--line); color: var(--ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  .pin .dot, .card { transition: none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Punilla valley · Córdoba</div>
+    <h1>Ruta 38 House Map</h1>
+    <p class="lede" id="lede">Eight houses along the valley, numbered north to south so the list reads the same way as the map. Tap a pin or a card to open the listing.</p>
+  </header>
+
+  <div class="layout">
+    <div class="mapcol">
+      <div class="mapbox">
+        <svg id="map" viewBox="0 0 300 760" role="img" aria-label="Map of the Punilla valley with Ruta 38 and eight numbered house listings"></svg>
+      </div>
+      <div class="legend" aria-hidden="true">
+        <span><i class="sw sw-pin"></i>Listing</span>
+        <span><i class="sw sw-road"></i>RN 38</span>
+        <span><i class="sw sw-branch"></i>RP 14 to Tala Huasi</span>
+        <span><i class="sw sw-water"></i>Lago San Roque</span>
+      </div>
+      <p class="note">Pins sit on each listing's own map point; #8 is placed on calle Tucman in Tala Huasi. Roads and the lake are drawn approximately, to scale.</p>
+    </div>
+
+    <div class="list" id="list"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var ZP = "https://www.zonaprop.com.ar/propiedades/clasificado/";
+  var L = [
+    { id: 1, town: "Capilla del Monte", addr: "Triunvirato al 6400", lat: -30.8700207, lng: -64.5180229, price: 138000, built: 138, lot: 1253, bed: 4, bath: 2, age: "20 yrs", url: ZP + "veclcain-casa-en-capilla-del-monte-59721390.html" },
+    { id: 2, town: "La Cumbre", addr: "Moreno 575", lat: -30.9844418, lng: -64.4857418, price: 190000, built: 185, lot: 1800, bed: 4, bath: 2, age: "40 yrs", url: ZP + "veclcain-venta-casas-en-la-cumbre-con-amplio-patio-55284775.html" },
+    { id: 3, town: "La Falda", addr: "La Quebrada al 700, Villa Edén", lat: -31.0879124, lng: -64.4795649, price: 180000, built: 210, lot: 1500, bed: 4, bath: 2, age: "50 yrs", url: ZP + "veclcain-vendo-espectacular-casa-6-ambientes-1500-m-sup2--de-60088008.html" },
+    { id: 4, town: "Valle Hermoso", addr: "Figueroa Alcorta s/n", lat: -31.1156976, lng: -64.4915682, price: 175000, built: 347, lot: 2390, bed: 3, bath: 3, age: "7 yrs", url: ZP + "veclcain-amplia-luminosa-y-muy-linda-casa-en-venta-en-valle-57789619.html" },
+    { id: 5, town: "Valle Hermoso", addr: "Yacoana neighborhood", lat: -31.1352248, lng: -64.4840875, price: 120000, built: 185, lot: 7120, bed: 3, bath: 3, age: "New build", url: ZP + "veclcain-casa-en-yacoana-59288291.html" },
+    { id: 6, town: "Cosquín", addr: "Unidad Nacional, Villa Pan de Azúcar", lat: -31.2188374, lng: -64.4796159, price: 199000, built: 256, lot: 4000, bed: 4, bath: 2, age: "50 yrs", url: ZP + "veclcain-casa-quinta-en-cosquin-pileta-vista-a-las-sierras-49318249.html" },
+    { id: 7, town: "Villa Parque Síquiman", addr: "La Pasionaria 1111, lake view", lat: -31.3568554, lng: -64.4788057, price: 195000, built: 590, lot: 5337, bed: 5, bath: 3, age: "40 yrs", url: ZP + "veclcain-chalet-con-vista-al-lago-y-sierras-5.300-m-sup2--de-58912469.html" },
+    { id: 8, town: "Tala Huasi", addr: "Tucman 76, off RP 14 southwest of Carlos Paz", lat: -31.4741803, lng: -64.5683728, price: null, built: 241, lot: null, bed: 3, bath: 3, age: "16 yrs", extra: "1 floor", isNew: true, url: "https://ficha.info/p/3dc89d1680f8436dbe934be66a3ca1df?v=1791316694305" }
+  ];
+
+  var LAT0 = -30.835, LNG0 = -64.62, KX = 952, KY = 1109; // 10 SVG units = 1 km
+  function P(lat, lng) { return [(lng - LNG0) * KX, (LAT0 - lat) * KY]; }
+  function f(p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }
+  function smooth(pts, closed) {
+    var p = pts.map(function (q) { return P(q[0], q[1]); });
+    var n = p.length;
+    function g(i) { return closed ? p[(i + n) % n] : p[Math.max(0, Math.min(n - 1, i))]; }
+    var d = "M" + f(p[0]);
+    var segs = closed ? n : n - 1;
+    for (var i = 0; i < segs; i++) {
+      var p0 = g(i - 1), p1 = g(i), p2 = g(i + 1), p3 = g(i + 2);
+      var c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+      var c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+      d += " C" + f(c1) + " " + f(c2) + " " + f(p2);
+    }
+    return d + (closed ? "Z" : "");
+  }
+
+  var RN38 = [[-30.835,-64.522],[-30.862,-64.523],[-30.890,-64.528],[-30.918,-64.530],[-30.950,-64.502],[-30.982,-64.489],[-31.010,-64.493],[-31.045,-64.497],[-31.068,-64.489],[-31.090,-64.478],[-31.120,-64.483],[-31.168,-64.479],[-31.220,-64.476],[-31.245,-64.467],[-31.268,-64.463],[-31.290,-64.462],[-31.315,-64.462],[-31.330,-64.472],[-31.350,-64.481],[-31.370,-64.486],[-31.395,-64.493],[-31.424,-64.498]];
+  var RP14 = [[-31.424,-64.498],[-31.448,-64.507],[-31.471,-64.525],[-31.479,-64.546],[-31.4742,-64.5684]];
+  var LAKE = [[-31.333,-64.468],[-31.340,-64.455],[-31.352,-64.447],[-31.368,-64.440],[-31.382,-64.444],[-31.392,-64.458],[-31.396,-64.474],[-31.391,-64.486],[-31.378,-64.481],[-31.364,-64.475],[-31.348,-64.472]];
+
+  function roadX(lat) {
+    for (var i = 0; i < RN38.length - 1; i++) {
+      var a = RN38[i], b = RN38[i + 1];
+      if (lat <= a[0] && lat >= b[0]) {
+        var t = (lat - a[0]) / (b[0] - a[0]);
+        return P(lat, a[1] + t * (b[1] - a[1]))[0];
+      }
+    }
+    return P(lat, RN38[RN38.length - 1][1])[0];
+  }
+
+  // [name, lat, side, minor, sub]
+  var TOWNS = [
+    ["Capilla del Monte", -30.862, "r", false],
+    ["San Esteban", -30.918, "r", true],
+    ["La Cumbre", -30.982, "r", false],
+    ["Villa Giardino", -31.045, "r", true],
+    ["Huerta Grande", -31.068, "r", true],
+    ["La Falda", -31.090, "r", false],
+    ["Valle Hermoso", -31.120, "r", false],
+    ["Casa Grande", -31.168, "r", true],
+    ["Cosquín", -31.245, "r", false],
+    ["Santa María de Punilla", -31.268, "r", true],
+    ["Bialet Massé", -31.315, "r", true],
+    ["Villa Parque Síquiman", -31.350, "l", false],
+    ["Villa Carlos Paz", -31.424, "r", false, "≈35 km to Córdoba city"]
+  ];
+
+  var COL = 166;
+  var s = [];
+  s.push('<rect x="0" y="0" width="300" height="760" fill="var(--terrain)"/>');
+  s.push('<text class="m-range" transform="translate(13 380) rotate(-90)" text-anchor="middle">SIERRAS GRANDES</text>');
+  s.push('<text class="m-range" transform="translate(289 330) rotate(90)" text-anchor="middle">SIERRAS CHICAS</text>');
+  s.push('<g class="compass"><path d="M272 10 L277 22 L272 19 L267 22 Z"/><text x="272" y="32" text-anchor="middle">N</text></g>');
+
+  s.push('<path class="lake" d="' + smooth(LAKE, true) + '"/>');
+  s.push('<text class="m-water" x="178" y="592">Lago San Roque</text>');
+
+  var leaders = [], labels = [];
+  TOWNS.forEach(function (t) {
+    var y = P(t[1], 0)[1], rx = roadX(t[1]);
+    s.push('<line class="m-tick" x1="' + (rx - 5).toFixed(1) + '" y1="' + y.toFixed(1) + '" x2="' + (rx + 5).toFixed(1) + '" y2="' + y.toFixed(1) + '"/>');
+    if (t[2] === "r") {
+      leaders.push('<line class="m-leader" x1="' + (rx + 7).toFixed(1) + '" y1="' + y.toFixed(1) + '" x2="' + (COL - 3) + '" y2="' + y.toFixed(1) + '"/>');
+      labels.push('<text class="m-label' + (t[3] ? " minor" : "") + '" x="' + COL + '" y="' + (y + 3.5).toFixed(1) + '">' + t[0] + '</text>');
+      if (t[4]) labels.push('<text class="m-sub" x="' + COL + '" y="' + (y + 13).toFixed(1) + '">' + t[4] + '</text>');
+    } else {
+      labels.push('<text class="m-label" x="' + (rx - 12).toFixed(1) + '" y="' + (y - 8).toFixed(1) + '" text-anchor="end">' + t[0] + '</text>');
+    }
+  });
+  s.push(leaders.join(""));
+
+  s.push('<path class="branch" d="' + smooth(RP14, false) + '"/>');
+  s.push('<text class="m-sub" x="104" y="700" font-style="italic">RP 14</text>');
+  s.push('<path class="road-casing" d="' + smooth(RN38, false) + '"/>');
+  s.push('<path class="road" d="' + smooth(RN38, false) + '"/>');
+
+  [-31.19, -30.948].forEach(function (lat) {
+    var x = roadX(lat), y = P(lat, 0)[1];
+    s.push('<g class="shield"><rect x="' + (x - 13).toFixed(1) + '" y="' + (y - 7).toFixed(1) + '" width="26" height="14" rx="3"/><text x="' + x.toFixed(1) + '" y="' + (y + 3).toFixed(1) + '" text-anchor="middle">RN 38</text></g>');
+  });
+
+  s.push(labels.join(""));
+  s.push('<text class="m-label" x="' + P(0, -64.5684)[0].toFixed(1) + '" y="' + (P(-31.4742, 0)[1] + 23).toFixed(1) + '" text-anchor="middle">Tala Huasi</text>');
+
+  s.push('<g class="scale"><line x1="225" y1="748" x2="275" y2="748"/><line x1="225" y1="744" x2="225" y2="752"/><line x1="275" y1="744" x2="275" y2="752"/><text x="250" y="741" text-anchor="middle">5 km</text></g>');
+
+  L.forEach(function (d) {
+    var p = P(d.lat, d.lng);
+    if (d.price) {
+      s.push('<text class="m-price" x="' + (p[0] - 13).toFixed(1) + '" y="' + (p[1] + 3.5).toFixed(1) + '" text-anchor="end">' + Math.round(d.price / 1000) + 'k</text>');
+    }
+    s.push('<a class="pin" data-id="' + d.id + '" href="' + d.url + '" target="_blank" rel="noopener" aria-label="' + d.id + ', ' + d.town + ', ' + (d.price ? "USD " + d.price.toLocaleString("en-US") : "price on listing") + '">' +
+      '<g class="dot"><circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="8"/>' +
+      '<text x="' + p[0].toFixed(1) + '" y="' + (p[1] + 3.6).toFixed(1) + '" text-anchor="middle">' + d.id + '</text></g></a>');
+  });
+
+  document.getElementById("map").innerHTML = s.join("");
+
+  function n(v) { return v.toLocaleString("en-US"); }
+  var list = document.getElementById("list");
+  list.innerHTML = L.map(function (d) {
+    var specs = [n(d.built) + " m² built"];
+    if (d.lot) specs.push(n(d.lot) + " m² lot");
+    specs.push(d.bed + " bed", d.bath + " bath", d.age);
+    if (d.extra) specs.push(d.extra);
+    return '<a class="card" data-id="' + d.id + '" href="' + d.url + '" target="_blank" rel="noopener">' +
+      '<span class="num">' + d.id + '</span>' +
+      '<span class="info"><span class="place">' + d.town + (d.isNew ? '<span class="tag">Added</span>' : '') + '</span>' +
+      '<span class="addr">' + d.addr + '</span>' +
+      '<span class="price' + (d.price ? '' : ' unk') + '">' + (d.price ? "USD " + n(d.price) : "Price on the listing") + '</span>' +
+      '<span class="specs">' + specs.join(" · ") + '</span></span>' +
+      '<span class="go">Open ↗</span></a>';
+  }).join("");
+
+  var priced = L.filter(function (d) { return d.price; }).map(function (d) { return d.price; });
+  var lo = Math.min.apply(null, priced), hi = Math.max.apply(null, priced);
+  document.getElementById("lede").innerHTML = "Eight houses along the valley, numbered north to south so the list reads the same way as the map. Seven are priced, from <strong>USD " + n(lo) + "</strong> to <strong>USD " + n(hi) + "</strong>. Tap a pin or a card to open the listing.";
+
+  var all = document.querySelectorAll("[data-id]");
+  function hl(id) { all.forEach(function (e) { e.classList.toggle("on", e.getAttribute("data-id") === id); }); }
+  all.forEach(function (e) {
+    var id = e.getAttribute("data-id");
+    e.addEventListener("pointerenter", function () { hl(id); });
+    e.addEventListener("pointerleave", function () { hl(null); });
+    e.addEventListener("focus", function () { hl(id); });
+    e.addEventListener("blur", function () { hl(null); });
+  });
+})();
+</script>
+</body>
+</html>
