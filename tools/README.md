@@ -133,6 +133,20 @@ python tools/build_sierras.py            # armar .work/DS.js
 python tools/make_sierras.py             # escribir sierras.html
 ```
 
+**Para limpiar, `--force --purge`.** `sierras.py` solo agrega, así que sin esto un
+aviso vendido se queda en `sierras.json` para siempre. Con `--purge` cada pueblo
+queda con lo que Zonaprop lista **hoy**. El 29/10 sacó 965 avisos; 759 ya estaban
+marcados muertos en `alive.json`, y de los otros, 20 al azar dieron 410 los 20. El
+bucket viejo solo se tira si el pueblo se leyó entero: si falla un pedido, o si toca
+el tope de 9 páginas (Villa Carlos Paz), se suman los nuevos sin sacar nada, y esos
+viejos hay que verificarlos con `deadlinks.py --dias 1`.
+
+**Pasado el final, Zonaprop repite la última página** en vez de dar una vacía.
+Charbonier, con una sola página, devolvía la misma de la 2 a la 9 y en la 10 chocaba
+con el tope. Eran 8 pedidos tirados por pueblo, y con `--purge` ese choque parecía una
+falla y no dejaba purgar ninguno. Ahora se corta cuando una página trae los mismos ids
+que la anterior.
+
 **No existe un slug del valle.** `casas-venta-punilla` y `casas-venta-calamuchita`
 no fallan: devuelven una búsqueda nacional con avisos de Mendoza y Mar del Plata.
 Hay que pedir pueblo por pueblo. Los slugs que parecen de la zona y no lo son están
@@ -463,8 +477,10 @@ python tools/ap_baths.py --limit 40 --delay 20
   nuevo) y repara lo que puede sin volver a pedir: ambientes desde la URL, y deja
   en 0 la superficie absurda para la cantidad de dormitorios.
 
-- **Mercado Libre** (`meli.py`): el scraping redirige a `gz/account-verification`
-  (su frontend de "suspicious traffic"), así que la única vía es la API con OAuth.
+- **Mercado Libre** (`meli.py`): el scraping **con urllib** redirige a
+  `gz/account-verification` (su frontend de "suspicious traffic"). Lo que sí anda es
+  pedirlo desde el panel del navegador: ver la sección siguiente. Esto de abajo es
+  el camino por la API, que quedó descartado.
   `meli.py` implementa el flujo completo —authorization code, refresh automático,
   credenciales en `.work/meli_secrets.json` (fuera de git)— y un `--probe` que dice
   qué endpoints contesta el token.
@@ -495,6 +511,56 @@ python tools/ap_baths.py --limit 40 --delay 20
 
   `meli.py` queda en el repo por si algún día reabren la búsqueda: tiene el flujo
   OAuth entero y `--probe` para confirmarlo en una llamada.
+
+## MercadoLibre y Argenprop desde el navegador (`navegador/`)
+
+Las dos fuentes que urllib no puede leer se leen desde el panel del navegador: un
+navegador de verdad, con su motor, sus cookies y su TLS, pidiendo lo mismo que pide
+cualquiera que abre el sitio. No hay IP rotada, encabezado falsificado ni captcha
+resuelto, y cuando el portal corta, se corta.
+
+Los extractores están en `tools/navegador/` y se pegan en la consola de una página
+del portal (los `fetch` tienen que salir del mismo dominio):
+
+| Archivo | Dónde se pega | Después |
+| --- | --- | --- |
+| `ml_sierras.js` | inmuebles.mercadolibre.com.ar | `ml_sierras.py` |
+| `ml_verificar.js` | una ficha **viva** de casa.mercadolibre.com.ar | anotar en `alive.json` |
+| `ap_partido.js` | www.argenprop.com | `ap_browser.py`, y `ap_vivos.py` si `completo` |
+
+Antes vivían solo en el historial de las conversaciones y hubo que rescatarlos de ahí.
+
+### Del navegador al disco
+
+Devolver un mega como resultado de herramienta lo trunca, y una página en https no
+puede postear a `127.0.0.1` (lo corta su propia CSP). Lo que sí sobrevive al cambio
+de dominio es `window.name`:
+
+```bash
+python tools/recibir.py .work/ml_sierras_nuevo.json --puerto 8124 --espera 300
+```
+
+y en la pestaña: `window.name = JSON.stringify(...)`, navegar a
+`http://127.0.0.1:8124/`, y la página de recogida lo postea. Escucha solo en
+localhost y se apaga sola apenas recibe algo.
+
+### Lo que cada portal hace distinto
+
+**MercadoLibre no contesta 404.** Una ficha dada de baja redirige a una búsqueda
+parecida (`#redirectedFromVip=...`), así que un chequeo que mire solo el estado ve
+200 y la da por viva. Con `redirect: 'manual'` se ve como `opaqueredirect`; un id
+inventado redirige igual. `deadlinks.py` **no** sirve para MercadoLibre: lo hace
+`ml_verificar.js`. El 29/10, de 54 avisos que se fueron de la búsqueda, 53 estaban
+dados de baja y uno vivo pero fuera del filtro.
+
+**El barrido de MercadoLibre se puede reemplazar entero** cuando los dos partidos
+llegan al final: el total de Punilla dio exactamente lo que dice el portal (361).
+
+**Argenprop deja ~22 páginas seguidas.** El 29/10, a 3,5 s entre pedidos, la 23 dio
+`405` y la visita siguiente, "Human Verification". Lo que entró sirve para sumar
+avisos nuevos (`ap_browser.py`), pero **no para dar de baja**: un barrido cortado no
+distingue "se vendió" de "no llegué a esa página", y `ap_vivos.py` exige
+`completo: true` y además se niega si se cae más del 20%.
 
 ## Geocodificar direcciones (`geocode.py`)
 

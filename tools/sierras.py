@@ -35,7 +35,7 @@ Calamuchita: `potrero-de-garay` (170 avisos) y `san-clemente` (12).
 —Yacanto de San Javier queda del otro lado de la provincia—. El del valle es
 `villa-yacanto`.
 
-    python tools/sierras.py [--max 260000] [--force]
+    python tools/sierras.py [--max 260000] [--force] [--purge] [--only charbonier,los-cocos]
 """
 import json, os, sys, time, random, unicodedata
 
@@ -151,19 +151,39 @@ def main():
     def sweep(slug, label, valle, bucket, seen, orden="ascendente"):
         """Recorre un slug en un orden de precio.
 
-        Devuelve cuántas páginas caminó, para saber si tocó el tope de 9.
+        Devuelve (páginas caminadas, si falló algún pedido): lo primero para
+        saber si tocó el tope de 9, lo segundo para que `--purge` no tire el
+        bucket viejo sobre un barrido que quedó por la mitad.
         """
         want = plain(label)
         tag = orden[:3]
         pages = 0
+        anterior = None
         for p in range(1, PAGES + 1):
             html = get(url_for(slug, p, orden))
             pages = p
             if not html:
-                print(f"{slug}/{tag} p{p}: FALLO", flush=True); break
+                # Pasada la novena página Zonaprop no sirve más resultados
+                # anónimos. Eso es el tope, no una falla: lo resuelve `tope` con
+                # las páginas caminadas, yendo por el otro extremo.
+                if p > 9:
+                    print(f"{slug}/{tag} p{p}: tope de páginas anónimas", flush=True)
+                    return p - 1, False
+                print(f"{slug}/{tag} p{p}: FALLO", flush=True)
+                return pages, True
             rows = postings(html)
             if not rows:
                 print(f"{slug}/{tag} p{p}: sin avisos", flush=True); break
+            # Pasado el final Zonaprop **no da una página vacía: repite la
+            # última**. Charbonier, con una sola página, devolvía la misma de la
+            # 2 a la 9 y en la 10 chocaba con el tope; eran 8 pedidos de más por
+            # pueblo, y con `--purge` ese choque se leía como falla y no dejaba
+            # purgar ninguno.
+            firma = [str(raw.get("postingId") or "") for raw in rows]
+            if firma == anterior:
+                print(f"{slug}/{tag} p{p}: repite la anterior, fin", flush=True)
+                return p - 1, False
+            anterior = firma
             added = over = wrong = 0
             for raw in rows:
                 path = plain(locpath(raw))
@@ -198,22 +218,58 @@ def main():
             if orden == "ascendente" and over >= 8:
                 break
             time.sleep(1.1 + random.random() * 0.6)
-        return pages
+        return pages, False
+
+    # `--purge`: el bucket de cada pueblo se reemplaza por lo que Zonaprop lista
+    # **hoy**, así se van solos los dados de baja, los vendidos y los que
+    # subieron de precio. Es lo que el README llama purgar y volver a relevar, y
+    # limpia más que `deadlinks.py` en una fracción del tiempo.
+    #
+    # El bucket viejo solo se tira si el barrido del pueblo llegó entero. Dos
+    # casos en que no, y entonces se suman los nuevos sin sacar nada:
+    #   - un pedido falló: una página que no vino se ve igual que una sin avisos;
+    #   - el pueblo tocó el tope de 9 páginas (Villa Carlos Paz): ni yendo de ida
+    #     y de vuelta se ve el medio, así que lo que no apareció puede estar vivo.
+    #     Esos los verifica `deadlinks.py`, aviso por aviso.
+    purge = "--purge" in sys.argv
+    only = set(sys.argv[sys.argv.index("--only") + 1].split(",")) \
+        if "--only" in sys.argv else None
 
     for slug, label, valle in LOCS:
+        if only and slug not in only:
+            continue
         if not force and time.time() - stamp.get(slug, 0) < MAX_AGE_H * 3600:
             print(f"{slug}: cache — skip", flush=True); continue
         bucket = data.setdefault(slug, [])
-        seen = {x["id"] for x in bucket}
-        pages = sweep(slug, label, valle, bucket, seen)
+        # Con `--purge` se barre a una lista aparte y el bucket viejo sigue en
+        # `data` hasta el final: `sweep()` escribe el archivo en cada página, y
+        # vaciándolo antes un corte a mitad dejaba el pueblo en cero en disco.
+        destino = [] if purge else bucket
+        seen = {x["id"] for x in destino}
+        pages, fallo = sweep(slug, label, valle, destino, seen)
         # Zonaprop corta la paginación anónima en 9 páginas (270 avisos) por
         # consulta. Villa Carlos Paz se topó ahí con 267 avisos y quedó cortado en
         # USD 139.000. Como el listado va de menor a mayor, se sigue pidiendo desde
         # el precio más alto que entró: cada banda arranca donde murió la anterior.
-        if pages >= 9:
+        tope = pages >= 9
+        if tope and not fallo:
             print(f"{slug}: tocó el tope de páginas, voy por el otro extremo", flush=True)
-            sweep(slug, label, valle, bucket, seen, "descendente")
-        stamp[slug] = time.time()
+            _, fallo = sweep(slug, label, valle, destino, seen, "descendente")
+        if purge:
+            ids = {x["id"] for x in destino}
+            if fallo or tope:
+                quedan = [x for x in bucket if x["id"] not in ids]
+                data[slug] = destino + quedan
+                print(f"{slug}: {'falló un pedido' if fallo else 'tope de páginas'}, "
+                      f"no purgo ({len(quedan)} viejos se quedan)", flush=True)
+            else:
+                data[slug] = destino
+                print(f"{slug}: purgo {sum(1 for x in bucket if x['id'] not in ids)} "
+                      f"de {len(bucket)} (quedan {len(destino)})", flush=True)
+        # Un pueblo que falló no se sella: así la próxima corrida lo vuelve a pedir
+        # en vez de saltearlo 24 horas con datos a medias.
+        if not fallo:
+            stamp[slug] = time.time()
         json.dump(data, open(OUT, "w", encoding="utf-8"), ensure_ascii=False)
 
     tot = sum(len(v) for k, v in data.items() if not k.startswith("_"))

@@ -86,8 +86,7 @@ def main():
         print("barrido: %s paginas, %d avisos en los resultados" % (paginas, len(vivos)))
         print("publicados: %d | se caerian: %d (%.0f%%)"
               % (len(pub), len(faltan), 100.0 * len(faltan) / len(pub)))
-        print("
-Se cae mas del %.0f%%. Eso no es rotacion de avisos, es un bloqueo"
+        print("\nSe cae mas del %.0f%%. Eso no es rotacion de avisos, es un bloqueo"
               % (TOPE * 100))
         print("a mitad del barrido. No se toca nada; conviene repetirlo mas tarde.")
         return 1

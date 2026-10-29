@@ -300,7 +300,7 @@ body.noscroll{overflow:hidden}
  <a href="favoritos.html" class="tab fav on">Favoritos <em id="favn"></em></a>
 </nav>
 <header>
-<span class="sello" id="sello" title="Cuándo se armó esta página">26/10/2026 16:32</span>
+<span class="sello" id="sello" title="Cuándo se armó esta página">29/10/2026 10:31</span>
 <h1>Favoritos<br>lo que fuimos marcando</h1>
 <p class="sub">Los avisos marcados con el <b>♥</b> en CABA norte, zona norte
 y sierras de Córdoba. Se guardan en este navegador: no viajan a ningún servidor y
@@ -538,7 +538,7 @@ fetch('notas.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(o=>{
 // 410. `bajas.json` trae los números de aviso verificados como baja. Se
 // marcan, no se borran: un favorito lo sacas vos.
 let BAJAS=null;
-const idDe=u=>{const m=/(?:MLA-?)?(\d{6,})(?:\.html)?$/.exec((u||'').split('?')[0].replace(/\/$/,''));return m?m[1]:null};
+const idDe=u=>{const s=(u||'').split('?')[0].replace(/\/$/,'');const m=/MLA-?(\d{6,})/.exec(s)||/(\d{6,})(?:\.html)?$/.exec(s);return m?m[1]:null};
 function pintarBajas(){
  if(!BAJAS)return;
  let n=0;

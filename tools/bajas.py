@@ -28,13 +28,18 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ALIVE = os.path.join(ROOT, ".work", "alive.json")
 DST = os.path.join(ROOT, "casas", "bajas.json")
 
-# el id va al final en los tres portales, con separadores distintos
-RE_ID = re.compile(r"(?:MLA-?)?(\d{6,})(?:\.html)?$")
+# Zonaprop y Argenprop ponen el número al final. MercadoLibre **no**: va al
+# principio y después viene el slug (`MLA-3726473126-casa-..._JM`). Buscándolo
+# solo al final no salía ningún id de MercadoLibre, y no se notó hasta que hubo
+# avisos suyos dados de baja: los 53 del 29/10 quedaron "sin id reconocible" y
+# Favoritos no los habría marcado. La misma regla está en make_favoritos.py.
+RE_ML = re.compile(r"MLA-?(\d{6,})")
+RE_ID = re.compile(r"(\d{6,})(?:\.html)?$")
 
 
 def id_de(url):
     u = (url or "").split("?")[0].rstrip("/")
-    m = RE_ID.search(u)
+    m = RE_ML.search(u) or RE_ID.search(u)
     return m.group(1) if m else None
 
 

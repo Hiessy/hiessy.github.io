@@ -141,7 +141,7 @@ fetch('notas.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(o=>{
 // 410. `bajas.json` trae los n\u00fameros de aviso verificados como baja. Se
 // marcan, no se borran: un favorito lo sacas vos.
 let BAJAS=null;
-const idDe=u=>{const m=/(?:MLA-?)?(\d{6,})(?:\.html)?$/.exec((u||'').split('?')[0].replace(/\/$/,''));return m?m[1]:null};
+const idDe=u=>{const s=(u||'').split('?')[0].replace(/\/$/,'');const m=/MLA-?(\d{6,})/.exec(s)||/(\d{6,})(?:\.html)?$/.exec(s);return m?m[1]:null};
 function pintarBajas(){
  if(!BAJAS)return;
  let n=0;
