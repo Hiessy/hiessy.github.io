@@ -571,7 +571,21 @@ ids únicos, lo mismo que dice el portal**. Calamuchita quedó en 6 de 12.
 
 `ap_vivos.py` acepta `completos: ["punilla"]` para juzgar solo los valles leídos
 enteros. En Punilla se cayeron 99 de 517 (19%, al borde del tope de 20%); de 10
-abiertos de a uno, los 8 que contestaron estaban dados de baja.
+abiertos de a uno, los 8 que contestaron estaban dados de baja. Calamuchita cerró
+esa misma tarde retomando en la 5: 237 ids, lo mismo que el portal.
+
+Dos cosas que aparecieron al limpiar:
+
+- **Villa Ciudad de América no está en la búsqueda de Calamuchita**: Argenprop la
+  tiene en el partido de Santa María. Faltaban 11 y los 2 que se abrieron estaban
+  vivos. `ap_vivos.py` la saltea (`OTRO_PARTIDO`); dar de baja por ausencia solo
+  vale para pueblos que el partido de verdad incluye.
+- **Sacar un aviso puede destapar a su gemelo.** Cuando la misma casa está publicada
+  dos veces, `dedupe.py` muestra una y esconde la otra. Si la que se mostraba estaba
+  muerta y se saca, en el próximo build aparece la escondida —que suele estar muerta
+  también—. Por eso después de `--aplicar` hay que rearmar y volver a correr
+  `ap_vivos.py` hasta que dé 0: el 29/10 aparecieron 12 en la segunda vuelta y 1 en
+  la tercera.
 
 ## Geocodificar direcciones (`geocode.py`)
 

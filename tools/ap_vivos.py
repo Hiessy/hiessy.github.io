@@ -46,6 +46,13 @@ ALIVE = os.path.join(W, "alive.json")
 # partido de la búsqueda -> valle de la fila (columna 13 de sierras.html)
 VALLE = {"punilla": "Punilla", "calamuchita": "Calamuchita"}
 
+# Pueblos que el sitio pone en un valle y Argenprop en **otro partido**: no salen
+# en la búsqueda del partido aunque estén vivos, así que no estar ahí no prueba
+# nada. Villa Ciudad de América es del departamento Santa María: el 29/10 faltaban
+# 11 de la búsqueda de Calamuchita y los 2 que se abrieron estaban publicados.
+# Sin esto se habrían dado de baja los 11.
+OTRO_PARTIDO = {"Villa Ciudad de América"}
+
 
 def ids_publicados(valles=None):
     """{id: url} de los avisos de Argenprop que hoy muestra sierras.html.
@@ -61,6 +68,8 @@ def ids_publicados(valles=None):
         if r[14] != "Argenprop":
             continue
         if valles is not None and r[13] not in valles:
+            continue
+        if r[9] in OTRO_PARTIDO:            # columna 9: el pueblo
             continue
         m = re.search(r"--(\d+)$", r[2])
         if m:
