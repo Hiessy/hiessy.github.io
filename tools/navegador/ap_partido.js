@@ -31,9 +31,9 @@ window.__lotes = [];
 window.__v = { ids: [], paginas: [], completo: false, corte: null, totales: {} };
 window.__fin = false;
 
-window.__barrer = async function (clave, slug, tope, pausa) {
+window.__barrer = async function (clave, slug, desde, tope, pausa) {
   const v = window.__v; let anterior = null;
-  for (let p = 1; p <= tope; p++) {
+  for (let p = desde; p <= tope; p++) {
     let r, txt;
     try { r = await fetch(`/casas/venta/${slug}/dolares-hasta-260000?pagina-${p}`, { credentials: 'include' }); txt = await r.text(); }
     catch (e) { v.corte = clave + ' p' + p + ' ERR'; return false; }
@@ -44,7 +44,7 @@ window.__barrer = async function (clave, slug, tope, pausa) {
     const doc = new DOMParser().parseFromString(txt, 'text/html');
     const cs = [...doc.querySelectorAll('a[data-item-card]')];
     const h1 = ((doc.querySelector('h1') || {}).textContent || '').trim();
-    if (p === 1) v.totales[clave] = h1.slice(0, 70);
+    if (p === desde) v.totales[clave] = h1.slice(0, 70);
     // un final de verdad sigue teniendo el encabezado con el total
     if (!cs.length) {
       if (!h1) { v.corte = clave + ' p' + p + ' pagina vacia sin h1'; return false; }
@@ -62,9 +62,14 @@ window.__barrer = async function (clave, slug, tope, pausa) {
   v.corte = clave + ' llego al tope de ' + tope + ' sin ver el final'; return false;
 };
 
+// Para retomar un barrido cortado, empezar **dos páginas antes** del corte: si
+// entre una tanda y otra se vendieron avisos, los de después del corte se corren
+// para atrás, y sin esa superposición quedarían sin ver en las dos tandas.
+window.__desde = window.__desde || { punilla: 1, calamuchita: 1 };
+
 (async () => {
-  const a = await window.__barrer('punilla', 'partido-de-punilla', 60, 3500);
-  const b = a ? await window.__barrer('calamuchita', 'partido-de-calamuchita', 30, 3500) : false;
+  const a = await window.__barrer('punilla', 'partido-de-punilla', window.__desde.punilla, 60, 5000);
+  const b = a ? await window.__barrer('calamuchita', 'partido-de-calamuchita', window.__desde.calamuchita, 30, 5000) : false;
   window.__v.completo = a && b;
   window.__fin = true;
 })();

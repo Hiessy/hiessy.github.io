@@ -25,6 +25,9 @@ no toca nada.
 
     python tools/ap_vivos.py [--entrada .work/ap_vivos.json] [--aplicar]
 
+La entrada trae `completo: true`, o `completos: ["punilla"]` si solo un partido
+se leyó hasta el final: entonces se juzgan solo los avisos de ese valle.
+
 Sin `--aplicar` sólo informa, que es como conviene mirarlo la primera vez.
 """
 import io
@@ -40,14 +43,24 @@ SITIO = os.path.join(ROOT, "casas")
 ALIVE = os.path.join(W, "alive.json")
 
 
-def ids_publicados():
-    """{id: url} de los avisos de Argenprop que hoy muestra sierras.html."""
+# partido de la búsqueda -> valle de la fila (columna 13 de sierras.html)
+VALLE = {"punilla": "Punilla", "calamuchita": "Calamuchita"}
+
+
+def ids_publicados(valles=None):
+    """{id: url} de los avisos de Argenprop que hoy muestra sierras.html.
+
+    Con `valles`, solo los de esos valles: los de un partido que no se leyó
+    entero no se pueden juzgar.
+    """
     t = io.open(os.path.join(SITIO, "sierras.html"), encoding="utf-8").read()
     linea = next(l for l in t.split("\n") if l.startswith("const D=[["))
     filas = json.loads(linea[len("const D="):].rstrip(";"))
     out = {}
     for r in filas:
         if r[14] != "Argenprop":
+            continue
+        if valles is not None and r[13] not in valles:
             continue
         m = re.search(r"--(\d+)$", r[2])
         if m:
@@ -65,14 +78,25 @@ def main():
         print("falta %s: hay que correr el barrido desde el navegador primero" % ent)
         return 1
     d = json.load(io.open(ent, encoding="utf-8"))
-    if not d.get("completo"):
+    # `completos`: los partidos que sí se leyeron hasta el final. Argenprop deja
+    # unas 22 páginas seguidas y entre los dos valles son ~50, así que el
+    # barrido entero casi nunca entra de una vez; pero Punilla, retomado dos
+    # páginas antes del corte, sí cierra solo. Con esto se limpia el valle que
+    # se leyó entero y el otro se deja como está.
+    completos = [c for c in d.get("completos", []) if c in VALLE]
+    if d.get("completo"):
+        valles = None
+    elif completos:
+        valles = {VALLE[c] for c in completos}
+        print("solo se juzgan los valles leídos enteros:", ", ".join(sorted(valles)))
+    else:
         print("el barrido no entró entero (completo=false). No se toca nada:")
         print("una página bloqueada se ve igual que una sin resultados.")
         return 1
 
     vivos = set(str(x) for x in d.get("ids", []))
     paginas = d.get("paginas", "?")
-    pub = ids_publicados()
+    pub = ids_publicados(valles)
     faltan = {i: u for i, u in pub.items() if i not in vivos}
 
     # Segunda red, independiente del `completo` que trae el barrido. La primera

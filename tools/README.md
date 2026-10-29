@@ -557,10 +557,21 @@ dados de baja y uno vivo pero fuera del filtro.
 llegan al final: el total de Punilla dio exactamente lo que dice el portal (361).
 
 **Argenprop deja ~22 páginas seguidas.** El 29/10, a 3,5 s entre pedidos, la 23 dio
-`405` y la visita siguiente, "Human Verification". Lo que entró sirve para sumar
-avisos nuevos (`ap_browser.py`), pero **no para dar de baja**: un barrido cortado no
-distingue "se vendió" de "no llegué a esa página", y `ap_vivos.py` exige
-`completo: true` y además se niega si se cae más del 20%.
+`405` y la visita siguiente, "Human Verification". Unas horas después el muro ya no
+estaba y entraron 24 más a 5 s, hasta otro `405`. Lo que entra sirve siempre para
+sumar avisos nuevos (`ap_browser.py`). Para **dar de baja** hace falta haber leído
+el partido entero, porque un barrido cortado no distingue "se vendió" de "no llegué
+a esa página".
+
+**Retomar dos páginas antes del corte** (`window.__desde` en `ap_partido.js`). Si
+entre una tanda y otra se vendieron avisos, los de después del corte se corren para
+atrás y sin superposición no se verían en ninguna de las dos. Así Punilla cerró en
+dos tandas: las páginas 21 y 22 vinieron idénticas en las dos, y la unión dio **744
+ids únicos, lo mismo que dice el portal**. Calamuchita quedó en 6 de 12.
+
+`ap_vivos.py` acepta `completos: ["punilla"]` para juzgar solo los valles leídos
+enteros. En Punilla se cayeron 99 de 517 (19%, al borde del tope de 20%); de 10
+abiertos de a uno, los 8 que contestaron estaban dados de baja.
 
 ## Geocodificar direcciones (`geocode.py`)
 
