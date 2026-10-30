@@ -33,7 +33,8 @@ CREATE TABLE IF NOT EXISTS visits (
   device TEXT,
   screen TEXT,
   language TEXT,
-  visitor TEXT
+  visitor TEXT,
+  mine INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS visits_day ON visits (day);
 """
@@ -110,7 +111,11 @@ def main():
     account = ok(api("GET", "/accounts", token))[0]["id"]
     sub = subdomain(account, token)
     db_id = database(account, token)
-    ok(api("POST", f"/accounts/{account}/d1/database/{db_id}/query", token, {"sql": SCHEMA}))
+    query = f"/accounts/{account}/d1/database/{db_id}/query"
+    ok(api("POST", query, token, {"sql": SCHEMA}))
+    columns = ok(api("POST", query, token, {"sql": "PRAGMA table_info(visits)"}))[0]["results"]
+    if not any(c["name"] == "mine" for c in columns):
+        ok(api("POST", query, token, {"sql": "ALTER TABLE visits ADD COLUMN mine INTEGER NOT NULL DEFAULT 0"}))
     upload(account, token, db_id, env)
 
     url = f"https://{NAME}.{sub}.workers.dev"

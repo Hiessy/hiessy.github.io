@@ -40,10 +40,11 @@ publishes whatever goes in.
 
 The JSON files stay out of the repo too: `.work/` is in `.gitignore`.
 
-## Not counting yourself
+## Your own visits
 
-Open <https://hiessy.github.io/?me> once per browser. It sets a flag in `localStorage`;
-clearing the site's data undoes it.
+Open <https://hiessy.github.io/?me> once per browser. That browser's visits still
+arrive, marked `mine`, and stay out of `visits` and `visitors`. The mark is a flag in
+`localStorage`; clearing the site's data undoes it.
 
 ## Scheduled task
 

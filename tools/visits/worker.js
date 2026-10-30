@@ -5,7 +5,8 @@
 //
 // No cookies, and the IP is never stored. `visitor` is a hash of IP and browser
 // with the day inside it: enough to count distinct people in a day, and it can't
-// follow anyone from one day to the next.
+// follow anyone from one day to the next. `mine` marks a visit from a browser that
+// opened /?me: it's stored, but left out of the visit and visitor counts.
 
 const ORIGIN = "https://hiessy.github.io";
 const BOTS = /bot|crawl|spider|slurp|headless|lighthouse|preview|facebookexternalhit|curl|wget|python/i;
@@ -34,8 +35,8 @@ async function visit(req, env) {
   const cf = req.cf || {};
   await env.DB.prepare(
     `INSERT INTO visits (ts, day, page, referrer, country, region, city, network,
-                         browser, os, device, screen, language, visitor)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                         browser, os, device, screen, language, visitor, mine)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).bind(
     new Date(now).toISOString(),
     day,
@@ -50,7 +51,8 @@ async function visit(req, env) {
     /Mobi|Android|iPhone|iPad/.test(ua) ? "mobile" : "desktop",
     short(d.s, 20),
     short(d.l, 20),
-    await hash(`${ip}|${ua}|${day}|${env.SALT}`)
+    await hash(`${ip}|${ua}|${day}|${env.SALT}`),
+    d.m ? 1 : 0
   ).run();
   return new Response(null, { status: 204 });
 }
@@ -62,10 +64,12 @@ async function exportDay(req, env, day) {
   const { results } = await env.DB.prepare(
     "SELECT * FROM visits WHERE day = ? ORDER BY ts"
   ).bind(day).all();
+  const others = results.filter((v) => !v.mine);
   return Response.json({
     day,
-    visits: results.length,
-    visitors: new Set(results.map((v) => v.visitor)).size,
+    visits: others.length,
+    visitors: new Set(others.map((v) => v.visitor)).size,
+    mine: results.length - others.length,
     rows: results,
   });
 }
