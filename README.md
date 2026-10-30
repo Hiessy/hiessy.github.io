@@ -113,6 +113,9 @@ de CABA se siguen relevando pero no se publican: están en `.work/` y vuelven co
   marca las que faltan, las que están en un idioma y no en otro y las que no
   usa nadie. Sale con 1 si falta algo. La guía está en
   [`.claude/skills/i18n/SKILL.md`](.claude/skills/i18n/SKILL.md).
+- `js/visits.js` — reports each page opened to a Cloudflare Worker, without
+  cookies. It goes on **every** page; the data never passes through this repo. See
+  [tools/visits/](tools/visits/README.md).
 - `casas/index.html` — portada de la búsqueda: las tres con sus números y un
   enlace a cada una. 8 KB, sin dataset. La genera `tools/make_inicio.py`.
 - `casas/caba-norte.html` / `casas/gba-norte.html` / `casas/sierras.html` — páginas completas: markup, CSS

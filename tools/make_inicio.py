@@ -258,6 +258,7 @@ inmobiliaria antes de viajar</b>: entre un barrido y el siguiente las cosas se v
 class="tx" href="https://github.com/hiessy/hiessy.github.io" target="_blank"
 rel="noopener">GitHub</a>.</p>
 </footer>
+<script src="/js/visits.js" defer></script>
 </body></html>
 """
     io.open(DST, "w", encoding="utf-8", newline="").write(html)
