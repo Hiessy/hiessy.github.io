@@ -63,5 +63,7 @@
   "sh.err.adentro": "{0}: no se puede mover un directorio dentro de sí mismo",
   "sh.err.raiz": "{0}: no voy a borrar la raíz",
   "sh.err.cripto": "sha256: este navegador no expone crypto.subtle (hace falta HTTPS o localhost)",
+  "lab.cmd": "<span class=\"arg\">./sorting-lab</span>",
+  "lab.help": "59 algoritmos de ordenamiento escritos en Java, corriendo en tu navegador como JavaScript y como WebAssembly. Miralos trabajar, hacelos correr una carrera y fijate cómo se calcula la O de una función. <a href=\"sort/\"><b>Abrir el laboratorio</b></a>",
   "pie.nota": "Unas pocas de las cifras anteriores fueron redondeadas con generosidad. Dos cosas no: me gusta aprender cosas nuevas y me gusta trabajar con gente. El resto queda abierto a discusión, de preferencia en persona."
 }

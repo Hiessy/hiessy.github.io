@@ -112,7 +112,7 @@ PALABRAS = [
 COMANDOS = ("sh ls cd pwd tree cat wc mkdir touch echo cp mv rm sha256 fnv "
             "whoami date history clear help iptables").split()
 ARCHIVOS = ["logros.txt", "achievements.txt", "README", "crypto.subtle",
-            "janitor-joe"]
+            "janitor-joe", "sorting-lab"]
 
 # Lo que no se toca nunca: marcado, entidades, los marcadores `{0}`, los
 # archivos que la ayuda nombra, `iptables` y las opciones de una letra.

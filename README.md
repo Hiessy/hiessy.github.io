@@ -113,6 +113,8 @@ de CABA se siguen relevando pero no se publican: están en `.work/` y vuelven co
   marca las que faltan, las que están en un idioma y no en otro y las que no
   usa nadie. Sale con 1 si falta algo. La guía está en
   [`.claude/skills/i18n/SKILL.md`](.claude/skills/i18n/SKILL.md).
+- `sort/` — Sorting Lab: 59 sorts written in Java and run as JavaScript and WebAssembly,
+  plus how the O of a function is worked out. See [sort/README.md](sort/README.md).
 - `js/visits.js` — reports each page opened to a Cloudflare Worker, without
   cookies. It goes on **every** page; the data never passes through this repo. See
   [tools/visits/](tools/visits/README.md).

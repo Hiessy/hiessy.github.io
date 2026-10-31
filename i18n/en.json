@@ -63,5 +63,7 @@
   "sh.err.adentro": "{0}: cannot move a directory into itself",
   "sh.err.raiz": "{0}: I am not deleting the root",
   "sh.err.cripto": "sha256: this browser does not expose crypto.subtle (needs HTTPS or localhost)",
+  "lab.cmd": "<span class=\"arg\">./sorting-lab</span>",
+  "lab.help": "59 sorting algorithms written in Java, running in your browser as JavaScript and as WebAssembly. Watch them work, race them, and see how the O of a function is worked out. <a href=\"sort/\"><b>Open the lab</b></a>",
   "pie.nota": "A small number of the figures above have been rounded generously. Two things have not: I like learning new things and I like working with people. The rest is open to discussion, ideally in person."
 }

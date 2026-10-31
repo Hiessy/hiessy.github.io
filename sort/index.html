@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sorting Lab</title>
+<meta name="description" content="59 sorting algorithms written once in Java and run in your browser as JavaScript and WebAssembly. Watch them, race them, and see how the O of a function is worked out.">
+<link rel="stylesheet" href="css/sort.css">
+</head>
+<body>
+
+<header class="top">
+ <div class="wrap top-row">
+  <a class="brand" href="/">hiessy<span>/sorting-lab</span></a>
+  <nav aria-label="Sections">
+   <a href="#watch">Watch</a>
+   <a href="#race">Race</a>
+   <a href="#algorithms">Algorithms</a>
+   <a href="#big-o">Big O</a>
+  </nav>
+ </div>
+</header>
+
+<main class="wrap">
+
+<section class="intro">
+ <h1>Sorting Lab</h1>
+ <p>59 sorting algorithms, written once in Java. The same code runs in your browser as JavaScript and as Java compiled to WebAssembly, so you can watch each one work, race the two versions, and see how the O of a function is worked out.</p>
+</section>
+
+<section id="watch" aria-labelledby="watch-title">
+ <h2 id="watch-title">Watch</h2>
+ <div class="controls">
+  <label>Algorithm <select id="w-algorithm"></select></label>
+  <label>Items <select id="w-size"></select></label>
+  <label>Input <select id="w-input"></select></label>
+  <label class="grow">Speed <input id="w-speed" type="range" min="0" max="6" step="1" value="2"></label>
+  <button id="w-play" type="button" class="primary">Pause</button>
+  <button id="w-new" type="button">New data</button>
+ </div>
+ <div class="stage">
+  <div>
+   <canvas id="w-canvas" role="img" aria-label="Bars showing the array being sorted"></canvas>
+   <p class="stats" id="w-stats" aria-live="off"></p>
+  </div>
+  <aside class="facts" aria-labelledby="w-name">
+   <p class="family" id="w-family"></p>
+   <h3 id="w-name"></h3>
+   <p id="w-about"></p>
+   <dl>
+    <div><dt>Best</dt><dd id="w-best"></dd></div>
+    <div><dt>Average</dt><dd id="w-average"></dd></div>
+    <div><dt>Worst</dt><dd id="w-worst"></dd></div>
+    <div><dt>Extra memory</dt><dd id="w-memory"></dd></div>
+    <div><dt>Stable</dt><dd id="w-stable"></dd></div>
+   </dl>
+  </aside>
+ </div>
+ <details class="code" id="w-code">
+  <summary>Read the code</summary>
+  <div class="tabs" role="tablist" aria-label="Language">
+   <button id="tab-java" role="tab" type="button" aria-selected="true">Java</button>
+   <button id="tab-js" role="tab" type="button" aria-selected="false">JavaScript</button>
+  </div>
+  <pre tabindex="0"><code id="w-source"></code></pre>
+ </details>
+</section>
+
+<section id="race" aria-labelledby="race-title">
+ <h2 id="race-title">Race</h2>
+ <p class="lede">Both sides sort the same numbers on your machine, one in the browser's JavaScript engine and one as Java compiled to WebAssembly. Each result is checked, so a win only counts if the output is right.</p>
+ <div class="controls">
+  <label>Algorithm <select id="r-algorithm"></select></label>
+  <label>Items <select id="r-size"></select></label>
+  <label>Input <select id="r-input"></select></label>
+  <button id="r-run" type="button" class="primary">Start the race</button>
+  <button id="r-stop" type="button" disabled>Stop</button>
+ </div>
+ <p class="notice" id="r-status" role="status"></p>
+ <div class="tiles" id="r-tiles" hidden>
+  <div class="tile"><span class="value" id="r-js-wins">0</span><span class="label">JavaScript wins</span></div>
+  <div class="tile"><span class="value" id="r-java-wins">0</span><span class="label">Java wins</span></div>
+  <div class="tile"><span class="value" id="r-same">0</span><span class="label">Results identical</span></div>
+ </div>
+ <div class="scroll" id="r-wrap" hidden>
+  <table class="data">
+   <thead>
+    <tr>
+     <th scope="col">Algorithm</th>
+     <th scope="col" class="num">JavaScript</th>
+     <th scope="col" class="num">Java (WebAssembly)</th>
+     <th scope="col">Faster</th>
+     <th scope="col">Same result</th>
+    </tr>
+   </thead>
+   <tbody id="r-rows"></tbody>
+  </table>
+ </div>
+ <p class="small" id="r-note" hidden>Each time is typical of repeated runs, measured after both compilers have had a chance to warm up. A difference under 10% is too close to call.</p>
+</section>
+
+<section id="algorithms" aria-labelledby="algorithms-title">
+ <h2 id="algorithms-title">Algorithms</h2>
+ <p class="lede">Choose one to watch it. In the table, n is the number of items.</p>
+ <div class="chips" id="a-filters" role="group" aria-label="Filter by family"></div>
+ <div class="scroll">
+  <table class="data">
+   <thead>
+    <tr>
+     <th scope="col">Algorithm</th>
+     <th scope="col">Family</th>
+     <th scope="col">Best</th>
+     <th scope="col">Average</th>
+     <th scope="col">Worst</th>
+     <th scope="col">Memory</th>
+     <th scope="col">Stable</th>
+    </tr>
+   </thead>
+   <tbody id="a-rows"></tbody>
+  </table>
+ </div>
+</section>
+
+<section id="big-o" aria-labelledby="big-o-title">
+ <h2 id="big-o-title">How we work out the O of a function</h2>
+ <div class="article">
+  <p class="lede">Big O describes how a function's work grows with its input. It says nothing about seconds. It answers a more useful question: if the input doubles, what happens to the work?</p>
+
+  <h3>What the notation says</h3>
+  <p>A function that takes f(n) steps is O(g(n)) if, past some input size, f(n) never goes above a constant times g(n). Constants and smaller terms disappear, so 3n² + 5n + 9 steps is O(n²). For large n, the n² term is the only one that matters.</p>
+
+  <h3>The rules for reading code</h3>
+  <div class="scroll">
+   <table class="data">
+    <thead><tr><th scope="col">In the code</th><th scope="col">What to do</th><th scope="col">Example</th></tr></thead>
+    <tbody>
+     <tr><td>Steps one after another</td><td>Add them and keep the largest</td><td>n + n² is n²</td></tr>
+     <tr><td>A loop</td><td>Multiply the body by the number of runs</td><td>n × log n</td></tr>
+     <tr><td>A loop whose range shrinks</td><td>Add up the runs</td><td>1 + 2 + … + n is about n²/2, so n²</td></tr>
+     <tr><td>A counter that doubles or halves</td><td>It runs log₂ n times</td><td><code>i *= 2</code></td></tr>
+     <tr><td><code>if</code> and <code>else</code></td><td>Take the more expensive arm</td><td>n or 1 is n</td></tr>
+     <tr><td>A function call</td><td>Count what the function costs</td><td><code>sort()</code> is n log n</td></tr>
+    </tbody>
+   </table>
+  </div>
+
+  <h3>A worked example</h3>
+  <pre><code>for (int i = 0; i &lt; n; i++) {          // runs n times
+    for (int j = i + 1; j &lt; n; j++) {  // n-1 times, then n-2, ... then 1
+        if (a[i] &gt; a[j]) swap(a, i, j);
+    }
+}</code></pre>
+  <p>The inner line runs (n−1) + (n−2) + … + 1 times, which adds up to n(n−1)/2, or ½n² − ½n. Drop the constant and the smaller term, and that's O(n²).</p>
+
+  <h3>Recursion</h3>
+  <p>Recursion hides its loops, so we write the cost as an equation called a recurrence: the cost of the recursive calls plus the work around them. Merge sort makes two calls on half the input, then does n work to merge:</p>
+  <p class="equation">T(n) = 2T(n/2) + n</p>
+  <p>Every level of calls does n work in total, and halving reaches 1 after log₂ n levels. That's n × log n. The Master theorem gives the same answer for any recurrence of the form T(n) = aT(n/b) + f(n), by comparing the work in the calls, n^(log<sub>b</sub> a), with the work around them, f(n):</p>
+  <div class="scroll">
+   <table class="data">
+    <thead><tr><th scope="col">Example</th><th scope="col">Recurrence</th><th scope="col">log<sub>b</sub> a</th><th scope="col">Which side wins</th><th scope="col">Result</th></tr></thead>
+    <tbody>
+     <tr><td>Binary search</td><td>T(n/2) + 1</td><td>0</td><td>A tie, so add a log</td><td>log n</td></tr>
+     <tr><td>Merge sort</td><td>2T(n/2) + n</td><td>1</td><td>A tie, so add a log</td><td>n log n</td></tr>
+     <tr><td>Karatsuba</td><td>3T(n/2) + n</td><td>1.58</td><td>The calls</td><td>n^1.58</td></tr>
+     <tr><td>Heavy merge</td><td>2T(n/2) + n²</td><td>1</td><td>The work around them</td><td>n²</td></tr>
+    </tbody>
+   </table>
+  </div>
+  <p>Not every recursion fits. Naive Fibonacci calls itself twice and only shrinks n by one, so the calls nearly double at each level. That grows as about 1.62ⁿ.</p>
+
+  <h3>Best, average and worst</h3>
+  <p>The same code can cost very different amounts on different inputs. Quicksort averages n log n but falls to n² when its pivots are bad, and insertion sort is n on sorted data but n² on reversed data. You can see both above by changing the input in Watch. Unless someone says otherwise, O usually means the worst case.</p>
+  <p>There's also a floor. There are n! possible orders of n items, and one comparison can at best rule out half of them, so any sort that only compares needs at least log₂(n!) comparisons, about n log n. Counting and radix sorts get below that because they never compare two items.</p>
+
+  <h3>Why no tool can do this for every function</h3>
+  <pre><code>while (n != 1) {
+    n = n % 2 == 0 ? n / 2 : 3 * n + 1;
+}</code></pre>
+  <p>Nobody knows the O of that loop. Nobody has even proved it stops for every n: this is the Collatz conjecture, open since 1937. And it isn't a gap in our tools. A program that always found the O of any code could also decide whether any code stops, and Alan Turing proved in 1936 that no program can do that.</p>
+  <p>So every tool estimates. This page uses two methods that fail in different ways.</p>
+
+  <h3>Method 1: read the code</h3>
+  <p>This works on most languages, because loops and recursion look alike in all of them. It removes comments and strings, works out what's nested inside what, checks how each loop's counter moves, and applies the rules above. For recursion it counts the calls, sees how much each one shrinks the input, and solves the recurrence.</p>
+  <p>It never runs anything, so it can't know what a variable really holds or what an unseen function costs. It can also be fooled by unusual code.</p>
+
+  <h3>Method 2: run it</h3>
+  <p>This only works for JavaScript, the one language this page can run on anything you paste. The function runs in a background worker at n, 2n, 4n and so on, and we watch what each doubling does to the time:</p>
+  <div class="scroll">
+   <table class="data narrow">
+    <thead><tr><th scope="col">When n doubles, time is multiplied by</th><th scope="col">Growth</th></tr></thead>
+    <tbody>
+     <tr><td>About 1</td><td>O(1) or O(log n)</td></tr>
+     <tr><td>About 2</td><td>O(n)</td></tr>
+     <tr><td>A little over 2</td><td>O(n log n)</td></tr>
+     <tr><td>About 4</td><td>O(n²)</td></tr>
+     <tr><td>About 8</td><td>O(n³)</td></tr>
+     <tr><td>More every time</td><td>Exponential</td></tr>
+    </tbody>
+   </table>
+  </div>
+  <p>On a log-log chart, n^k is a straight line with slope k, so the slope of the points estimates the exponent. We then fit each candidate curve to the largest sizes, where small effects matter least, and keep the closest.</p>
+  <p>This measures real behaviour, including things the first method can't see. It also picks up noise, caches and the compiler warming up, and n and n log n are hard to tell apart. And it only knows about the input it was given, so it can miss the worst case.</p>
+ </div>
+
+ <div class="lab" aria-labelledby="lab-title">
+  <h3 id="lab-title">Try it on your own function</h3>
+  <div class="controls">
+   <label class="grow">Example <select id="o-example"></select></label>
+   <label>Run it on <select id="o-input">
+    <option value="array">An array of n numbers</option>
+    <option value="sorted">A sorted array of n numbers</option>
+    <option value="number">The number n</option>
+    <option value="string">A string of length n</option>
+   </select></label>
+   <button id="o-run" type="button" class="primary">Run it</button>
+   <button id="o-stop" type="button" disabled>Stop</button>
+  </div>
+  <label class="editor">Your function, in any language
+   <textarea id="o-code" rows="12" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+  </label>
+  <div class="results">
+   <div class="result">
+    <p class="label">Reading the code</p>
+    <p class="verdict" id="o-read">–</p>
+    <ol id="o-steps"></ol>
+   </div>
+   <div class="result">
+    <p class="label">Running it (JavaScript only)</p>
+    <p class="verdict" id="o-measured">–</p>
+    <p class="small" id="o-detail">Press Run it to time this function at growing input sizes.</p>
+    <div id="o-chart"></div>
+    <div class="scroll" id="o-table-wrap" hidden>
+     <table class="data">
+      <thead><tr><th scope="col" class="num">n</th><th scope="col" class="num">Time</th><th scope="col" class="num">Compared with the last</th></tr></thead>
+      <tbody id="o-table"></tbody>
+     </table>
+    </div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<section id="left-out" aria-labelledby="left-out-title">
+ <h2 id="left-out-title">What's left out</h2>
+ <div class="article">
+  <p>People keep inventing sorting algorithms, so nobody can really implement all of them. These well-known ones aren't here:</p>
+  <ul>
+   <li><b>Block sort</b> (WikiSort, GrailSort): stable and in place, but hundreds of lines each. In-place merge sort shows the same trade-off.</li>
+   <li><b>Burstsort and multikey quicksort</b>: built for strings, and this lab sorts integers.</li>
+   <li><b>Polyphase and cascade merge sort</b>: designed for tape drives.</li>
+   <li><b>Sleep sort</b>: uses timers, so it would measure the clock and not the code.</li>
+   <li><b>Spaghetti sort</b>: needs actual spaghetti.</li>
+   <li><b>Stalin sort</b>: deletes anything out of order, which isn't sorting.</li>
+   <li><b>Quantum bogosort</b>: destroys every universe where the list isn't sorted. Hard to test.</li>
+  </ul>
+  <p>Timsort leaves out galloping and pdqsort leaves out block partitioning, so neither would match the fastest real versions. Bogosort and friends sit out the race, because they'd never finish it.</p>
+
+  <h3>How it's built</h3>
+  <p>The sorts are written once, in a plain subset of Java. <a href="https://teavm.org">TeaVM</a> compiles them to WebAssembly, and a small script translates the same source to JavaScript line by line, so the race compares two runtimes running the same logic. A test runs every algorithm on 31 sizes and 8 input shapes, in real Java and in Node, and checks each result against the built-in sort and against the other language: 28,336 cases, no mismatches.</p>
+  <p><a href="https://github.com/Hiessy/hiessy.github.io/tree/main/sort">Read the source on GitHub</a></p>
+ </div>
+</section>
+
+</main>
+
+<div id="tip" class="tip" hidden></div>
+
+<script src="js/algorithms.js" defer></script>
+<script src="js/big-o.js" defer></script>
+<script src="js/page.js" defer></script>
+<script src="/js/visits.js" defer></script>
+</body>
+</html>

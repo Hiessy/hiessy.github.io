@@ -167,6 +167,7 @@ h2{font-size:14px;font-weight:400;margin:54px 0 20px}
 /* --- el juego ----------------------------------------------------------- */
 .hint{color:var(--mut);font-size:13px;margin:0 0 18px;line-height:1.7}
 .hint b{color:var(--ink)}
+.hint a{color:var(--amb)}
 .marco{margin-left:var(--gut);background:#000;border:1px solid var(--line);border-radius:4px;
  padding:14px;display:flex;flex-direction:column;align-items:center;gap:12px}
 canvas{width:100%;max-width:440px;aspect-ratio:320/200;display:block;
