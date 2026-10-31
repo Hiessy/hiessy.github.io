@@ -2,18 +2,30 @@
 
 GitHub Pages gives no logs, so every page loads `js/visits.js`, which tells a Cloudflare
 Worker (<https://visits.hiessy.workers.dev>) about the visit. The Worker stores it in a
-D1 database, and a Windows scheduled task downloads each day to `.work/visits/`.
+D1 database, and the local dashboard downloads each finished day to `.work/visits/`.
 
 | File | What it does |
 | --- | --- |
 | `worker.js` | Receives visits and serves each day as JSON |
 | `deploy.py` | Creates the D1 database and publishes the Worker through the API |
-| `download.py` | Downloads the missing days to `.work/visits/YYYY-MM-DD.json` |
+| `download.py` | Saves the missing days to `.work/visits/YYYY-MM-DD.json`; the dashboard runs it |
+| `dashboard.py`, `dashboard.html` | Local page at <http://localhost:8124> |
 
 ```bash
+python tools/visits/dashboard.py  # the local page, stop it with Ctrl+C
 python tools/visits/deploy.py     # after changing worker.js
-python tools/visits/download.py   # what the scheduled task runs
 ```
+
+## Dashboard
+
+Shows the last 30 days and, for any day you pick, its pages, places, sources,
+networks, devices and every single visit. Today comes live from the Worker; finished
+days come from `.work/visits/`. Every load downloads the days that are missing, so
+this is the only thing to run: whatever you haven't opened yet waits in D1. Your own
+visits get their own tile and table, and stay out of everything else.
+
+The server only listens on 127.0.0.1 and only answers requests addressed to
+localhost, and the token never reaches the browser.
 
 Everything goes through the API with the Python stdlib: Wrangler needs Node 22 and this
 PC has Node 12.
@@ -40,17 +52,14 @@ publishes whatever goes in.
 
 The JSON files stay out of the repo too: `.work/` is in `.gitignore`.
 
+Reading needs `VISITS_TOKEN`. `POST /v` has to stay open for the browser to reach it,
+so anyone can send fake visits, but they can't read or change what's stored.
+
 ## Your own visits
 
 Open <https://hiessy.github.io/?me> once per browser. That browser's visits still
 arrive, marked `mine`, and stay out of `visits` and `visitors`. The mark is a flag in
 `localStorage`; clearing the site's data undoes it.
-
-## Scheduled task
-
-Called `hiessy visits`. It runs `download.py` every day at 9:00, or as soon as the PC
-is on if it was off at that time. Since `download.py` fills in whatever days are
-missing, skipping one loses nothing: the data stays in D1.
 
 ## Adding a page
 

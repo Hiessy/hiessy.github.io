@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Site visits</title>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #898781;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --border: rgba(11, 11, 11, .10);
+  --series: #2a78d6;
+  --series-soft: #86b6ef;
+  --wash: rgba(42, 120, 214, .08);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --ink: #f0efec;
+    --ink-2: #c3c2b7;
+    --grid: #2c2c2a;
+    --axis: #383835;
+    --border: rgba(255, 255, 255, .10);
+    --series: #3987e5;
+    --series-soft: #184f95;
+    --wash: rgba(57, 135, 229, .14);
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+main { max-width: 1040px; margin: 0 auto; padding: 24px 16px 48px; transition: opacity .15s; }
+.busy main { opacity: .6; }
+h1 { margin: 0; font-size: 22px; font-weight: 600; }
+h2 { margin: 0 0 12px; font-size: 14px; font-weight: 600; }
+header, .daybar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+header { margin-bottom: 20px; }
+header .sub { color: var(--ink-2); font-size: 13px; margin-right: auto; }
+button {
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 12px;
+  cursor: pointer;
+}
+button:hover:not(:disabled) { background: var(--wash); }
+button:disabled { color: var(--muted); cursor: default; }
+button:focus-visible { outline: 2px solid var(--series); outline-offset: 1px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+#alert { margin: 0 0 16px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+#alert:empty { display: none; }
+
+.chart { display: grid; grid-template-columns: auto 1fr; column-gap: 8px; }
+.ticks {
+  display: flex; flex-direction: column; justify-content: space-between;
+  height: 150px; color: var(--muted); font-size: 12px; text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.ticks span { line-height: 1; }
+#bars {
+  display: flex; align-items: stretch; height: 150px;
+  border-top: 1px solid var(--grid); border-bottom: 1px solid var(--axis);
+}
+.col {
+  flex: 1 1 0; min-width: 0; height: 100%; padding: 0 1px; border: 0; border-radius: 0;
+  background: none; display: flex; align-items: flex-end; justify-content: center;
+}
+.col:hover:not(:disabled), .col[aria-pressed="true"] { background: var(--wash); }
+.bar { display: block; width: 100%; max-width: 24px; border-radius: 4px 4px 0 0; background: var(--series-soft); }
+.col[aria-pressed="true"] .bar, .col:hover .bar { background: var(--series); }
+.xlabels {
+  grid-column: 2; display: flex; justify-content: space-between; margin-top: 6px;
+  color: var(--muted); font-size: 12px;
+}
+#tip {
+  position: fixed; z-index: 2; pointer-events: none; padding: 6px 10px; border-radius: 8px;
+  background: var(--surface); border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0, 0, 0, .15);
+  font-size: 13px; white-space: nowrap;
+}
+#tip strong { display: block; font-size: 15px; }
+#tip span { color: var(--ink-2); }
+
+.daybar { margin: 28px 0 12px; }
+#dayname { font-size: 18px; font-weight: 600; min-width: 220px; text-align: center; }
+.tiles { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.tile .label { color: var(--ink-2); font-size: 13px; }
+.tile .value { font-size: 28px; font-weight: 600; line-height: 1.2; }
+.tile.hero .value { font-size: 52px; }
+.tile { display: flex; flex-direction: column; justify-content: flex-end; }
+#empty { color: var(--ink-2); text-align: center; padding: 40px 16px; }
+#ownCard { margin-top: 12px; }
+.lists { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 12px; margin-bottom: 12px; }
+.item { margin-bottom: 8px; font-size: 14px; }
+.item .line { display: flex; justify-content: space-between; gap: 12px; }
+.item .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.item .count { color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.item .fill { display: block; height: 6px; margin-top: 2px; min-width: 4px; border-radius: 0 4px 4px 0; background: var(--series); }
+.scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; font-weight: 600; color: var(--ink-2); padding: 0 12px 6px 0; border-bottom: 1px solid var(--axis); white-space: nowrap; }
+td { padding: 6px 12px 6px 0; border-bottom: 1px solid var(--grid); max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+td.num { font-variant-numeric: tabular-nums; }
+tr:last-child td { border-bottom: 0; }
+@media (max-width: 600px) {
+  .tiles { grid-template-columns: 1fr 1fr; }
+  .tile.hero { grid-column: 1 / -1; }
+  #dayname { min-width: 0; }
+}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Site visits</h1>
+    <span class="sub" id="updated"></span>
+    <button id="refresh" type="button">Refresh</button>
+  </header>
+  <p id="alert" role="alert"></p>
+
+  <section class="card">
+    <h2>Page views per day, last 30 days</h2>
+    <div class="chart">
+      <div class="ticks"><span id="top">1</span><span>0</span></div>
+      <div id="bars"></div>
+      <div class="xlabels"><span id="xfirst"></span><span id="xmid"></span><span id="xlast"></span></div>
+    </div>
+  </section>
+
+  <div class="daybar">
+    <button id="prev" type="button" aria-label="Previous day">‹</button>
+    <span id="dayname"></span>
+    <button id="next" type="button" aria-label="Next day">›</button>
+    <button id="gotoday" type="button">Today</button>
+  </div>
+
+  <section class="tiles">
+    <div class="card tile hero"><span class="value" id="views">–</span><span class="label">Page views</span></div>
+    <div class="card tile"><span class="value" id="people">–</span><span class="label">Visitors</span></div>
+    <div class="card tile"><span class="value" id="mobile">–</span><span class="label">On mobile</span></div>
+    <div class="card tile"><span class="value" id="own">–</span><span class="label">Yours, not counted</span></div>
+  </section>
+
+  <section class="card" id="empty" hidden></section>
+  <div id="detail" hidden>
+    <section class="lists" id="lists"></section>
+    <section class="card">
+      <h2>Every visit, newest first</h2>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Time</th><th>Page</th><th>Place</th><th>Network</th><th>Device</th><th>Came from</th><th>Visitor</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+  <section class="card" id="ownCard" hidden>
+    <h2>Your own visits, newest first</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Time</th><th>Page</th><th>Place</th><th>Network</th><th>Device</th><th>Came from</th><th>Visitor</th></tr></thead>
+        <tbody id="ownRows"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+<div id="tip" hidden></div>
+
+<script>
+// Page and referrer come from anyone who can POST to the Worker, so everything
+// reaches the DOM through textContent, never innerHTML.
+const $ = (id) => document.getElementById(id);
+const countries = new Intl.DisplayNames(['en'], { type: 'region' });
+let days = [];
+let today = '';
+let selected = '';
+
+function el(tag, className, text) {
+  const e = document.createElement(tag);
+  if (className) e.className = className;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+
+async function getJson(url) {
+  const r = await fetch(url);
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error || r.status);
+  return data;
+}
+
+function dayLabel(day, options) {
+  return new Date(day + 'T12:00:00Z').toLocaleDateString('en-US', { timeZone: 'UTC', ...options });
+}
+
+function place(r) {
+  let country = r.country;
+  try { country = r.country ? countries.of(r.country) : ''; } catch (e) {}
+  return [r.city, country].filter(Boolean).join(', ');
+}
+
+function source(r) {
+  if (!r.referrer) return 'Direct';
+  try {
+    const host = new URL(r.referrer).hostname;
+    return host === 'hiessy.github.io' ? 'Inside the site' : host;
+  } catch (e) {
+    return r.referrer;
+  }
+}
+
+const LISTS = [
+  ['Pages', (r) => r.page],
+  ['Places', place],
+  ['Came from', source],
+  ['Networks', (r) => r.network],
+  ['Devices', (r) => `${r.device} · ${r.os}`],
+  ['Browsers', (r) => r.browser],
+];
+
+function tally(rows, key, limit = 6) {
+  const counts = new Map();
+  for (const r of rows) {
+    const k = key(r) || 'Unknown';
+    counts.set(k, (counts.get(k) || 0) + 1);
+  }
+  const sorted = [...counts].sort((a, b) => b[1] - a[1]);
+  if (sorted.length <= limit) return sorted;
+  const rest = sorted.slice(limit - 1).reduce((sum, [, n]) => sum + n, 0);
+  return [...sorted.slice(0, limit - 1), ['Other', rest]];
+}
+
+function drawList(title, items) {
+  const card = el('div', 'card');
+  card.append(el('h2', '', title));
+  const top = items[0][1];
+  for (const [name, n] of items) {
+    const item = el('div', 'item');
+    const line = el('div', 'line');
+    const label = el('span', 'name', name);
+    label.title = name;
+    line.append(label, el('span', 'count', n));
+    const fill = el('span', 'fill');
+    fill.style.width = (n / top) * 100 + '%';
+    item.append(line, fill);
+    card.append(item);
+  }
+  return card;
+}
+
+function showTip(d, x, y) {
+  const tip = $('tip');
+  tip.replaceChildren(
+    el('strong', '', `${d.visits} page ${d.visits === 1 ? 'view' : 'views'}`),
+    el('span', '', `${d.visitors} ${d.visitors === 1 ? 'visitor' : 'visitors'} · ${dayLabel(d.day, { month: 'short', day: 'numeric' })}`)
+  );
+  tip.hidden = false;
+  const left = Math.min(x + 12, innerWidth - tip.offsetWidth - 8);
+  tip.style.left = left + 'px';
+  tip.style.top = Math.max(8, y - tip.offsetHeight - 10) + 'px';
+}
+
+function hideTip() {
+  $('tip').hidden = true;
+}
+
+function drawChart() {
+  const max = Math.max(1, ...days.map((d) => d.visits));
+  $('top').textContent = max;
+  $('bars').replaceChildren(...days.map((d) => {
+    const col = el('button', 'col');
+    col.type = 'button';
+    const name = dayLabel(d.day, { month: 'short', day: 'numeric' });
+    col.setAttribute('aria-label', `${name}: ${d.visits} page views, ${d.visitors} visitors`);
+    col.setAttribute('aria-pressed', d.day === selected);
+    const bar = el('span', 'bar');
+    bar.style.height = (d.visits / max) * 100 + '%';
+    if (d.visits) bar.style.minHeight = '2px';
+    col.append(bar);
+    col.onclick = () => pick(d.day);
+    col.onpointermove = (e) => showTip(d, e.clientX, e.clientY);
+    col.onpointerleave = hideTip;
+    col.onblur = hideTip;
+    col.onfocus = () => {
+      const box = col.getBoundingClientRect();
+      showTip(d, box.left, box.top);
+    };
+    return col;
+  }));
+  const short = { month: 'short', day: 'numeric' };
+  $('xfirst').textContent = dayLabel(days[0].day, short);
+  $('xmid').textContent = dayLabel(days[Math.floor(days.length / 2)].day, short);
+  $('xlast').textContent = dayLabel(days[days.length - 1].day, short);
+}
+
+function visitRow(r) {
+  const tr = el('tr');
+  const time = new Date(r.ts).toLocaleTimeString('en-GB', {
+    timeZone: 'America/Argentina/Buenos_Aires', hour: '2-digit', minute: '2-digit',
+  });
+  const cells = [time, r.page, place(r), r.network, `${r.device} · ${r.browser} · ${r.os}`, source(r)];
+  for (const text of cells) {
+    const td = el('td', '', text);
+    td.title = text;
+    tr.append(td);
+  }
+  tr.append(el('td', 'num', r.visitor.slice(0, 4)));
+  return tr;
+}
+
+function drawDay(data) {
+  const rows = data.rows.filter((r) => !r.mine);
+  const own = data.rows.filter((r) => r.mine);
+  $('views').textContent = data.visits.toLocaleString('en-US');
+  $('people').textContent = data.visitors.toLocaleString('en-US');
+  const onMobile = rows.filter((r) => r.device === 'mobile').length;
+  $('mobile').textContent = rows.length ? Math.round((onMobile / rows.length) * 100) + '%' : '–';
+  $('own').textContent = own.length.toLocaleString('en-US');
+  $('empty').textContent = own.length ? 'No visits from anyone else on this day.' : 'No visits on this day.';
+  $('empty').hidden = rows.length > 0;
+  $('detail').hidden = rows.length === 0;
+  $('ownCard').hidden = own.length === 0;
+  $('ownRows').replaceChildren(...[...own].reverse().map(visitRow));
+  if (!rows.length) return;
+
+  $('lists').replaceChildren(...LISTS.map(([title, key]) => drawList(title, tally(rows, key))));
+  $('rows').replaceChildren(...[...rows].reverse().map(visitRow));
+}
+
+function drawNav() {
+  const i = days.findIndex((d) => d.day === selected);
+  $('prev').disabled = i <= 0;
+  $('next').disabled = selected === today;
+  $('gotoday').disabled = selected === today;
+  $('dayname').textContent = dayLabel(selected, { weekday: 'long', month: 'long', day: 'numeric' });
+}
+
+async function showDay() {
+  const wanted = selected;
+  drawNav();
+  const data = await getJson(`/api/day/${wanted}`);
+  if (wanted === selected) drawDay(data);
+}
+
+async function pick(day) {
+  selected = day;
+  drawChart();
+  document.body.classList.add('busy');
+  try {
+    await showDay();
+    $('alert').textContent = '';
+  } catch (e) {
+    $('alert').textContent = `Couldn't load that day: ${e.message}`;
+  }
+  document.body.classList.remove('busy');
+}
+
+function step(by) {
+  const i = days.findIndex((d) => d.day === selected);
+  pick(days[i + by].day);
+}
+
+async function refresh() {
+  document.body.classList.add('busy');
+  try {
+    const data = await getJson('/api/days');
+    days = data.days;
+    today = data.today;
+    if (!selected) selected = today;
+    drawChart();
+    await showDay();
+    $('alert').textContent = data.offline ? "Couldn't reach Cloudflare, so this only shows days already downloaded." : '';
+    $('updated').textContent = 'Updated ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  } catch (e) {
+    $('alert').textContent = `Couldn't load the visits: ${e.message}`;
+  }
+  document.body.classList.remove('busy');
+}
+
+$('refresh').onclick = refresh;
+$('prev').onclick = () => step(-1);
+$('next').onclick = () => step(1);
+$('gotoday').onclick = () => pick(today);
+refresh();
+</script>
+</body>
+</html>

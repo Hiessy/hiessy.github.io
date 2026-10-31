@@ -6,6 +6,12 @@
       "runtimeExecutable": "python",
       "runtimeArgs": ["-m", "http.server", "8123"],
       "port": 8123
+    },
+    {
+      "name": "visits",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["tools/visits/dashboard.py"],
+      "port": 8124
     }
   ]
 }
