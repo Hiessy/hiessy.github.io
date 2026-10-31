@@ -4,26 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>*,*::before,*::after{box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<title>Ruta 38 House Map</title>
+<title>Sierras Houses</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap">
 <style>
-/* Layout: a to-scale strip map of the Punilla valley (north up) beside a list of numbered listing cards */
+/* Layout: two tabs of house tables. Below 760px each table row becomes a card. */
 :root {
   --bg: #EDF0EA;
   --panel: #F8FAF6;
   --ink: #1C2520;
   --muted: #5B6860;
   --line: #CCD4CB;
-  --terrain: #E1E7DC;
-  --road: #D9861C;
-  --road-casing: #8A5412;
-  --branch: #9C7B4B;
-  --water: #A7CBD9;
-  --water-ink: #3B6A7E;
-  --pin: #B3242C;
-  --pin-ink: #FFFFFF;
+  --accent: #D9861C;
+  --link: #2D6A4F;
   --hl: #F3E6CF;
   --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
   --body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -31,272 +25,303 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #121815; --panel: #1A221E; --ink: #E3E9E4; --muted: #9AA8A0; --line: #2D3933;
-    --terrain: #18211C; --road: #E39A36; --road-casing: #5C3808; --branch: #B8955F;
-    --water: #23465A; --water-ink: #8EC3D6; --pin: #EF5A50; --pin-ink: #1B0E0D; --hl: #2E2716;
+    --accent: #E39A36; --link: #8FD0B0; --hl: #2E2716;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #121815; --panel: #1A221E; --ink: #E3E9E4; --muted: #9AA8A0; --line: #2D3933;
-  --terrain: #18211C; --road: #E39A36; --road-casing: #5C3808; --branch: #B8955F;
-  --water: #23465A; --water-ink: #8EC3D6; --pin: #EF5A50; --pin-ink: #1B0E0D; --hl: #2E2716;
+  --accent: #E39A36; --link: #8FD0B0; --hl: #2E2716;
   color-scheme: dark;
 }
-body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.45; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5; }
 .wrap {
-  max-width: 1060px; margin: 0 auto;
-  padding-block: 24px 40px;
+  max-width: 1160px; margin: 0 auto;
+  padding-block: 24px 48px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
-header { display: grid; gap: 6px; margin-bottom: 20px; }
+header { display: grid; gap: 6px; margin-bottom: 18px; }
 .eyebrow { font-family: var(--display); font-weight: 600; text-transform: uppercase; letter-spacing: .12em; font-size: .8rem; color: var(--muted); }
-h1 { font-family: var(--display); font-weight: 700; font-size: clamp(1.9rem, 5vw, 2.6rem); line-height: 1.05; margin: 0; text-wrap: balance; }
-.lede { margin: 0; color: var(--muted); max-width: 62ch; }
-.lede strong { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(1.9rem, 5vw, 2.6rem); line-height: 1.05; margin: 0; }
+h2, h3, h4 { font-family: var(--display); line-height: 1.15; text-wrap: balance; }
+h2 { font-weight: 700; font-size: 1.7rem; margin: 0; }
+h3 { font-weight: 700; font-size: 1.45rem; margin: 36px 0 8px; padding-top: 14px; border-top: 1px solid var(--line); }
+h4 { font-weight: 600; font-size: 1.2rem; margin: 26px 0 6px; }
+p { margin: 0 0 10px; max-width: 74ch; }
+.date { color: var(--muted); font-size: .9rem; margin-bottom: 14px; }
+.small { font-size: .9rem; color: var(--muted); margin-top: 10px; }
+a { color: var(--link); text-underline-offset: 2px; }
+a:hover { text-decoration-thickness: 2px; }
+a:focus-visible, summary:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 
-.layout { display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr); }
-@media (min-width: 780px) {
-  .layout { grid-template-columns: minmax(0, 360px) minmax(0, 1fr); align-items: start; }
-  .mapcol { position: sticky; top: max(16px, env(safe-area-inset-top, 0px)); }
-  .mapbox svg { max-height: calc(100vh - 110px); }
+.tabs { position: sticky; top: 0; z-index: 2; display: flex; gap: 4px; padding-top: 6px; margin-bottom: 22px; background: var(--bg); border-bottom: 1px solid var(--line); }
+.tabs button {
+  font-family: var(--display); font-weight: 600; font-size: 1.15rem; color: var(--muted);
+  background: none; border: 0; border-bottom: 3px solid transparent; margin-bottom: -1px;
+  padding: 8px 14px; cursor: pointer;
 }
-.mapbox { background: var(--terrain); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
-.mapbox svg { display: block; width: 100%; height: auto; max-height: 88vh; }
-.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 10px; font-size: .82rem; color: var(--muted); }
-.legend span { display: inline-flex; align-items: center; gap: 6px; }
-.sw { display: inline-block; }
-.sw-pin { width: 12px; height: 12px; border-radius: 50%; background: var(--pin); }
-.sw-road { width: 22px; height: 5px; border-radius: 3px; background: var(--road); box-shadow: 0 0 0 1.5px var(--road-casing); }
-.sw-branch { width: 22px; height: 0; border-top: 2.5px dashed var(--branch); }
-.sw-water { width: 14px; height: 10px; border-radius: 5px; background: var(--water); }
-.note { font-size: .78rem; color: var(--muted); margin: 8px 0 0; max-width: 60ch; }
+.tabs button:hover { color: var(--ink); }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.tabs .n { font-weight: 500; color: var(--muted); margin-left: 6px; font-variant-numeric: tabular-nums; }
 
-/* SVG map */
-.m-label { font-family: var(--display); font-weight: 600; font-size: 10.5px; fill: var(--ink); }
-.m-label.minor { font-weight: 500; font-size: 9px; fill: var(--muted); }
-.m-sub { font-family: var(--body); font-size: 7.5px; fill: var(--muted); }
-.m-price { font-family: var(--display); font-weight: 600; font-size: 9.5px; fill: var(--pin); font-variant-numeric: tabular-nums; }
-.m-range { font-family: var(--display); font-weight: 600; font-size: 8px; letter-spacing: 4px; fill: var(--muted); opacity: .55; }
-.m-water { font-family: var(--body); font-style: italic; font-size: 8.5px; fill: var(--water-ink); }
-.m-tick { stroke: var(--ink); stroke-width: 1.2; }
-.m-leader { stroke: var(--muted); stroke-width: .6; stroke-dasharray: 1.5 2; opacity: .7; }
-.road-casing { fill: none; stroke: var(--road-casing); stroke-width: 6.5; stroke-linecap: round; stroke-linejoin: round; }
-.road { fill: none; stroke: var(--road); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
-.branch { fill: none; stroke: var(--branch); stroke-width: 2.4; stroke-dasharray: 5 3; stroke-linecap: round; }
-.lake { fill: var(--water); stroke: var(--water-ink); stroke-width: .6; stroke-opacity: .5; }
-.shield rect { fill: var(--panel); stroke: var(--ink); stroke-width: 1; }
-.shield text { font-family: var(--display); font-weight: 700; font-size: 8px; fill: var(--ink); }
-.compass { fill: var(--muted); font-family: var(--display); font-weight: 700; font-size: 9px; }
-.scale line { stroke: var(--ink); stroke-width: 1.2; }
-.scale text { font-family: var(--display); font-size: 8.5px; fill: var(--ink); }
-.pin { cursor: pointer; }
-.pin .dot { transform-box: fill-box; transform-origin: center; transition: transform .15s ease; }
-.pin circle { fill: var(--pin); stroke: var(--terrain); stroke-width: 2; }
-.pin text { font-family: var(--display); font-weight: 700; font-size: 10px; fill: var(--pin-ink); }
-.pin.on .dot, .pin:hover .dot { transform: scale(1.35); }
-.pin:focus { outline: none; }
-.pin:focus-visible circle { stroke: var(--ink); stroke-width: 2.5; }
+.tablewrap { margin: 10px 0 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); overflow: hidden; }
+table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+th { text-align: left; font-family: var(--display); font-weight: 600; font-size: .95rem; color: var(--muted); padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: bottom; }
+td { padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; overflow-wrap: break-word; }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr:hover { background: var(--hl); }
+.c-price-usd { font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.c-where { font-weight: 500; min-width: 150px; }
+.c-listing { white-space: nowrap; }
+.c-house-m, .c-lot-m, .c-bed-bath, .c-bed, .c-house-lot-m { font-variant-numeric: tabular-nums; }
+.c-house-lot-m { white-space: nowrap; }
+.c-town, .c-verdict, .c-watch-for { font-weight: 500; }
+.check { display: inline-block; padding: 0 8px; border-radius: 4px; border: 1px solid var(--line); font-family: var(--display); font-weight: 600; font-size: .85rem; letter-spacing: .03em; white-space: nowrap; }
+.check.confirm { background: var(--hl); border-color: var(--accent); }
+ul { margin: 8px 0; padding-left: 22px; max-width: 80ch; }
+li { margin-bottom: 6px; }
+li ul { margin-top: 6px; }
+details { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 12px; font-size: .9rem; }
+summary { cursor: pointer; font-family: var(--display); font-weight: 600; font-size: 1.15rem; }
 
-/* Cards */
-.list { display: grid; gap: 10px; }
-.card {
-  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: start;
-  padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px;
-  background: var(--panel); color: inherit; text-decoration: none;
-  transition: background-color .15s ease, border-color .15s ease;
-}
-.card:hover, .card.on { background: var(--hl); border-color: var(--road); }
-.card:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
-.num {
-  width: 28px; height: 28px; border-radius: 50%; background: var(--pin); color: var(--pin-ink);
-  display: grid; place-items: center; font-family: var(--display); font-weight: 700; font-size: .95rem;
-}
-.info { min-width: 0; display: grid; gap: 2px; }
-.place { font-family: var(--display); font-weight: 600; font-size: 1.2rem; line-height: 1.15; }
-.addr { color: var(--muted); font-size: .85rem; }
-.price { font-weight: 600; font-variant-numeric: tabular-nums; margin-top: 4px; }
-.price.unk { font-weight: 500; color: var(--muted); }
-.specs { color: var(--muted); font-size: .85rem; font-variant-numeric: tabular-nums; }
-.go { font-family: var(--display); font-weight: 600; font-size: .85rem; color: var(--muted); white-space: nowrap; padding-top: 3px; }
-.card:hover .go, .card.on .go { color: var(--ink); }
-.tag { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 4px; font-family: var(--display); font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; vertical-align: 2px; background: var(--line); color: var(--ink); }
-
-@media (prefers-reduced-motion: reduce) {
-  .pin .dot, .card { transition: none; }
+@media (max-width: 760px) {
+  .tablewrap { border: 0; background: none; overflow: visible; }
+  table, tbody, tr, td { display: block; width: 100%; }
+  thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  tr { margin-bottom: 10px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+  tbody tr:hover { background: var(--panel); }
+  td { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; padding: 4px 0; border-bottom: 0; }
+  td::before { content: attr(data-label); color: var(--muted); font-size: .84rem; font-weight: 400; }
+  .c-listing, .c-house-lot-m { white-space: normal; }
 }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div class="eyebrow">Punilla valley · Córdoba</div>
-    <h1>Ruta 38 House Map</h1>
-    <p class="lede" id="lede">Eight houses along the valley, numbered north to south so the list reads the same way as the map. Tap a pin or a card to open the listing.</p>
+    <div class="eyebrow">Sierras de Córdoba</div>
+    <h1>Sierras Houses</h1>
   </header>
 
-  <div class="layout">
-    <div class="mapcol">
-      <div class="mapbox">
-        <svg id="map" viewBox="0 0 300 760" role="img" aria-label="Map of the Punilla valley with Ruta 38 and eight numbered house listings"></svg>
-      </div>
-      <div class="legend" aria-hidden="true">
-        <span><i class="sw sw-pin"></i>Listing</span>
-        <span><i class="sw sw-road"></i>RN 38</span>
-        <span><i class="sw sw-branch"></i>RP 14 to Tala Huasi</span>
-        <span><i class="sw sw-water"></i>Lago San Roque</span>
-      </div>
-      <p class="note">Pins sit on each listing's own map point; #8 is placed on calle Tucman in Tala Huasi. Roads and the lake are drawn approximately, to scale.</p>
-    </div>
-
-    <div class="list" id="list"></div>
+  <div class="tabs" role="tablist" aria-label="House lists">
+    <button role="tab" id="tab-safe" aria-controls="safe" aria-selected="true" type="button">Safe houses<span class="n">14</span></button>
+    <button role="tab" id="tab-sierras" aria-controls="sierras" aria-selected="false" type="button">Sierras houses<span class="n">39</span></button>
   </div>
+
+  <section id="safe" role="tabpanel" aria-labelledby="tab-safe" data-houses="14">
+    <h2>Safe houses: Villa General Belgrano, Los Reartes, Potrero de Garay and nearby</h2>
+    <p class="date">30 Oct 2026</p>
+<p>14 houses pass: 12 in Villa General Belgrano and 2 in Los Reartes, at USD 105k–180k. Nothing in Potrero de Garay or Santa Rosa passed.</p>
+<p>A house passes when the ad states town water, nothing in it suggests a title problem, it isn&#x27;t near a river or stream, and its town has no record of chronic water shortages or repeated fires. The size filter is the same as before: 3+ bedrooms, at least 110 m² built and 600 m² of land, USD 100k–190k. The houses come from your saved Sierras list; every ad was opened on 29 or 30 Oct 2026.</p>
+<h3>Safe houses</h3>
+<h4>Villa General Belgrano (12)</h4>
+<p>All 12 have town water stated in the ad and no stream mentioned. These ads were read on 29 Oct 2026.</p>
+<div class="tablewrap"><table class="houses"><thead><tr><th scope="col">Price (USD)</th><th scope="col">Where</th><th scope="col">House m²</th><th scope="col">Lot m²</th><th scope="col">Bed / bath</th><th scope="col">Services</th><th scope="col">Note</th><th scope="col">Listing</th></tr></thead>
+<tbody>
+<tr><td data-label="Price (USD)" class="c-price-usd"><span>105k</span></td><td data-label="Where" class="c-where"><span>El Mirador <em>(shortlist)</em></span></td><td data-label="House m²" class="c-house-m"><span>134 + 2nd house</span></td><td data-label="Lot m²" class="c-lot-m"><span>1,750</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>2+2 / 2</span></td><td data-label="Services" class="c-services"><span>Town water; gas at the curb, not connected</span></td><td data-label="Note" class="c-note"><span>Pool; second house needs work</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-con-piscina-sobre-lote-de-1.750-m-sup2--y-segunda-59420191.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Price (USD)" class="c-price-usd"><span>115k</span></td><td data-label="Where" class="c-where"><span>Altos de Belgrano <em>(shortlist)</em></span></td><td data-label="House m²" class="c-house-m"><span>141</span></td><td data-label="Lot m²" class="c-lot-m"><span>817</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 1</span></td><td data-label="Services" class="c-services"><span>Town water; natural gas</span></td><td data-label="Note" class="c-note"><span>Deed ready</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-venta-de-casa-en-villa-general-belgrano-58348201.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Price (USD)" class="c-price-usd"><span>130k</span></td><td data-label="Where" class="c-where"><span>Ruta 5 km 90 (house + guest house)</span></td><td data-label="House m²" class="c-house-m"><span>150</span></td><td data-label="Lot m²" class="c-lot-m"><span>2,500</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 2</span></td><td data-label="Services" class="c-services"><span>Town water; no gas mentioned</span></td><td data-label="Note" class="c-note"><span>On the highway at the edge of town</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-mas-departamento-en-villa-general-belgrano-51234666.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Price (USD)" class="c-price-usd"><span>135k</span></td><td data-label="Where" class="c-where"><span>Cuatro Horizontes</span></td><td data-label="House m²" class="c-house-m"><span>150</span></td><td data-label="Lot m²" class="c-lot-m"><span>811</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 2</span></td><td data-label="Services" class="c-services"><span>Town water; bottled gas</span></td><td data-label="Note" class="c-note"><span>Wooden house, 3.5 km from the plaza</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-en-venta-casa-de-4-ambientes-con-pileta-b-cuatro-59205601.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Price (USD)" class="c-price-usd"><span>135k</span></td><td data-label="Where" class="c-where"><span>Los Osos</span></td><td data-label="House m²" class="c-house-m"><span>144</span></td><td data-label="Lot m²" class="c-lot-m"><span>942</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 1</span></td><td data-label="Services" class="c-services"><span>Town water; bottled gas</span></td><td data-label="Note" class="c-note"><span>Pool; furnished</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-amueblada-2-dorm.-piscina-7-mx3-m-villa-58182468.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Price (USD)" class="c-price-usd"><span>140k</span></td><td data-label="Where" class="c-where"><span>Eglof</span></td><td data-label="House m²" class="c-house-m"><span>179</span></td><td data-label="Lot m²" class="c-lot-m"><span>700</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 2</span></td><td data-label="Services" class="c-services"><span>Town water; gas at the curb</span></td><td data-label="Note" class="c-note"><span>Deed ready</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-en-venta-b-eglof-villa-general-belgrano-60002282.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Price (USD)" class="c-price-usd"><span>150k</span></td><td data-label="Where" class="c-where"><span>Campo Awaike</span></td><td data-label="House m²" class="c-house-m"><span>199</span></td><td data-label="Lot m²" class="c-lot-m"><span>1,000</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>4 / 2</span></td><td data-label="Services" class="c-services"><span>Town water; ad mentions only solar power</span></td><td data-label="Note" class="c-note"><span>Ask whether it is on the power grid</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-de-campo-en-villa-general-belgrano-campo-awaike-58576331.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Price (USD)" class="c-price-usd"><span>170k</span></td><td data-label="Where" class="c-where"><span>Centro (Bolivia 32)</span></td><td data-label="House m²" class="c-house-m"><span>236</span></td><td data-label="Lot m²" class="c-lot-m"><span>1,115</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 2</span></td><td data-label="Services" class="c-services"><span>Town water; natural gas</span></td><td data-label="Note" class="c-note"><span>58 years old</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-centrica-villa-general-belgrano-57892173.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Price (USD)" class="c-price-usd"><span>170k</span></td><td data-label="Where" class="c-where"><span>Egloff (Nahuel Huapi)</span></td><td data-label="House m²" class="c-house-m"><span>166</span></td><td data-label="Lot m²" class="c-lot-m"><span>700</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>4 / 2</span></td><td data-label="Services" class="c-services"><span>Town water; natural gas; sewer</span></td><td data-label="Note" class="c-note"><span>6 years old</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-3-dorm.-gas-natural-cloacas-a-10-cuadras-del-59018316.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Price (USD)" class="c-price-usd"><span>170k</span></td><td data-label="Where" class="c-where"><span>Altos de Belgrano, facing Ruta 5</span></td><td data-label="House m²" class="c-house-m"><span>251</span></td><td data-label="Lot m²" class="c-lot-m"><span>656</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 2</span></td><td data-label="Services" class="c-services"><span>Town water; natural gas</span></td><td data-label="Note" class="c-note"><span>Road noise</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-venta-de-casa-en-villa-general-belgrano.-59131063.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Price (USD)" class="c-price-usd"><span>174k</span></td><td data-label="Where" class="c-where"><span>Comechingones 650 (2 houses + pool)</span></td><td data-label="House m²" class="c-house-m"><span>177</span></td><td data-label="Lot m²" class="c-lot-m"><span>810</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>5 / 3</span></td><td data-label="Services" class="c-services"><span>All services incl. sewer</span></td><td data-label="Note" class="c-note"><span>Deed ready</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-2-casa-modernas-muy-bien-ubicadas-en-villa-gral.-51849047.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Price (USD)" class="c-price-usd"><span>180k</span></td><td data-label="Where" class="c-where"><span>Loreley (Comechingones 600)</span></td><td data-label="House m²" class="c-house-m"><span>205</span></td><td data-label="Lot m²" class="c-lot-m"><span>900</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 2</span></td><td data-label="Services" class="c-services"><span>Town water; natural gas; sewer</span></td><td data-label="Note" class="c-note"><span>8 blocks from the plaza</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-villa-general-belgrano-b-loreley-4-ambientes-51508983.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+</tbody></table></div>
+<h4>Los Reartes (2)</h4>
+<p>Both have town water and a deed ready, and neither is near the river. Ads read on 30 Oct 2026.</p>
+<div class="tablewrap"><table class="houses"><thead><tr><th scope="col">Price (USD)</th><th scope="col">Where</th><th scope="col">House m²</th><th scope="col">Lot m²</th><th scope="col">Bed / bath</th><th scope="col">Services</th><th scope="col">Note</th><th scope="col">Listing</th></tr></thead>
+<tbody>
+<tr><td data-label="Price (USD)" class="c-price-usd"><span>128k</span></td><td data-label="Where" class="c-where"><span>El Vergel, corner of Vélez Sarsfield and Ruta 271</span></td><td data-label="House m²" class="c-house-m"><span>154–173</span></td><td data-label="Lot m²" class="c-lot-m"><span>1,067</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 2</span></td><td data-label="Services" class="c-services"><span>Town water; bottled gas</span></td><td data-label="Note" class="c-note"><span>7 blocks from the river; sold furnished. The two ads give different m²</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-amueblada-de-3-dorm.-en-el-vergel-59917646.html" target="_blank" rel="noopener">Zonaprop</a> · <a href="https://www.argenprop.com/casa-en-venta-en-los-reartes--16840345" target="_blank" rel="noopener">Argenprop</a></span></td></tr>
+<tr><td data-label="Price (USD)" class="c-price-usd"><span>149k</span></td><td data-label="Where" class="c-where"><span>Los Reartes, among cabin complexes</span></td><td data-label="House m²" class="c-house-m"><span>180</span></td><td data-label="Lot m²" class="c-lot-m"><span>974</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>4 / 2</span></td><td data-label="Services" class="c-services"><span>Town water; fiber internet</span></td><td data-label="Note" class="c-note"><span>5 years old; approved plans; the lot next door is also for sale</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-chalet-180-m-sup2--con-excelente-vista-a-las-sierras-55389745.html" target="_blank" rel="noopener">Zonaprop</a> · <a href="https://www.argenprop.com/casa-en-venta-en-los-reartes--16860742" target="_blank" rel="noopener">Argenprop</a></span></td></tr>
+</tbody></table></div>
+<h4>Santa Rosa de Calamuchita (0)</h4>
+<p>None of the 27 passed. Eleven are within a few blocks of the river or by a stream, five are actually in other towns, and five more need one answer (below).</p>
+<h4>Worth one question</h4>
+<p>These could pass if the seller confirms the one thing in the right-hand column.</p>
+<div class="tablewrap"><table class="houses"><thead><tr><th scope="col">Town</th><th scope="col">Price (USD)</th><th scope="col">Where</th><th scope="col">House / lot m²</th><th scope="col">Bed</th><th scope="col">Ask</th><th scope="col">Listing</th></tr></thead>
+<tbody>
+<tr><td data-label="Town" class="c-town"><span>Villa General Belgrano</span></td><td data-label="Price (USD)" class="c-price-usd"><span>100k</span></td><td data-label="Where" class="c-where"><span>Pampa de los Reartes (new)</span></td><td data-label="House / lot m²" class="c-house-lot-m"><span>110 / 790</span></td><td data-label="Bed" class="c-bed"><span>3</span></td><td data-label="Ask" class="c-ask"><span>Town water?</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-hermosa-casa-en-venta-pampa-de-los-reartes-villa-56763542.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Town" class="c-town"><span>Villa General Belgrano</span></td><td data-label="Price (USD)" class="c-price-usd"><span>145k</span></td><td data-label="Where" class="c-where"><span>Bertone (Lago Traful)</span></td><td data-label="House / lot m²" class="c-house-lot-m"><span>235 / 703</span></td><td data-label="Bed" class="c-bed"><span>3</span></td><td data-label="Ask" class="c-ask"><span>Town water?</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-venta-de-casa-familiar-con-potencial-de-ampliacion-53637390.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Town" class="c-town"><span>Villa General Belgrano</span></td><td data-label="Price (USD)" class="c-price-usd"><span>150k</span></td><td data-label="Where" class="c-where"><span>Bertone / 4 Horizontes</span></td><td data-label="House / lot m²" class="c-house-lot-m"><span>220 / 1,030</span></td><td data-label="Bed" class="c-bed"><span>4</span></td><td data-label="Ask" class="c-ask"><span>Does the second lot have a deed?</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-a-la-venta-en-villa-general-belgrano-barrio-4-60028208.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Town" class="c-town"><span>Villa General Belgrano</span></td><td data-label="Price (USD)" class="c-price-usd"><span>165k</span></td><td data-label="Where" class="c-where"><span>House + apartment near the center</span></td><td data-label="House / lot m²" class="c-house-lot-m"><span>222 / 1,200</span></td><td data-label="Bed" class="c-bed"><span>4</span></td><td data-label="Ask" class="c-ask"><span>Town water?</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-y-departamento-a-pocas-cuadras-de-pleno-centro-de-59426633.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Town" class="c-town"><span>Los Reartes</span></td><td data-label="Price (USD)" class="c-price-usd"><span>160k</span></td><td data-label="Where" class="c-where"><span>Loma Dorada, 5 blocks from the river</span></td><td data-label="House / lot m²" class="c-house-lot-m"><span>130 / 1,075</span></td><td data-label="Bed" class="c-bed"><span>3</span></td><td data-label="Ask" class="c-ask"><span>Town water and deed?</span></td><td data-label="Listing" class="c-listing"><span><a href="https://casa.mercadolibre.com.ar/MLA-3496034732-casa-en-loma-dorada-con-excelente-vistas-a-las-sierras-en-los-reartes-_JM" target="_blank" rel="noopener">MercadoLibre</a></span></td></tr>
+<tr><td data-label="Town" class="c-town"><span>Los Reartes</span></td><td data-label="Price (USD)" class="c-price-usd"><span>165k</span></td><td data-label="Where" class="c-where"><span>Altos del Corral (gated, with club house)</span></td><td data-label="House / lot m²" class="c-house-lot-m"><span>181 / 2,200</span></td><td data-label="Bed" class="c-bed"><span>3</span></td><td data-label="Ask" class="c-ask"><span>Water source? Deed is ready</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.argenprop.com/casa-en-venta-en-los-reartes-4-ambientes--20765274" target="_blank" rel="noopener">Argenprop</a></span></td></tr>
+<tr><td data-label="Town" class="c-town"><span>Los Reartes</span></td><td data-label="Price (USD)" class="c-price-usd"><span>190k</span></td><td data-label="Where" class="c-where"><span>Barrio Gutiérrez</span></td><td data-label="House / lot m²" class="c-house-lot-m"><span>120 / 1,268</span></td><td data-label="Bed" class="c-bed"><span>3</span></td><td data-label="Ask" class="c-ask"><span>Ad lists no services</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcapa-amplia-y-luminosa-casa-con-proyecto-aprobado-para-58854102.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Town" class="c-town"><span>Santa Rosa</span></td><td data-label="Price (USD)" class="c-price-usd"><span>110k</span></td><td data-label="Where" class="c-where"><span>Villa Cerro de Oro, toward Villa General Belgrano</span></td><td data-label="House / lot m²" class="c-house-lot-m"><span>225 / 606</span></td><td data-label="Bed" class="c-bed"><span>4</span></td><td data-label="Ask" class="c-ask"><span>Ad says &quot;neighborhood water&quot;: town network or a shared well?</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-chalet-de-4-dorm.-en-villa-cerro-de-oro-calamuchita-57461770.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Town" class="c-town"><span>Santa Rosa</span></td><td data-label="Price (USD)" class="c-price-usd"><span>120k</span></td><td data-label="Where" class="c-where"><span>Los Cháñares al 200</span></td><td data-label="House / lot m²" class="c-house-lot-m"><span>190 / 1,089</span></td><td data-label="Bed" class="c-bed"><span>3</span></td><td data-label="Ask" class="c-ask"><span>Water and deed? How far from the river?</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-en-venta-santa-rosa-de-calamuchita-60299815.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Town" class="c-town"><span>Santa Rosa</span></td><td data-label="Price (USD)" class="c-price-usd"><span>142k</span></td><td data-label="Where" class="c-where"><span>Villa Santarelli, 4 blocks from the center (new)</span></td><td data-label="House / lot m²" class="c-house-lot-m"><span>239 / 685</span></td><td data-label="Bed" class="c-bed"><span>3</span></td><td data-label="Ask" class="c-ask"><span>Water and deed? How far from the river?</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-en-venta-villa-santarelli-santa-rosa-de-60471038.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Town" class="c-town"><span>Santa Rosa</span></td><td data-label="Price (USD)" class="c-price-usd"><span>145k</span></td><td data-label="Where" class="c-where"><span>Villa Cerro de Oro</span></td><td data-label="House / lot m²" class="c-house-lot-m"><span>114 / 895</span></td><td data-label="Bed" class="c-bed"><span>3</span></td><td data-label="Ask" class="c-ask"><span>Water source? Deed is ready</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-de-3-dorm.-en-villa-cerro-de-oro-calamuchita-59892667.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Town" class="c-town"><span>Santa Rosa</span></td><td data-label="Price (USD)" class="c-price-usd"><span>169k</span></td><td data-label="Where" class="c-where"><span>Location not given (70 years old)</span></td><td data-label="House / lot m²" class="c-house-lot-m"><span>261 / 976</span></td><td data-label="Bed" class="c-bed"><span>3</span></td><td data-label="Ask" class="c-ask"><span>Where is it, and is the water from the town network?</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-hermosa-propiedad-vivir-en-la-paz-y-el-confort!-56927283.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+</tbody></table></div>
+<h3>Hazards by town</h3>
+<p>Only three towns pass: Villa General Belgrano, Los Reartes and Santa Rosa, and all three only away from rivers and streams. Potrero de Garay fails on both water and fire.</p>
+<div class="tablewrap"><table class="towns"><thead><tr><th scope="col">Town</th><th scope="col">Water</th><th scope="col">Fire</th><th scope="col">Flooding</th><th scope="col">Verdict</th></tr></thead>
+<tbody>
+<tr><td data-label="Town" class="c-town"><span>Villa General Belgrano</span></td><td data-label="Water" class="c-water"><span>One cooperative serves this town and Los Reartes. No shortages found (<a href="https://ersep.cba.gov.ar/prestador/coop-de-aguas-corrientes-de-villa-general-belgrano/" target="_blank" rel="noopener">ERSeP</a>)</span></td><td data-label="Fire" class="c-fire"><span>None in town. The pine forest toward La Cumbrecita has burned (<a href="https://grupoclarin-la-voz-prod.cdn.arcpublishing.com/ciudadanos/incendios-en-calamuchita-3600-hectareas-quemadas-esta-semana-y-23-mil-desde-julio" target="_blank" rel="noopener">La Voz</a>)</span></td><td data-label="Flooding" class="c-flooding"><span>Streams overflowed in March 2017 and January 2024 (<a href="https://diariodecuyo.com.ar/argentina/La-crecida-de-arroyos-en-Villa-General-Belgrano-arrastro-autos-y-hubo-evacuados-20170329-0050.html" target="_blank" rel="noopener">Diario de Cuyo</a>, <a href="https://www.infobae.com/sociedad/2024/01/07/villa-general-belgrano-una-de-las-ciudades-mas-afectadas-por-el-temporal-dos-mujeres-fueron-arrastradas-por-el-agua/" target="_blank" rel="noopener">Infobae</a>)</span></td><td data-label="Verdict" class="c-verdict"><span>Pass, away from streams</span></td></tr>
+<tr><td data-label="Town" class="c-town"><span>Los Reartes</span></td><td data-label="Water" class="c-water"><span>Same cooperative. No shortages found</span></td><td data-label="Fire" class="c-fire"><span>August 2025: a fire near Capilla Vieja took 116 firefighters, but was kept out of town (<a href="https://www.cadena3.com/noticia/informados-al-regreso/bomberos-contienen-incendio-en-los-reartes-pero-el-viento-mantiene-la-alerta_459216" target="_blank" rel="noopener">Cadena 3</a>)</span></td><td data-label="Flooding" class="c-flooding"><span>The Los Reartes river rose and people had to be rescued (<a href="https://grupoclarin-la-voz-prod.cdn.arcpublishing.com/ciudadanos/regionales/tres-personas-tuvieron-que-ser-rescatadas-por-la-crecida-del-rio-en-los-reartes" target="_blank" rel="noopener">La Voz</a>)</span></td><td data-label="Verdict" class="c-verdict"><span>Pass, away from the river and Capilla Vieja</span></td></tr>
+<tr><td data-label="Town" class="c-town"><span>Santa Rosa de Calamuchita</span></td><td data-label="Water" class="c-water"><span>Cooperative supply. No cuts found (<a href="https://srcoop.com.ar/category/servicios/agua/" target="_blank" rel="noopener">cooperative</a>)</span></td><td data-label="Fire" class="c-fire"><span>October 2022: fire at Estancia Santa Mónica (<a href="https://www.lavozdesanjusto.com.ar/bomberos-controlaron-un-incendio-en-santa-rosa-de-calamuchita-127203" target="_blank" rel="noopener">La Voz de San Justo</a>)</span></td><td data-label="Flooding" class="c-flooding"><span>Flash flood in January 2025; the river rose again in February 2026 (<a href="https://www.perfil.com/noticias/actualidad/devastador-temporal-en-calamuchita-calles-inundadas-y-autos-arrastrados-por-la-corriente.phtml" target="_blank" rel="noopener">Perfil</a>, <a href="https://cordobainteriorinforma.com/2026/02/19/gran-crecida-del-rio-en-santa-rosa-de-calamuchita/" target="_blank" rel="noopener">Córdoba Interior Informa</a>)</span></td><td data-label="Verdict" class="c-verdict"><span>Pass, away from the river</span></td></tr>
+<tr><td data-label="Town" class="c-town"><span>Potrero de Garay</span></td><td data-label="Water" class="c-water"><span>Some neighborhoods struggle in dry seasons (<a href="https://mivalle.com.ar/potrero-de-garay-inversion-millonaria-para-mejoras-en-la-red-de-agua/" target="_blank" rel="noopener">Mi Valle</a>); Los Espinillos still had no piped water in September 2025 (<a href="https://www.altagracianoticias.com/potrero-de-garay-lo-que-hay-que-saber-de-la-obra-de-agua-en-los-espinillos/" target="_blank" rel="noopener">Alta Gracia Noticias</a>); still unresolved in December 2025 (<a href="https://www.altagracianoticias.com/potrero-de-garay-sigue-gestionando-por-solucionar-la-situacion-del-agua/" target="_blank" rel="noopener">Alta Gracia Noticias</a>)</span></td><td data-label="Fire" class="c-fire"><span>August 2021: about 80 properties destroyed (<a href="https://www.unidiversidad.com.ar/incendios-en-cordoba-dos-focos-sin-control-arrasaron-80-casas" target="_blank" rel="noopener">Unidiversidad</a>). Fires again in August 2023 and August 2025 (<a href="https://hoydia.com.ar/informacion-general/persiste-el-fuego-en-potrero-de-garay-aunque-se-logro-contener-gran-parte/" target="_blank" rel="noopener">Hoy Día</a>, <a href="https://www.lavozdesanjusto.com.ar/mas-de-80-bomberos-combaten-un-incendio-entre-potrero-de-garay-y-san-clemente" target="_blank" rel="noopener">La Voz de San Justo</a>)</span></td><td data-label="Flooding" class="c-flooding"><span>Nothing found</span></td><td data-label="Verdict" class="c-verdict"><span>Fail: water and fire</span></td></tr>
+<tr><td data-label="Town" class="c-town"><span>Villa Ciudad Parque</span></td><td data-label="Water" class="c-water"><span>Formal water emergency since 2014 (<a href="https://ciudadparque.gov.ar/emergencia-hidrica/" target="_blank" rel="noopener">Comuna</a>)</span></td><td data-label="Fire" class="c-fire"><span>Nothing found</span></td><td data-label="Flooding" class="c-flooding"><span>Nothing found</span></td><td data-label="Verdict" class="c-verdict"><span>Fail: water</span></td></tr>
+<tr><td data-label="Town" class="c-town"><span>Villa Ciudad de América</span></td><td data-label="Water" class="c-water"><span>In a drought the San Pedro river dried up, three pumping systems ran dry and water was limited to household use (<a href="https://grupoclarin-la-voz-prod.cdn.arcpublishing.com/ciudadanos/crisis-hidrica-en-las-sierras-de-cordoba-se-suma-la-comuna-de-villas-ciudad-de-america" target="_blank" rel="noopener">La Voz</a>)</span></td><td data-label="Fire" class="c-fire"><span>Nothing found</span></td><td data-label="Flooding" class="c-flooding"><span>Nothing found</span></td><td data-label="Verdict" class="c-verdict"><span>Fail: water</span></td></tr>
+<tr><td data-label="Town" class="c-town"><span>Los Molinos (Puerto del Águila, Ruta E56)</span></td><td data-label="Water" class="c-water"><span>Nothing found on the town supply; neither listing says where the water comes from</span></td><td data-label="Fire" class="c-fire"><span>Nothing found</span></td><td data-label="Flooding" class="c-flooding"><span>Nothing found</span></td><td data-label="Verdict" class="c-verdict"><span>Left out: not enough information</span></td></tr>
+<tr><td data-label="Town" class="c-town"><span>La Cumbrecita, Villa Berna, Villa Alpina, Athos Pampa</span></td><td data-label="Water" class="c-water"><span>Nothing found</span></td><td data-label="Fire" class="c-fire"><span>Pine forest. September 2026 fire burned close to houses in Villa Berna (<a href="https://elmonterizo.com/incendio-forestal-en-villa-berna-el-fuego-avanza-cerca-de-las-casas-y-ya-hay-alerta-roja" target="_blank" rel="noopener">El Monterizo</a>); the 2021 fire ran toward Athos Pampa (<a href="https://www.unidiversidad.com.ar/incendios-en-cordoba-dos-focos-sin-control-arrasaron-80-casas" target="_blank" rel="noopener">Unidiversidad</a>)</span></td><td data-label="Flooding" class="c-flooding"><span>Nothing found</span></td><td data-label="Verdict" class="c-verdict"><span>Fail: fire</span></td></tr>
+<tr><td data-label="Town" class="c-town"><span>Villa Yacanto</span></td><td data-label="Water" class="c-water"><span>Nothing found</span></td><td data-label="Fire" class="c-fire"><span>About 30 houses burned in 2013; more fires in 2023 and 2024 (<a href="https://www.continental.com.ar/en-villa-yacanto-hubo-250-evacuaciones_a60e45a90771a9219a550bddf" target="_blank" rel="noopener">Continental</a>, <a href="https://www.perfil.com/noticias/cordoba/incendios-en-cordoba-se-quemaron-mas-de-5-mil-hectareas-y-algunas-casas-en-yacanto.phtml" target="_blank" rel="noopener">Perfil</a>)</span></td><td data-label="Flooding" class="c-flooding"><span>Nothing found</span></td><td data-label="Verdict" class="c-verdict"><span>Fail: fire</span></td></tr>
+</tbody></table></div>
+<p class="small">&quot;Nothing found&quot; means local news had no reports. Calamuchita gets less coverage than Punilla, so treat it as weaker evidence.</p>
+<h3>Left out</h3>
+<p>The biggest group left out is everything in a failing town: 40 listings in Potrero de Garay (10), Villa Ciudad Parque (13), Villa Ciudad de América (6), La Cumbrecita (3), Los Molinos (2) and Villa Yacanto (6). The rest were dropped one by one:</p>
+<ul><li><strong>Near a river or stream:</strong><ul><li>Los Reartes: <a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-los-reartes-2-duplex-a-m-de-rio-los-reartes-58309309.html" target="_blank" rel="noopener">Capilla Vieja duplex, 30 m from the river</a>, <a href="https://www.argenprop.com/casa-en-venta-en-los-reartes--17278266" target="_blank" rel="noopener">house + cabin, 150 m</a>, <a href="https://casa.mercadolibre.com.ar/MLA-1531254903-gran-oportunidad-venta-casa-3-dorm-150-m2-cub-1890-m2-terr-villa-berna-_JM" target="_blank" rel="noopener">Loma del Tigre, stream on the lot, at the Villa Berna edge</a>.</li>
+<li>Villa General Belgrano: <a href="https://www.argenprop.com/casa-en-venta-en-villa-general-belgrano-6-ambientes--17361486" target="_blank" rel="noopener">cabin + house facing the stream</a> and <a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-2-dorm.-parque-de-2492-m-sup2--gas-natural-56425545.html" target="_blank" rel="noopener">Papayo, by the stream walk</a>.</li>
+<li>Santa Rosa: 11 ads, among them <a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-y-dpto.-en-venta-c-renta-garantizada-en-santa-57488075.html" target="_blank" rel="noopener">1 block from the river</a>, <a href="https://www.argenprop.com/casa-en-venta-en-santa-rosa-de-calamuchita-4-ambientes--16971733" target="_blank" rel="noopener">on the riverside road</a> and <a href="https://casa.mercadolibre.com.ar/MLA-3531636802-casa-de-categoria-a-la-venta-b-posta-carreta-b-santa-monica-santa-rosa-de-calamuchita-_JM" target="_blank" rel="noopener">Posta Carreta, among pines by the river</a>.</li></ul></li>
+<li><strong>Fire area:</strong> <a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-de-diseno-en-capilla-vieja-4-dorm.-luminosos-52629696.html" target="_blank" rel="noopener">Las Calandrias 60, Capilla Vieja</a>, USD 149k. Otherwise it would pass: town water, deed, on high ground, 4 bedrooms. It&#x27;s your call, since the August 2025 fire there was kept out of the houses.</li>
+<li><strong>Well water only:</strong> <a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-con-pileta-en-venta-b-santa-monica-santa-51431970.html" target="_blank" rel="noopener">Santa Mónica, USD 115k</a> and <a href="https://www.argenprop.com/casa-en-venta-en-santa-monica-7-ambientes--20748293" target="_blank" rel="noopener">Santa Mónica, Carlos S. Cuadros 900, USD 156k</a>.</li>
+<li><strong>No deed, only possession rights:</strong> <a href="https://www.argenprop.com/casa-en-venta-en-falda-de-los-reartes-8-ambientes--17366767" target="_blank" rel="noopener">Falda de los Reartes, USD 110k</a>.</li>
+<li><strong>Not a family house:</strong> five cabin complexes and an unfinished guesthouse.</li>
+<li><strong>Lot under 600 m²:</strong> <a href="https://www.argenprop.com/casa-en-venta-en-el-vergel-4-ambientes--19853672" target="_blank" rel="noopener">El Vergel, USD 140k, 500 m² with pool</a>. It has town water and a deed, so it&#x27;s safe, just smaller than your other picks. Three more small lots were in Los Reartes and Santa Rosa.</li>
+<li><strong>Listed under Santa Rosa but in another town:</strong> three in Villa del Dique, one in Villa Rumipal, one in Villa Carlos Paz, plus two more in La Calera and Villa Lago Azul. One of them is new for your Villa del Dique list: <a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-en-villa-rumipal-58225795.html" target="_blank" rel="noopener">USD 129k, 250 m² on 1,154 m² with a 2-bedroom apartment</a>, with town water and a deed ready.</li></ul>
+<details><summary>Sources (23)</summary><ul><li><a href="https://ersep.cba.gov.ar/prestador/coop-de-aguas-corrientes-de-villa-general-belgrano/" target="_blank" rel="noopener">Water cooperative of Villa General Belgrano – ERSeP</a></li>
+<li><a href="https://srcoop.com.ar/category/servicios/agua/" target="_blank" rel="noopener">Water – Cooperativa de Santa Rosa de Calamuchita</a></li>
+<li><a href="https://ciudadparque.gov.ar/emergencia-hidrica/" target="_blank" rel="noopener">Water emergency – Comuna de Villa Ciudad Parque</a></li>
+<li><a href="https://mivalle.com.ar/potrero-de-garay-inversion-millonaria-para-mejoras-en-la-red-de-agua/" target="_blank" rel="noopener">Potrero de Garay: investment in the water network – Mi Valle (2022)</a></li>
+<li><a href="https://www.altagracianoticias.com/potrero-de-garay-lo-que-hay-que-saber-de-la-obra-de-agua-en-los-espinillos/" target="_blank" rel="noopener">Potrero de Garay: the Los Espinillos water project – Alta Gracia Noticias (Sept 2025)</a></li>
+<li><a href="https://www.altagracianoticias.com/potrero-de-garay-sigue-gestionando-por-solucionar-la-situacion-del-agua/" target="_blank" rel="noopener">Potrero de Garay still working on its water problem – Alta Gracia Noticias (Dec 2025)</a></li>
+<li><a href="https://grupoclarin-la-voz-prod.cdn.arcpublishing.com/ciudadanos/crisis-hidrica-en-las-sierras-de-cordoba-se-suma-la-comuna-de-villas-ciudad-de-america" target="_blank" rel="noopener">Villa Ciudad de América joins the water crisis – La Voz</a></li>
+<li><a href="https://grupoclarin-la-voz-prod.cdn.arcpublishing.com/ciudadanos/lago-los-molinos-el-proceso-de-deterioro-ambiental-se-sigue-acentuando" target="_blank" rel="noopener">Lake Los Molinos: environmental decline – La Voz</a></li>
+<li><a href="https://www.unidiversidad.com.ar/incendios-en-cordoba-dos-focos-sin-control-arrasaron-80-casas" target="_blank" rel="noopener">Two fires destroyed 80 houses – Unidiversidad (2021)</a></li>
+<li><a href="https://hoydia.com.ar/informacion-general/persiste-el-fuego-en-potrero-de-garay-aunque-se-logro-contener-gran-parte/" target="_blank" rel="noopener">Fire persists in Potrero de Garay – Hoy Día (2023)</a></li>
+<li><a href="https://www.lavozdesanjusto.com.ar/mas-de-80-bomberos-combaten-un-incendio-entre-potrero-de-garay-y-san-clemente" target="_blank" rel="noopener">Fire between Potrero de Garay and San Clemente – La Voz de San Justo (2025)</a></li>
+<li><a href="https://www.cadena3.com/noticia/informados-al-regreso/bomberos-contienen-incendio-en-los-reartes-pero-el-viento-mantiene-la-alerta_459216" target="_blank" rel="noopener">Fire contained in Los Reartes – Cadena 3 (2025)</a></li>
+<li><a href="https://www.lavozdesanjusto.com.ar/bomberos-combaten-un-importante-incendio-en-los-reartes" target="_blank" rel="noopener">Firefighters fight a fire in Los Reartes – La Voz de San Justo (2025)</a></li>
+<li><a href="https://grupoclarin-la-voz-prod.cdn.arcpublishing.com/ciudadanos/regionales/tres-personas-tuvieron-que-ser-rescatadas-por-la-crecida-del-rio-en-los-reartes" target="_blank" rel="noopener">Rescues in the Los Reartes river flood – La Voz</a></li>
+<li><a href="https://www.lavozdesanjusto.com.ar/bomberos-controlaron-un-incendio-en-santa-rosa-de-calamuchita-127203" target="_blank" rel="noopener">Fire controlled in Santa Rosa de Calamuchita – La Voz de San Justo (2022)</a></li>
+<li><a href="https://grupoclarin-la-voz-prod.cdn.arcpublishing.com/ciudadanos/incendios-en-calamuchita-3600-hectareas-quemadas-esta-semana-y-23-mil-desde-julio" target="_blank" rel="noopener">Calamuchita fires: 3,600 ha in a week – La Voz</a></li>
+<li><a href="https://www.perfil.com/noticias/actualidad/devastador-temporal-en-calamuchita-calles-inundadas-y-autos-arrastrados-por-la-corriente.phtml" target="_blank" rel="noopener">Flash flood in Calamuchita – Perfil (2025)</a></li>
+<li><a href="https://cordobainteriorinforma.com/2026/02/19/gran-crecida-del-rio-en-santa-rosa-de-calamuchita/" target="_blank" rel="noopener">River rise in Santa Rosa – Córdoba Interior Informa (2026)</a></li>
+<li><a href="https://diariodecuyo.com.ar/argentina/La-crecida-de-arroyos-en-Villa-General-Belgrano-arrastro-autos-y-hubo-evacuados-20170329-0050.html" target="_blank" rel="noopener">Stream flood in Villa General Belgrano – Diario de Cuyo (2017)</a></li>
+<li><a href="https://www.infobae.com/sociedad/2024/01/07/villa-general-belgrano-una-de-las-ciudades-mas-afectadas-por-el-temporal-dos-mujeres-fueron-arrastradas-por-el-agua/" target="_blank" rel="noopener">Villa General Belgrano among the worst hit – Infobae (2024)</a></li>
+<li><a href="https://elmonterizo.com/incendio-forestal-en-villa-berna-el-fuego-avanza-cerca-de-las-casas-y-ya-hay-alerta-roja" target="_blank" rel="noopener">Fire in Villa Berna – El Monterizo (2026)</a></li>
+<li><a href="https://www.continental.com.ar/en-villa-yacanto-hubo-250-evacuaciones_a60e45a90771a9219a550bddf" target="_blank" rel="noopener">250 evacuated in Villa Yacanto – Continental (2013)</a></li>
+<li><a href="https://www.perfil.com/noticias/cordoba/incendios-en-cordoba-se-quemaron-mas-de-5-mil-hectareas-y-algunas-casas-en-yacanto.phtml" target="_blank" rel="noopener">Houses burned near Yacanto – Perfil (2024)</a></li></ul></details>
+  </section>
+
+  <section id="sierras" role="tabpanel" aria-labelledby="tab-sierras">
+    <h2>Sierras houses: Villa General Belgrano, Villa del Dique, La Cumbre</h2>
+    <p class="date">29 Oct 2026</p>
+<h3>Summary</h3>
+<p>39 houses were still for sale when checked on 29 Oct 2026, at USD 100k–190k: 18 in Villa General Belgrano, 8 in Villa del Dique and 13 in La Cumbre. Each has 3+ bedrooms, at least 110 m² built and at least 600 m² of land, where the ad gives those figures.</p>
+<p>The five houses already on your shortlist are marked <em>(shortlist)</em>: El Mirador and Altos de Belgrano in Villa General Belgrano, Punta Peñón and Bv. Yrigoyen in Villa del Dique, and Moreno 575 in La Cumbre.</p>
+<p>In the <strong>Check</strong> column, <strong>OK</strong> means the ad says the house has town water and nothing in it suggests a title problem. <strong>Confirm</strong> means one thing still needs asking, named in the Notes.</p>
+<h3>Villa General Belgrano (18)</h3>
+<p>Villa General Belgrano has the most choice: 18 houses, 13 of them with town water stated in the ad.</p>
+<div class="tablewrap"><table class="houses"><thead><tr><th scope="col">Check</th><th scope="col">Price (USD)</th><th scope="col">Where</th><th scope="col">House m²</th><th scope="col">Lot m²</th><th scope="col">Bed / bath</th><th scope="col">Notes</th><th scope="col">Listing</th></tr></thead>
+<tbody>
+<tr><td data-label="Check" class="c-check"><span><span class="check confirm">Confirm</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>100k</span></td><td data-label="Where" class="c-where"><span>Pampa de los Reartes (new, wood and stone)</span></td><td data-label="House m²" class="c-house-m"><span>110</span></td><td data-label="Lot m²" class="c-lot-m"><span>790</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 2</span></td><td data-label="Notes" class="c-notes"><span>Water not stated; deed ready</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-hermosa-casa-en-venta-pampa-de-los-reartes-villa-56763542.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check ok">OK</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>105k</span></td><td data-label="Where" class="c-where"><span>El Mirador <em>(shortlist)</em></span></td><td data-label="House m²" class="c-house-m"><span>134 + 2nd house</span></td><td data-label="Lot m²" class="c-lot-m"><span>1,750</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>2+2 / 2</span></td><td data-label="Notes" class="c-notes"><span>Gas at the curb, not connected; pool</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-con-piscina-sobre-lote-de-1.750-m-sup2--y-segunda-59420191.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check ok">OK</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>115k</span></td><td data-label="Where" class="c-where"><span>Altos de Belgrano <em>(shortlist)</em></span></td><td data-label="House m²" class="c-house-m"><span>141</span></td><td data-label="Lot m²" class="c-lot-m"><span>817</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 1</span></td><td data-label="Notes" class="c-notes"><span>Natural gas; deed. Same ad posted twice</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-venta-de-casa-en-villa-general-belgrano-58348201.html" target="_blank" rel="noopener">Zonaprop</a> · <a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-venta-de-casa-en-villa-general-belgrano-57090844.html" target="_blank" rel="noopener">2nd</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check ok">OK</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>130k</span></td><td data-label="Where" class="c-where"><span>Ruta 5 km 90 (house + guest house)</span></td><td data-label="House m²" class="c-house-m"><span>150</span></td><td data-label="Lot m²" class="c-lot-m"><span>2,500</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 2</span></td><td data-label="Notes" class="c-notes"><span>No gas mentioned</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-mas-departamento-en-villa-general-belgrano-51234666.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check ok">OK</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>135k</span></td><td data-label="Where" class="c-where"><span>Cuatro Horizontes (wood house)</span></td><td data-label="House m²" class="c-house-m"><span>150</span></td><td data-label="Lot m²" class="c-lot-m"><span>811</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 2</span></td><td data-label="Notes" class="c-notes"><span>Bottled gas; 3.5 km from the plaza</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-en-venta-casa-de-4-ambientes-con-pileta-b-cuatro-59205601.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check ok">OK</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>135k</span></td><td data-label="Where" class="c-where"><span>Los Osos</span></td><td data-label="House m²" class="c-house-m"><span>144</span></td><td data-label="Lot m²" class="c-lot-m"><span>942</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 1</span></td><td data-label="Notes" class="c-notes"><span>Bottled gas; pool; furnished</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-amueblada-2-dorm.-piscina-7-mx3-m-villa-58182468.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check ok">OK</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>140k</span></td><td data-label="Where" class="c-where"><span>Eglof</span></td><td data-label="House m²" class="c-house-m"><span>179</span></td><td data-label="Lot m²" class="c-lot-m"><span>700</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 2</span></td><td data-label="Notes" class="c-notes"><span>Gas at the curb; deed ready</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-en-venta-b-eglof-villa-general-belgrano-60002282.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check confirm">Confirm</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>145k</span></td><td data-label="Where" class="c-where"><span>Bertone (Lago Traful)</span></td><td data-label="House m²" class="c-house-m"><span>235</span></td><td data-label="Lot m²" class="c-lot-m"><span>703</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 1</span></td><td data-label="Notes" class="c-notes"><span>Water not stated. Also listed at 152k</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-venta-de-casa-familiar-con-potencial-de-ampliacion-53637390.html" target="_blank" rel="noopener">Zonaprop</a> · <a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-en-venta-3-dorm.-1-bano-cochera-700-m-sup2-59693448.html" target="_blank" rel="noopener">152k</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check ok">OK</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>150k</span></td><td data-label="Where" class="c-where"><span>Campo Awaike</span></td><td data-label="House m²" class="c-house-m"><span>199</span></td><td data-label="Lot m²" class="c-lot-m"><span>1,000</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>4 / 2</span></td><td data-label="Notes" class="c-notes"><span>Town water; ad mentions only solar power</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-de-campo-en-villa-general-belgrano-campo-awaike-58576331.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check confirm">Confirm</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>150k</span></td><td data-label="Where" class="c-where"><span>Bertone / 4 Horizontes</span></td><td data-label="House m²" class="c-house-m"><span>220</span></td><td data-label="Lot m²" class="c-lot-m"><span>1,030</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>4 / 3</span></td><td data-label="Notes" class="c-notes"><span>Ad says only &quot;1 lot with deed&quot;: ask about the other lot</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-a-la-venta-en-villa-general-belgrano-barrio-4-60028208.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check confirm">Confirm</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>165k</span></td><td data-label="Where" class="c-where"><span>House + apartment, 10 blocks from the center</span></td><td data-label="House m²" class="c-house-m"><span>222</span></td><td data-label="Lot m²" class="c-lot-m"><span>1,200</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>4 / 3</span></td><td data-label="Notes" class="c-notes"><span>Water not stated</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-y-departamento-a-pocas-cuadras-de-pleno-centro-de-59426633.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check ok">OK</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>170k</span></td><td data-label="Where" class="c-where"><span>Centro (Bolivia 32)</span></td><td data-label="House m²" class="c-house-m"><span>236</span></td><td data-label="Lot m²" class="c-lot-m"><span>1,115</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 2</span></td><td data-label="Notes" class="c-notes"><span>Natural gas; 58 years old</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-centrica-villa-general-belgrano-57892173.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check ok">OK</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>170k</span></td><td data-label="Where" class="c-where"><span>Egloff (Nahuel Huapi)</span></td><td data-label="House m²" class="c-house-m"><span>166</span></td><td data-label="Lot m²" class="c-lot-m"><span>700</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>4 / 2</span></td><td data-label="Notes" class="c-notes"><span>Natural gas + sewer; 6 years old</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-3-dorm.-gas-natural-cloacas-a-10-cuadras-del-59018316.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check ok">OK</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>170k</span></td><td data-label="Where" class="c-where"><span>Altos de Belgrano, facing Ruta 5</span></td><td data-label="House m²" class="c-house-m"><span>251</span></td><td data-label="Lot m²" class="c-lot-m"><span>656</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 2</span></td><td data-label="Notes" class="c-notes"><span>Natural gas; road noise</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-venta-de-casa-en-villa-general-belgrano.-59131063.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check ok">OK</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>174k</span></td><td data-label="Where" class="c-where"><span>Comechingones 650 (2 houses + pool)</span></td><td data-label="House m²" class="c-house-m"><span>177</span></td><td data-label="Lot m²" class="c-lot-m"><span>810</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>5 / 3</span></td><td data-label="Notes" class="c-notes"><span>All services incl. sewer; deed ready</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-2-casa-modernas-muy-bien-ubicadas-en-villa-gral.-51849047.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check ok">OK</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>180k</span></td><td data-label="Where" class="c-where"><span>Loreley (Comechingones 600)</span></td><td data-label="House m²" class="c-house-m"><span>205</span></td><td data-label="Lot m²" class="c-lot-m"><span>900</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 2</span></td><td data-label="Notes" class="c-notes"><span>Natural gas + sewer</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-villa-general-belgrano-b-loreley-4-ambientes-51508983.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check ok">OK</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>180k</span></td><td data-label="Where" class="c-where"><span>Papayo, by the Paseo de los Arroyos</span></td><td data-label="House m²" class="c-house-m"><span>173</span></td><td data-label="Lot m²" class="c-lot-m"><span>2,492</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 2</span></td><td data-label="Notes" class="c-notes"><span>Natural gas; ask how close the streams are</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-2-dorm.-parque-de-2492-m-sup2--gas-natural-56425545.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check confirm">Confirm</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>190k</span></td><td data-label="Where" class="c-where"><span>Cabin + house facing the stream</span></td><td data-label="House m²" class="c-house-m"><span>150</span></td><td data-label="Lot m²" class="c-lot-m"><span>1,500</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 2</span></td><td data-label="Notes" class="c-notes"><span>Deed ready, but flood risk from the stream</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-cabana-casa-en-1.500-m-sup2--de-terreno-56089650.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+</tbody></table></div>
+<h3>Villa del Dique (8)</h3>
+<p>Villa del Dique has the cheapest big houses: four of the eight cost USD 110k or less, and seven state town water.</p>
+<div class="tablewrap"><table class="houses"><thead><tr><th scope="col">Check</th><th scope="col">Price (USD)</th><th scope="col">Where</th><th scope="col">House m²</th><th scope="col">Lot m²</th><th scope="col">Bed / bath</th><th scope="col">Notes</th><th scope="col">Listing</th></tr></thead>
+<tbody>
+<tr><td data-label="Check" class="c-check"><span><span class="check ok">OK</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>100k</span></td><td data-label="Where" class="c-where"><span>Centro (Corrientes 34), 4 blocks from the lake</span></td><td data-label="House m²" class="c-house-m"><span>270</span></td><td data-label="Lot m²" class="c-lot-m"><span>1,100</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 3</span></td><td data-label="Notes" class="c-notes"><span>Natural gas; paved street; papers ready to sign the deed</span></td><td data-label="Listing" class="c-listing"><span><a href="https://casa.mercadolibre.com.ar/MLA-1856027239-casa-en-venta-villa-del-dique-3-dormitorios-_JM" target="_blank" rel="noopener">MercadoLibre</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check ok">OK</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>100k</span></td><td data-label="Where" class="c-where"><span>San Juan between Mendoza and San Luis</span></td><td data-label="House m²" class="c-house-m"><span>160</span></td><td data-label="Lot m²" class="c-lot-m"><span>505</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 2</span></td><td data-label="Notes" class="c-notes"><span>Natural gas; smaller lot</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.argenprop.com/casa-en-venta-en-villa-del-dique-4-ambientes--16523901" target="_blank" rel="noopener">Argenprop</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check ok">OK</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>110k</span></td><td data-label="Where" class="c-where"><span>Punta Peñón <em>(shortlist)</em></span></td><td data-label="House m²" class="c-house-m"><span>180</span></td><td data-label="Lot m²" class="c-lot-m"><span>750</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 2</span></td><td data-label="Notes" class="c-notes"><span>Natural gas; pool; town water confirmed</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.argenprop.com/casa-en-venta-en-villa-del-dique-4-ambientes--16524223" target="_blank" rel="noopener">Argenprop</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check ok">OK</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>110k</span></td><td data-label="Where" class="c-where"><span>Eva Perón and San Marino (3 separate homes)</span></td><td data-label="House m²" class="c-house-m"><span>299</span></td><td data-label="Lot m²" class="c-lot-m"><span>742</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 homes</span></td><td data-label="Notes" class="c-notes"><span>Natural gas; deed</span></td><td data-label="Listing" class="c-listing"><span><a href="https://casa.mercadolibre.com.ar/MLA-1932692837-tres-viviendas-totalmente-independiente-con-escritura-excelente-oportunidad-de-inversion-en-villa-del-dique-_JM" target="_blank" rel="noopener">MercadoLibre</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check confirm">Confirm</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>110k</span></td><td data-label="Where" class="c-where"><span>3 cabins, 1 block from the center</span></td><td data-label="House m²" class="c-house-m"><span>224</span></td><td data-label="Lot m²" class="c-lot-m"><span>730</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>5 in total</span></td><td data-label="Notes" class="c-notes"><span>Water and title not stated</span></td><td data-label="Listing" class="c-listing"><span><a href="https://casa.mercadolibre.com.ar/MLA-1837930753-cabanas-casas-en-venta-oportunidad-a-cuadral-del-lago-y-del-centro-villa-del-dique-_JM" target="_blank" rel="noopener">MercadoLibre</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check ok">OK</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>130k</span></td><td data-label="Where" class="c-where"><span>Córdoba 252, 500 m from the center</span></td><td data-label="House m²" class="c-house-m"><span>220</span></td><td data-label="Lot m²" class="c-lot-m"><span>1,155</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 2</span></td><td data-label="Notes" class="c-notes"><span>Gas at the curb</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-imperdible-casa-en-venta-en-villa-del-dique-3-dorm.-54404317.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check ok">OK</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>130k</span></td><td data-label="Where" class="c-where"><span>Córdoba al 100, 2 blocks from the center</span></td><td data-label="House m²" class="c-house-m"><span>211</span></td><td data-label="Lot m²" class="c-lot-m"><span>1,140</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 2+</span></td><td data-label="Notes" class="c-notes"><span>Bottled gas; pool + apartment; deed</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-5-ambientes-pileta-depto-2-terrenos-59908503.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check ok">OK</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>159k</span></td><td data-label="Where" class="c-where"><span>Bv. Yrigoyen, house + 3 apartments <em>(shortlist)</em></span></td><td data-label="House m²" class="c-house-m"><span>168</span></td><td data-label="Lot m²" class="c-lot-m"><span>815</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 2 + apts</span></td><td data-label="Notes" class="c-notes"><span>Natural gas; deed</span></td><td data-label="Listing" class="c-listing"><span><a href="https://casa.mercadolibre.com.ar/MLA-3967752022-casa-de-tres-dormitorios-y-tres-deparatmentos-en-villa-del-dique-calamuchita-sierras-de-cordoba-_JM" target="_blank" rel="noopener">MercadoLibre</a></span></td></tr>
+</tbody></table></div>
+<h3>La Cumbre (13)</h3>
+<p>Most La Cumbre ads mention gas but not water, so 11 of the 13 still need that question asked. All are in the center or in Potrerillo, close to it.</p>
+<div class="tablewrap"><table class="houses"><thead><tr><th scope="col">Check</th><th scope="col">Price (USD)</th><th scope="col">Where</th><th scope="col">House m²</th><th scope="col">Lot m²</th><th scope="col">Bed / bath</th><th scope="col">Notes</th><th scope="col">Listing</th></tr></thead>
+<tbody>
+<tr><td data-label="Check" class="c-check"><span><span class="check ok">OK</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>110k</span></td><td data-label="Where" class="c-where"><span>Potrerillos (Pellegrini al 100)</span></td><td data-label="House m²" class="c-house-m"><span>247</span></td><td data-label="Lot m²" class="c-lot-m"><span>1,000</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 2</span></td><td data-label="Notes" class="c-notes"><span>Gas available; deed; ad says flat and not floodable. Posted twice</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-la-cumbre-casa-en-barrio-potrerillos-60016366.html" target="_blank" rel="noopener">Zonaprop</a> · <a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-en-venta-en-la-cumbe-3-dorm.-y-pileta-59530306.html" target="_blank" rel="noopener">2nd</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check ok">OK</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>115k</span></td><td data-label="Where" class="c-where"><span>San Martín al 300 (fully renovated)</span></td><td data-label="House m²" class="c-house-m"><span>not stated</span></td><td data-label="Lot m²" class="c-lot-m"><span>692</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 2</span></td><td data-label="Notes" class="c-notes"><span>Gas needs connecting; pool; 60 years old</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-la-cumbre-casa-con-pileta-sobre-san-martin-59681738.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check confirm">Confirm</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>120k</span></td><td data-label="Where" class="c-where"><span>Irigoyen, 5 blocks from the center</span></td><td data-label="House m²" class="c-house-m"><span>187</span></td><td data-label="Lot m²" class="c-lot-m"><span>898</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>2+1 / 2</span></td><td data-label="Notes" class="c-notes"><span>Natural gas; ad says the title is clean</span></td><td data-label="Listing" class="c-listing"><span><a href="https://casa.mercadolibre.com.ar/MLA-3223491262-casa-en-la-cumbre-_JM" target="_blank" rel="noopener">MercadoLibre</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check confirm">Confirm</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>140k</span></td><td data-label="Where" class="c-where"><span>Potrerillo (old chalet)</span></td><td data-label="House m²" class="c-house-m"><span>185</span></td><td data-label="Lot m²" class="c-lot-m"><span>not stated</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>5 / 4</span></td><td data-label="Notes" class="c-notes"><span>Natural gas</span></td><td data-label="Listing" class="c-listing"><span><a href="https://casa.mercadolibre.com.ar/MLA-4037870508-ampiio-chalet-con-gas-natural-cerca-del-centro-de-la-cumbre-barrio-potrerillo-_JM" target="_blank" rel="noopener">MercadoLibre</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check confirm">Confirm</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>155k</span></td><td data-label="Where" class="c-where"><span>Potrerillo (Bartolomé Jaime 500)</span></td><td data-label="House m²" class="c-house-m"><span>120</span></td><td data-label="Lot m²" class="c-lot-m"><span>600</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 2</span></td><td data-label="Notes" class="c-notes"><span>Natural gas; pool</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-venta-casa-en-la-cumbre-con-gas-natural-58785634.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check confirm">Confirm</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>158k</span></td><td data-label="Where" class="c-where"><span>100 m from the center (Bustos 125)</span></td><td data-label="House m²" class="c-house-m"><span>216</span></td><td data-label="Lot m²" class="c-lot-m"><span>640</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>not stated</span></td><td data-label="Notes" class="c-notes"><span>No services listed</span></td><td data-label="Listing" class="c-listing"><span><a href="https://casa.mercadolibre.com.ar/MLA-1982313953-casa-venta-centro-la-cumbre-sierras-de-cordoba-_JM" target="_blank" rel="noopener">MercadoLibre</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check confirm">Confirm</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>160k</span></td><td data-label="Where" class="c-where"><span>Lucrecia Villalba</span></td><td data-label="House m²" class="c-house-m"><span>200</span></td><td data-label="Lot m²" class="c-lot-m"><span>650</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 2</span></td><td data-label="Notes" class="c-notes"><span>Natural gas</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-hermosa-casa-en-la-cumbre-con-gas-natural-conectado-50970082.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check confirm">Confirm</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>170k</span></td><td data-label="Where" class="c-where"><span>Centro (Pje Nebiolo 62)</span></td><td data-label="House m²" class="c-house-m"><span>177</span></td><td data-label="Lot m²" class="c-lot-m"><span>653</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 3</span></td><td data-label="Notes" class="c-notes"><span>Natural gas</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-disfruta-de-tu-descanso-en-pleno-zona-centro-con-gas-55284779.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check confirm">Confirm</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>175k</span></td><td data-label="Where" class="c-where"><span>Centro (Pje Nebiolo 50)</span></td><td data-label="House m²" class="c-house-m"><span>187</span></td><td data-label="Lot m²" class="c-lot-m"><span>750</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>4 / 3</span></td><td data-label="Notes" class="c-notes"><span>Natural gas; 50 years old</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-se-vende-casa-centrica-en-la-cumbre-con-gas-natural-3-60246552.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check confirm">Confirm</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>175k</span></td><td data-label="Where" class="c-where"><span>Justo Páez Molina 26</span></td><td data-label="House m²" class="c-house-m"><span>188</span></td><td data-label="Lot m²" class="c-lot-m"><span>902</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 2</span></td><td data-label="Notes" class="c-notes"><span>Natural gas</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-en-venta-la-cumbre-calle-justo-paez-molina-26-53891995.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check confirm">Confirm</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>190k</span></td><td data-label="Where" class="c-where"><span>Moreno 575 <em>(shortlist)</em></span></td><td data-label="House m²" class="c-house-m"><span>185</span></td><td data-label="Lot m²" class="c-lot-m"><span>1,800</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>4 / 2</span></td><td data-label="Notes" class="c-notes"><span>Natural gas; two 1,000-liter tanks; water source not stated</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-venta-casas-en-la-cumbre-con-amplio-patio-55284775.html" target="_blank" rel="noopener">Zonaprop</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check confirm">Confirm</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>190k</span></td><td data-label="Where" class="c-where"><span>Potrerillo (Quintana 300)</span></td><td data-label="House m²" class="c-house-m"><span>162</span></td><td data-label="Lot m²" class="c-lot-m"><span>686</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 2+</span></td><td data-label="Notes" class="c-notes"><span>Deed + approved building plans; pool; 8 years old. Posted twice</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-casa-esxclusiva-la-cumbre-categoria-pileta-58243347.html" target="_blank" rel="noopener">Zonaprop</a> · <a href="https://casa.mercadolibre.com.ar/MLA-3557654712-casa-venta-la-cumbre-barrio-potrerillo-sierras-de-cordoba-_JM" target="_blank" rel="noopener">MercadoLibre</a></span></td></tr>
+<tr><td data-label="Check" class="c-check"><span><span class="check confirm">Confirm</span></span></td><td data-label="Price (USD)" class="c-price-usd"><span>190k</span></td><td data-label="Where" class="c-where"><span>Rodríguez Peña 256</span></td><td data-label="House m²" class="c-house-m"><span>180</span></td><td data-label="Lot m²" class="c-lot-m"><span>not stated</span></td><td data-label="Bed / bath" class="c-bed-bath"><span>3 / 2</span></td><td data-label="Notes" class="c-notes"><span>Pool; no services listed</span></td><td data-label="Listing" class="c-listing"><span><a href="https://www.argenprop.com/casa-en-venta-en-la-cumbre-3-ambientes--17078013" target="_blank" rel="noopener">Argenprop</a></span></td></tr>
+</tbody></table></div>
+<p class="small">Six houses in Cruz Chica and Lomita de San Luis were left out: that edge of town borders the forest that burned in 2019, and one of them runs on a well.</p>
+<h3>Risks by town</h3>
+<p>Each town has a different main worry: streams in Villa General Belgrano, storms and lake pollution in Villa del Dique, and summer water shortages in La Cumbre.</p>
+<div class="tablewrap"><table class="towns"><thead><tr><th scope="col">Town</th><th scope="col">Water supply</th><th scope="col">Fire</th><th scope="col">Flooding</th><th scope="col">Watch for</th></tr></thead>
+<tbody>
+<tr><td data-label="Town" class="c-town"><span>Villa General Belgrano</span></td><td data-label="Water supply" class="c-water-supply"><span>One cooperative serves the town and Los Reartes, about 4,834 accounts. No shortages found (<a href="https://ersep.cba.gov.ar/prestador/coop-de-aguas-corrientes-de-villa-general-belgrano/" target="_blank" rel="noopener">ERSeP</a>)</span></td><td data-label="Fire" class="c-fire"><span>Nothing found in town</span></td><td data-label="Flooding" class="c-flooding"><span>Streams through town overflowed in March 2017 and January 2024 (<a href="https://diariodecuyo.com.ar/argentina/La-crecida-de-arroyos-en-Villa-General-Belgrano-arrastro-autos-y-hubo-evacuados-20170329-0050.html" target="_blank" rel="noopener">Diario de Cuyo</a>, <a href="https://www.infobae.com/sociedad/2024/01/07/villa-general-belgrano-una-de-las-ciudades-mas-afectadas-por-el-temporal-dos-mujeres-fueron-arrastradas-por-el-agua/" target="_blank" rel="noopener">Infobae</a>)</span></td><td data-label="Watch for" class="c-watch-for"><span>Houses beside a stream (Papayo, and the cabin facing the stream)</span></td></tr>
+<tr><td data-label="Town" class="c-town"><span>Villa del Dique</span></td><td data-label="Water supply" class="c-water-supply"><span>On the province&#x27;s largest reservoir. No shortages found</span></td><td data-label="Fire" class="c-fire"><span>Nothing found</span></td><td data-label="Flooding" class="c-flooding"><span>Streets flooded in January 2025 after 70–80 mm fell in a short time (<a href="https://www.perfil.com/noticias/actualidad/devastador-temporal-en-calamuchita-calles-inundadas-y-autos-arrastrados-por-la-corriente.phtml" target="_blank" rel="noopener">Perfil</a>)</span></td><td data-label="Watch for" class="c-watch-for"><span>Lake water quality: over 1.5 million fish died in 2024, and studies found arsenic and mercury in fish (<a href="https://prensaobrera.com/ambiente/rio-tercero-contaminacion-y-mortandad-de-peces-en-calamuchita-parte-ii" target="_blank" rel="noopener">Prensa Obrera</a>)</span></td></tr>
+<tr><td data-label="Town" class="c-town"><span>La Cumbre</span></td><td data-label="Water supply" class="c-water-supply"><span>San Jerónimo dam, two streams and several wells (<a href="https://www.cba.gov.ar/obras/una-solucion-al-problema-del-agua-potable-para-la-cumbre/" target="_blank" rel="noopener">Gobierno de Córdoba</a>). The dam hit a record low in 2022–23 (<a href="https://www.marcainformativacba.com/sequia/triste-postal-la-sequia-cordoba-el-dique-la-cumbre-el-caudal-mas-su-historia-n32219" target="_blank" rel="noopener">Marca Informativa</a>), and power cuts stopped the pumps in February 2025 (<a href="https://www.canal11lacumbre.com.ar/blog/leer/art/17724" target="_blank" rel="noopener">Canal 11</a>)</span></td><td data-label="Fire" class="c-fire"><span>Edges of town only: a 2019 fire near Cruz Chica burned one house (<a href="https://www.lanacion.com.ar/sociedad/incendios-cordoba-contienen-fuego-aunque-persiste-riesgo-nid2291834/" target="_blank" rel="noopener">La Nación</a>); a 2024 fire was contained (<a href="https://cdmnoticias.com.ar/2024/09/23/la-cumbre-lograron-contener-el-fuego-y-no-hay-necesidad-de-evacuacion/" target="_blank" rel="noopener">CDM</a>)</span></td><td data-label="Flooding" class="c-flooding"><span>Nothing found</span></td><td data-label="Watch for" class="c-watch-for"><span>Summer cuts when tourists arrive; a tank or cistern and pump backup matter most here</span></td></tr>
+</tbody></table></div>
+<p class="small">&quot;Nothing found&quot; means local news had no reports. Calamuchita gets less coverage than Punilla, so it is weaker evidence for Villa General Belgrano and Villa del Dique.</p>
+<h3>What to ask on each visit</h3>
+<p>Water source and title are the two questions that settle most of the Confirm rows.</p>
+<ul><li>Water: town network, well, or both? How big is the tank or cistern?</li>
+<li>Cuts: how often did the water go off in the last two summers, and for how long?</li>
+<li>Power: does the water depend on a pump? Is there a gravity tank or a generator?</li>
+<li>Title: is the deed (escritura) ready to sign, or are there only possession rights? On two-lot properties, does each lot have its own deed?</li>
+<li>Gas: natural gas connected, only at the curb, or bottled?</li>
+<li>Sewer or septic tank?</li>
+<li>Streams: how far is the nearest one, and has the lot ever flooded? Matters most in Villa General Belgrano and Villa del Dique.</li>
+<li>Vegetation: any pines or dense brush on or next to the lot? Matters most at the edges of La Cumbre.</li>
+<li>New connections: if the house isn&#x27;t on the town network yet, is the town granting new water connections? La Cumbre suspended them during the 2022–23 drought.</li></ul>
+  </section>
 </div>
 
 <script>
 (function () {
-  var ZP = "https://www.zonaprop.com.ar/propiedades/clasificado/";
-  var L = [
-    { id: 1, town: "Capilla del Monte", addr: "Triunvirato al 6400", lat: -30.8700207, lng: -64.5180229, price: 138000, built: 138, lot: 1253, bed: 4, bath: 2, age: "20 yrs", url: ZP + "veclcain-casa-en-capilla-del-monte-59721390.html" },
-    { id: 2, town: "La Cumbre", addr: "Moreno 575", lat: -30.9844418, lng: -64.4857418, price: 190000, built: 185, lot: 1800, bed: 4, bath: 2, age: "40 yrs", url: ZP + "veclcain-venta-casas-en-la-cumbre-con-amplio-patio-55284775.html" },
-    { id: 3, town: "La Falda", addr: "La Quebrada al 700, Villa Edén", lat: -31.0879124, lng: -64.4795649, price: 180000, built: 210, lot: 1500, bed: 4, bath: 2, age: "50 yrs", url: ZP + "veclcain-vendo-espectacular-casa-6-ambientes-1500-m-sup2--de-60088008.html" },
-    { id: 4, town: "Valle Hermoso", addr: "Figueroa Alcorta s/n", lat: -31.1156976, lng: -64.4915682, price: 175000, built: 347, lot: 2390, bed: 3, bath: 3, age: "7 yrs", url: ZP + "veclcain-amplia-luminosa-y-muy-linda-casa-en-venta-en-valle-57789619.html" },
-    { id: 5, town: "Valle Hermoso", addr: "Yacoana neighborhood", lat: -31.1352248, lng: -64.4840875, price: 120000, built: 185, lot: 7120, bed: 3, bath: 3, age: "New build", url: ZP + "veclcain-casa-en-yacoana-59288291.html" },
-    { id: 6, town: "Cosquín", addr: "Unidad Nacional, Villa Pan de Azúcar", lat: -31.2188374, lng: -64.4796159, price: 199000, built: 256, lot: 4000, bed: 4, bath: 2, age: "50 yrs", url: ZP + "veclcain-casa-quinta-en-cosquin-pileta-vista-a-las-sierras-49318249.html" },
-    { id: 7, town: "Villa Parque Síquiman", addr: "La Pasionaria 1111, lake view", lat: -31.3568554, lng: -64.4788057, price: 195000, built: 590, lot: 5337, bed: 5, bath: 3, age: "40 yrs", url: ZP + "veclcain-chalet-con-vista-al-lago-y-sierras-5.300-m-sup2--de-58912469.html" },
-    { id: 8, town: "Tala Huasi", addr: "Tucman 76, off RP 14 southwest of Carlos Paz", lat: -31.4741803, lng: -64.5683728, price: null, built: 241, lot: null, bed: 3, bath: 3, age: "16 yrs", extra: "1 floor", isNew: true, url: "https://ficha.info/p/3dc89d1680f8436dbe934be66a3ca1df?v=1791316694305" }
-  ];
+  var tabs = [].slice.call(document.querySelectorAll('[role="tab"]'));
 
-  var LAT0 = -30.835, LNG0 = -64.62, KX = 952, KY = 1109; // 10 SVG units = 1 km
-  function P(lat, lng) { return [(lng - LNG0) * KX, (LAT0 - lat) * KY]; }
-  function f(p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }
-  function smooth(pts, closed) {
-    var p = pts.map(function (q) { return P(q[0], q[1]); });
-    var n = p.length;
-    function g(i) { return closed ? p[(i + n) % n] : p[Math.max(0, Math.min(n - 1, i))]; }
-    var d = "M" + f(p[0]);
-    var segs = closed ? n : n - 1;
-    for (var i = 0; i < segs; i++) {
-      var p0 = g(i - 1), p1 = g(i), p2 = g(i + 1), p3 = g(i + 2);
-      var c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
-      var c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
-      d += " C" + f(c1) + " " + f(c2) + " " + f(p2);
-    }
-    return d + (closed ? "Z" : "");
+  function show(id, focus) {
+    tabs.forEach(function (t) {
+      var panel = t.getAttribute("aria-controls"), on = panel === id;
+      t.setAttribute("aria-selected", on);
+      t.tabIndex = on ? 0 : -1;
+      document.getElementById(panel).hidden = !on;
+      if (on && focus) t.focus();
+    });
   }
 
-  var RN38 = [[-30.835,-64.522],[-30.862,-64.523],[-30.890,-64.528],[-30.918,-64.530],[-30.950,-64.502],[-30.982,-64.489],[-31.010,-64.493],[-31.045,-64.497],[-31.068,-64.489],[-31.090,-64.478],[-31.120,-64.483],[-31.168,-64.479],[-31.220,-64.476],[-31.245,-64.467],[-31.268,-64.463],[-31.290,-64.462],[-31.315,-64.462],[-31.330,-64.472],[-31.350,-64.481],[-31.370,-64.486],[-31.395,-64.493],[-31.424,-64.498]];
-  var RP14 = [[-31.424,-64.498],[-31.448,-64.507],[-31.471,-64.525],[-31.479,-64.546],[-31.4742,-64.5684]];
-  var LAKE = [[-31.333,-64.468],[-31.340,-64.455],[-31.352,-64.447],[-31.368,-64.440],[-31.382,-64.444],[-31.392,-64.458],[-31.396,-64.474],[-31.391,-64.486],[-31.378,-64.481],[-31.364,-64.475],[-31.348,-64.472]];
-
-  function roadX(lat) {
-    for (var i = 0; i < RN38.length - 1; i++) {
-      var a = RN38[i], b = RN38[i + 1];
-      if (lat <= a[0] && lat >= b[0]) {
-        var t = (lat - a[0]) / (b[0] - a[0]);
-        return P(lat, a[1] + t * (b[1] - a[1]))[0];
-      }
-    }
-    return P(lat, RN38[RN38.length - 1][1])[0];
-  }
-
-  // [name, lat, side, minor, sub]
-  var TOWNS = [
-    ["Capilla del Monte", -30.862, "r", false],
-    ["San Esteban", -30.918, "r", true],
-    ["La Cumbre", -30.982, "r", false],
-    ["Villa Giardino", -31.045, "r", true],
-    ["Huerta Grande", -31.068, "r", true],
-    ["La Falda", -31.090, "r", false],
-    ["Valle Hermoso", -31.120, "r", false],
-    ["Casa Grande", -31.168, "r", true],
-    ["Cosquín", -31.245, "r", false],
-    ["Santa María de Punilla", -31.268, "r", true],
-    ["Bialet Massé", -31.315, "r", true],
-    ["Villa Parque Síquiman", -31.350, "l", false],
-    ["Villa Carlos Paz", -31.424, "r", false, "≈35 km to Córdoba city"]
-  ];
-
-  var COL = 166;
-  var s = [];
-  s.push('<rect x="0" y="0" width="300" height="760" fill="var(--terrain)"/>');
-  s.push('<text class="m-range" transform="translate(13 380) rotate(-90)" text-anchor="middle">SIERRAS GRANDES</text>');
-  s.push('<text class="m-range" transform="translate(289 330) rotate(90)" text-anchor="middle">SIERRAS CHICAS</text>');
-  s.push('<g class="compass"><path d="M272 10 L277 22 L272 19 L267 22 Z"/><text x="272" y="32" text-anchor="middle">N</text></g>');
-
-  s.push('<path class="lake" d="' + smooth(LAKE, true) + '"/>');
-  s.push('<text class="m-water" x="178" y="592">Lago San Roque</text>');
-
-  var leaders = [], labels = [];
-  TOWNS.forEach(function (t) {
-    var y = P(t[1], 0)[1], rx = roadX(t[1]);
-    s.push('<line class="m-tick" x1="' + (rx - 5).toFixed(1) + '" y1="' + y.toFixed(1) + '" x2="' + (rx + 5).toFixed(1) + '" y2="' + y.toFixed(1) + '"/>');
-    if (t[2] === "r") {
-      leaders.push('<line class="m-leader" x1="' + (rx + 7).toFixed(1) + '" y1="' + y.toFixed(1) + '" x2="' + (COL - 3) + '" y2="' + y.toFixed(1) + '"/>');
-      labels.push('<text class="m-label' + (t[3] ? " minor" : "") + '" x="' + COL + '" y="' + (y + 3.5).toFixed(1) + '">' + t[0] + '</text>');
-      if (t[4]) labels.push('<text class="m-sub" x="' + COL + '" y="' + (y + 13).toFixed(1) + '">' + t[4] + '</text>');
-    } else {
-      labels.push('<text class="m-label" x="' + (rx - 12).toFixed(1) + '" y="' + (y - 8).toFixed(1) + '" text-anchor="end">' + t[0] + '</text>');
-    }
-  });
-  s.push(leaders.join(""));
-
-  s.push('<path class="branch" d="' + smooth(RP14, false) + '"/>');
-  s.push('<text class="m-sub" x="104" y="700" font-style="italic">RP 14</text>');
-  s.push('<path class="road-casing" d="' + smooth(RN38, false) + '"/>');
-  s.push('<path class="road" d="' + smooth(RN38, false) + '"/>');
-
-  [-31.19, -30.948].forEach(function (lat) {
-    var x = roadX(lat), y = P(lat, 0)[1];
-    s.push('<g class="shield"><rect x="' + (x - 13).toFixed(1) + '" y="' + (y - 7).toFixed(1) + '" width="26" height="14" rx="3"/><text x="' + x.toFixed(1) + '" y="' + (y + 3).toFixed(1) + '" text-anchor="middle">RN 38</text></g>');
+  tabs.forEach(function (t, i) {
+    var id = t.getAttribute("aria-controls");
+    t.addEventListener("click", function () {
+      show(id);
+      history.replaceState(null, "", "#" + id);
+      window.scrollTo(0, 0);
+    });
+    t.addEventListener("keydown", function (e) {
+      var step = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+      if (step) show(tabs[(i + step + tabs.length) % tabs.length].getAttribute("aria-controls"), true);
+    });
   });
 
-  s.push(labels.join(""));
-  s.push('<text class="m-label" x="' + P(0, -64.5684)[0].toFixed(1) + '" y="' + (P(-31.4742, 0)[1] + 23).toFixed(1) + '" text-anchor="middle">Tala Huasi</text>');
-
-  s.push('<g class="scale"><line x1="225" y1="748" x2="275" y2="748"/><line x1="225" y1="744" x2="225" y2="752"/><line x1="275" y1="744" x2="275" y2="752"/><text x="250" y="741" text-anchor="middle">5 km</text></g>');
-
-  L.forEach(function (d) {
-    var p = P(d.lat, d.lng);
-    if (d.price) {
-      s.push('<text class="m-price" x="' + (p[0] - 13).toFixed(1) + '" y="' + (p[1] + 3.5).toFixed(1) + '" text-anchor="end">' + Math.round(d.price / 1000) + 'k</text>');
-    }
-    s.push('<a class="pin" data-id="' + d.id + '" href="' + d.url + '" target="_blank" rel="noopener" aria-label="' + d.id + ', ' + d.town + ', ' + (d.price ? "USD " + d.price.toLocaleString("en-US") : "price on listing") + '">' +
-      '<g class="dot"><circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="8"/>' +
-      '<text x="' + p[0].toFixed(1) + '" y="' + (p[1] + 3.6).toFixed(1) + '" text-anchor="middle">' + d.id + '</text></g></a>');
-  });
-
-  document.getElementById("map").innerHTML = s.join("");
-
-  function n(v) { return v.toLocaleString("en-US"); }
-  var list = document.getElementById("list");
-  list.innerHTML = L.map(function (d) {
-    var specs = [n(d.built) + " m² built"];
-    if (d.lot) specs.push(n(d.lot) + " m² lot");
-    specs.push(d.bed + " bed", d.bath + " bath", d.age);
-    if (d.extra) specs.push(d.extra);
-    return '<a class="card" data-id="' + d.id + '" href="' + d.url + '" target="_blank" rel="noopener">' +
-      '<span class="num">' + d.id + '</span>' +
-      '<span class="info"><span class="place">' + d.town + (d.isNew ? '<span class="tag">Added</span>' : '') + '</span>' +
-      '<span class="addr">' + d.addr + '</span>' +
-      '<span class="price' + (d.price ? '' : ' unk') + '">' + (d.price ? "USD " + n(d.price) : "Price on the listing") + '</span>' +
-      '<span class="specs">' + specs.join(" · ") + '</span></span>' +
-      '<span class="go">Open ↗</span></a>';
-  }).join("");
-
-  var priced = L.filter(function (d) { return d.price; }).map(function (d) { return d.price; });
-  var lo = Math.min.apply(null, priced), hi = Math.max.apply(null, priced);
-  document.getElementById("lede").innerHTML = "Eight houses along the valley, numbered north to south so the list reads the same way as the map. Seven are priced, from <strong>USD " + n(lo) + "</strong> to <strong>USD " + n(hi) + "</strong>. Tap a pin or a card to open the listing.";
-
-  var all = document.querySelectorAll("[data-id]");
-  function hl(id) { all.forEach(function (e) { e.classList.toggle("on", e.getAttribute("data-id") === id); }); }
-  all.forEach(function (e) {
-    var id = e.getAttribute("data-id");
-    e.addEventListener("pointerenter", function () { hl(id); });
-    e.addEventListener("pointerleave", function () { hl(null); });
-    e.addEventListener("focus", function () { hl(id); });
-    e.addEventListener("blur", function () { hl(null); });
-  });
+  show(location.hash === "#sierras" ? "sierras" : "safe");
 })();
 </script>
 <script src="/js/visits.js" defer></script>
