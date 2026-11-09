@@ -1,0 +1,180 @@
+<!doctype html>
+<!-- Structure only: every visible text lives in i18n/<language>.json and each
+     element names its key (data-i18n, data-i18n-attr), as on the home page.
+     js/plan.js draws the floor plan and js/walk.js the 3D walk, both from the
+     measurements in js/house.js. -->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title data-i18n="meta.title">Norita Ranch</title>
+<meta name="description" data-i18n-attr="content=meta.description" content="">
+<link rel="stylesheet" href="css/norita.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+
+<header class="top">
+ <div class="wrap top-row">
+  <a class="brand" href="/" data-i18n="brand"></a>
+  <div class="lang" id="lang"><!-- js/i18n.js adds the language buttons --></div>
+ </div>
+</header>
+
+<main class="wrap">
+
+<section class="intro">
+ <p class="kicker" data-i18n="intro.kicker"></p>
+ <h1 data-i18n="intro.title"></h1>
+ <p class="lede" data-i18n="intro.lede"></p>
+</section>
+
+<div class="views" role="tablist" data-i18n-attr="aria-label=views.aria">
+ <button type="button" role="tab" id="tab-plan" class="on" aria-controls="view-plan" aria-selected="true" data-i18n="views.plan"></button>
+ <button type="button" role="tab" id="tab-walk" aria-controls="view-walk" aria-selected="false" data-i18n="views.walk"></button>
+</div>
+
+<section id="view-plan" class="view" role="tabpanel" aria-labelledby="tab-plan">
+ <div class="floors" role="group" data-i18n-attr="aria-label=floors.aria">
+  <button type="button" data-floor="0" class="on" aria-pressed="true" data-i18n="floors.ground"></button>
+  <button type="button" data-floor="1" aria-pressed="false" data-i18n="floors.upper"></button>
+ </div>
+ <div class="plan-grid">
+  <div class="sheet-box">
+   <div class="sheet">
+    <svg id="plan" role="img" data-i18n-attr="aria-label=plan.aria"></svg>
+    <div class="zoom" role="group" data-i18n-attr="aria-label=plan.zoom">
+     <button type="button" id="zoom-in" data-i18n-attr="aria-label=plan.zoomin;title=plan.zoomin"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg></button>
+     <button type="button" id="zoom-out" data-i18n-attr="aria-label=plan.zoomout;title=plan.zoomout"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12"/></svg></button>
+     <button type="button" id="zoom-fit" data-i18n-attr="aria-label=plan.fit;title=plan.fit"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 7V3h4M13 3h4v4M17 13v4h-4M7 17H3v-4"/></svg></button>
+    </div>
+   </div>
+   <p class="zoom-hint" data-i18n="plan.zoomhint"></p>
+  </div>
+  <aside class="rooms" data-i18n-attr="aria-label=rooms.title">
+   <h2 data-i18n="rooms.title"></h2>
+   <p class="hint" data-i18n="rooms.hint"></p>
+   <ol class="room-list" id="room-list"></ol>
+  </aside>
+ </div>
+ <div class="legend">
+  <div class="key">
+   <h3 data-i18n="key.title"></h3>
+   <ul>
+    <li><i class="sw k-bedroom"></i><span data-i18n="key.bedrooms"></span></li>
+    <li><i class="sw k-bath"></i><span data-i18n="key.baths"></span></li>
+    <li><i class="sw k-living"></i><span data-i18n="key.living"></span></li>
+    <li><i class="sw k-service"></i><span data-i18n="key.service"></span></li>
+    <li><i class="sw k-hall"></i><span data-i18n="key.hall"></span></li>
+    <li><i class="sw k-covered"></i><span data-i18n="key.covered"></span></li>
+    <li><i class="sw k-garden"></i><span data-i18n="key.garden"></span></li>
+    <li><i class="sw k-gravel"></i><span data-i18n="key.gravel"></span></li>
+    <li><i class="sw k-marks"></i><span data-i18n="key.marks"></span></li>
+    <li><i class="sw k-roof"></i><span data-i18n="key.roofs"></span></li>
+   </ul>
+  </div>
+  <div class="areas">
+   <h3 data-i18n="areas.title"></h3>
+   <p data-i18n="areas.01"></p>
+   <p data-i18n="areas.02"></p>
+   <p class="soft" data-i18n="areas.03"></p>
+  </div>
+ </div>
+</section>
+
+<section id="view-walk" class="view" role="tabpanel" aria-labelledby="tab-walk" hidden>
+ <div class="stage" id="stage">
+  <canvas id="walk-canvas" data-i18n-attr="aria-label=walk.aria"></canvas>
+  <div class="hud-bar">
+   <div class="seg" role="group" data-i18n-attr="aria-label=walk.modes">
+    <button type="button" id="mode-walk" class="on" aria-pressed="true" data-i18n="walk.mode.walk"></button>
+    <button type="button" id="mode-orbit" aria-pressed="false" data-i18n="walk.mode.orbit"></button>
+   </div>
+   <button type="button" id="toggle-roofs" class="tog on" aria-pressed="true" data-i18n="walk.roofs"></button>
+   <button type="button" id="toggle-labels" class="tog on" aria-pressed="true" data-i18n="walk.labels"></button>
+   <button type="button" id="toggle-full" class="tog" aria-pressed="false" data-i18n="walk.full"></button>
+  </div>
+  <p class="level" id="level" aria-live="polite"></p>
+  <canvas class="minimap" id="minimap" data-i18n-attr="aria-label=walk.minimap"></canvas>
+  <p class="hint" id="hint"></p>
+  <div class="joy" id="joy" hidden aria-hidden="true"><div class="knob"></div></div>
+  <div class="start" id="start" hidden><button type="button" id="start-btn" class="primary"></button></div>
+  <p class="msg" id="walk-msg" hidden></p>
+ </div>
+ <p class="walk-note" data-i18n="walk.note"></p>
+</section>
+
+<details class="facts">
+ <summary data-i18n="facts.title"></summary>
+ <p data-i18n="facts.intro"></p>
+ <h3 data-i18n="facts.cadastre.title"></h3>
+ <ul>
+  <li data-i18n="facts.cadastre.01"></li>
+  <li data-i18n="facts.cadastre.02"></li>
+  <li data-i18n="facts.cadastre.03"></li>
+  <li data-i18n="facts.cadastre.04"></li>
+ </ul>
+ <h3 data-i18n="facts.sale.title"></h3>
+ <ul>
+  <li data-i18n="facts.sale.01"></li>
+  <li data-i18n="facts.sale.02"></li>
+  <li data-i18n="facts.sale.03"></li>
+  <li data-i18n="facts.sale.04"></li>
+ </ul>
+ <h3 data-i18n="facts.rental.title"></h3>
+ <ul>
+  <li data-i18n="facts.rental.01"></li>
+  <li data-i18n="facts.rental.02"></li>
+ </ul>
+ <h3 data-i18n="facts.photos.title"></h3>
+ <ul>
+  <li data-i18n="facts.photos.01"></li>
+  <li data-i18n="facts.photos.02"></li>
+  <li data-i18n="facts.photos.03"></li>
+  <li data-i18n="facts.photos.04"></li>
+  <li data-i18n="facts.photos.05"></li>
+  <li data-i18n="facts.photos.06"></li>
+ </ul>
+ <h3 data-i18n="facts.reviews.title"></h3>
+ <ul>
+  <li data-i18n="facts.reviews.01"></li>
+  <li data-i18n="facts.reviews.02"></li>
+ </ul>
+ <h3 data-i18n="facts.unknown.title"></h3>
+ <ul>
+  <li data-i18n="facts.unknown.01"></li>
+  <li data-i18n="facts.unknown.02"></li>
+  <li data-i18n="facts.unknown.03"></li>
+  <li data-i18n="facts.unknown.04"></li>
+ </ul>
+ <h3 data-i18n="facts.sources.title"></h3>
+ <ul class="sources">
+  <li><a href="https://www.linkspropiedades.com.ar/prop?00=MzM2&amp;01=1" data-i18n="facts.sources.01"></a></li>
+  <li><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-venta-de-norita-ranch-56968980.html" data-i18n="facts.sources.02"></a></li>
+  <li><a href="https://www.alquilerargentina.com/alojamientos/ph44-Casa-NORITA-RANCH-La-Cumbre.html" data-i18n="facts.sources.03"></a></li>
+  <li><a href="https://www.tripadvisor.com.ar/Hotel_Review-g669021-d1211851-Reviews-Norita_Ranch-La_Cumbre_Province_of_Cordoba_Central_Argentina.html" data-i18n="facts.sources.04"></a></li>
+  <li><a href="https://hosteria-norita-ranch.hotelvip.com.ar/" data-i18n="facts.sources.05"></a></li>
+  <li><a href="http://www.guiahoteleraon-line.com/argentina/cordoba/la-cumbre/alojamientos/hoteleria/hosterias/11839/hosteria-norita-ranch/" data-i18n="facts.sources.06"></a></li>
+  <li><a href="https://mapascordoba.gob.ar/" data-i18n="facts.sources.07"></a></li>
+  <li><a href="https://www.google.com/maps/@-30.98077,-64.4926,40m/data=!3m1!1e3" data-i18n="facts.sources.08"></a></li>
+ </ul>
+</details>
+
+</main>
+
+<footer class="wrap foot"><p data-i18n="foot.note"></p></footer>
+
+<script src="/js/i18n.js" defer></script>
+<script src="js/house.js" defer></script>
+<script src="js/plan.js" defer></script>
+<script src="js/page.js" defer></script>
+<script src="/js/visits.js" defer></script>
+</body>
+</html>

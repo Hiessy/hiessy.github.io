@@ -11,6 +11,11 @@ archivos entre sí. Informa tres cosas distintas:
 Sale con 1 si hay algo de las dos primeras, así sirve en un hook o antes de
 commitear. Las huérfanas no hacen fallar: molestan, pero no rompen nada.
 
+Pages with texts of their own: a folder with its own `i18n/` (norita-ranch/,
+for one) answers for the files inside it, because js/i18n.js fetches the
+dictionary relative to the page. Each dictionary is checked against the files
+it serves, and its lines carry the folder's name.
+
     python .claude/skills/i18n/revisar.py
 """
 import io
@@ -47,8 +52,20 @@ def sin_comentarios(txt, nombre):
     return re.sub(r"(?m)^\s*//.*$", "", txt)
 
 
+def raiz_de_textos(carpeta):
+    """The folder whose i18n/ serves a file: the nearest one up the tree that
+    has an i18n/ folder, or the site's root."""
+    d = carpeta
+    while os.path.normpath(d) != os.path.normpath(RAIZ):
+        if os.path.isdir(os.path.join(d, "i18n")):
+            return d
+        d = os.path.dirname(d)
+    return RAIZ
+
+
 def claves_pedidas():
-    """Todas las claves que el sitio usa, con el archivo donde aparecen."""
+    """Las claves que usa cada diccionario, con el archivo donde aparecen:
+    {carpeta: {clave: {archivos}}}."""
     pedidas = {}
     # Se comparan **tramos** de la ruta y no subcadenas: el repo se llama
     # `hiessy.github.io`, que contiene ".git", así que un `".git" in base`
@@ -69,29 +86,34 @@ def claves_pedidas():
                 for par in grupo.split(";"):
                     if "=" in par:
                         encontradas.append(par.split("=", 1)[1].strip())
+            raiz = raiz_de_textos(base)
             for k in encontradas:
-                pedidas.setdefault(k, set()).add(rel)
+                pedidas.setdefault(raiz, {}).setdefault(k, set()).add(rel)
     return pedidas
 
 
-def main():
-    if not os.path.isdir(I18N):
-        print("no existe la carpeta i18n/", file=sys.stderr)
-        return 1
+def revisar(raiz, pedidas):
+    """Checks one dictionary against the keys its files use. Returns the
+    number of problems, or None if the dictionary can't be read."""
+    carpeta = os.path.join(raiz, "i18n")
+    rel = os.path.relpath(carpeta, RAIZ).replace(os.sep, "/")
+    pre = "" if os.path.normpath(raiz) == os.path.normpath(RAIZ) else "[%s] " % os.path.relpath(raiz, RAIZ).replace(os.sep, "/")
+    if not os.path.isdir(carpeta):
+        print("no existe la carpeta %s/" % rel, file=sys.stderr)
+        return None
     idiomas = {}
-    for nombre in sorted(os.listdir(I18N)):
+    for nombre in sorted(os.listdir(carpeta)):
         if nombre.endswith(".json"):
             cod = nombre[:-5]
             try:
-                idiomas[cod] = json.load(io.open(os.path.join(I18N, nombre), encoding="utf-8"))
+                idiomas[cod] = json.load(io.open(os.path.join(carpeta, nombre), encoding="utf-8"))
             except ValueError as e:
-                print("ROTO      i18n/%s: %s" % (nombre, e))
-                return 1
+                print("ROTO      %s/%s: %s" % (rel, nombre, e))
+                return None
     if not idiomas:
-        print("no hay ningún archivo en i18n/", file=sys.stderr)
-        return 1
+        print("no hay ningún archivo en %s/" % rel, file=sys.stderr)
+        return None
 
-    pedidas = claves_pedidas()
     todas = set()
     for d in idiomas.values():
         todas |= set(d)
@@ -101,26 +123,42 @@ def main():
     for k in sorted(pedidas):
         if k not in todas:
             problemas += 1
-            print("FALTA      %-22s  la usa %s" % (k, ", ".join(sorted(pedidas[k]))))
+            print("%sFALTA      %-22s  la usa %s" % (pre, k, ", ".join(sorted(pedidas[k]))))
 
     for k in sorted(todas):
         sin = [c for c in idiomas if k not in idiomas[c]]
         if sin and k in todas:
             problemas += 1
-            print("INCOMPLETA %-22s  no está en: %s" % (k, ", ".join(sorted(sin))))
+            print("%sINCOMPLETA %-22s  no está en: %s" % (pre, k, ", ".join(sorted(sin))))
 
     huerfanas = sorted(todas - set(pedidas))
     for k in huerfanas:
-        print("HUÉRFANA   %-22s  no la usa nadie" % k)
+        print("%sHUÉRFANA   %-22s  no la usa nadie" % (pre, k))
 
     print("")
-    print("idiomas: %s" % ", ".join("%s (%d)" % (c, len(d)) for c, d in sorted(idiomas.items())))
-    print("claves usadas por el sitio: %d" % len(pedidas))
+    print("%s/: %s" % (rel, ", ".join("%s (%d)" % (c, len(d)) for c, d in sorted(idiomas.items()))))
+    print("claves usadas: %d" % len(pedidas))
     if problemas:
         print("%d problema(s)" % problemas)
+    else:
+        print("sin faltantes" + (" · %d huérfana(s)" % len(huerfanas) if huerfanas else ""))
+    print("")
+    return problemas
+
+
+def main():
+    if not os.path.isdir(I18N):
+        print("no existe la carpeta i18n/", file=sys.stderr)
         return 1
-    print("sin faltantes" + (" · %d huérfana(s)" % len(huerfanas) if huerfanas else ""))
-    return 0
+    pedidas = claves_pedidas()
+    raices = sorted(set(pedidas) | {RAIZ}, key=lambda r: (r != RAIZ, r))
+    total = 0
+    for raiz in raices:
+        p = revisar(raiz, pedidas.get(raiz, {}))
+        if p is None:
+            return 1
+        total += p
+    return 1 if total else 0
 
 
 if __name__ == "__main__":

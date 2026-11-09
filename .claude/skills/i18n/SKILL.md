@@ -70,6 +70,15 @@ dibujo, y sin esa guarda se ve el nombre crudo de la clave por un instante.
 
 No hay que tocar el HTML.
 
+## Pages with their own texts
+
+A page in a folder can keep its texts in its own `<folder>/i18n/<language>.json`
+instead of the site's: `js/i18n.js` fetches `i18n/` relative to the page, so it
+finds them on its own, and `revisar.py` checks each such folder against the
+files inside it. `norita-ranch/` works this way. It still needs one file per
+language in `IDIOMAS`; its `l33t.json` comes from its `en.json` with
+`python norita-ranch/make_l33t.py`.
+
 ## Nombres de clave
 
 `seccion.cosa`, en minúsculas y en castellano, que es el idioma de todo el
