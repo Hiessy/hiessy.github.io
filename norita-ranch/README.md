@@ -9,33 +9,41 @@
   lights it up in both places; a click keeps it lit and zooms the plan to it.
 - **Walk through in 3D**: a three.js model you walk around in first person, with
   stairs up to the apartment and to the roof terrace, and an overview mode.
-  `#3d` in the address opens it directly.
+  Doors start closed and open with a click (or E); the furniture follows the
+  listing photos. A click on the little map, or the cube button beside a room
+  in the plan's list, takes you there. `#3d` in the address opens it directly.
 
 Below both, "What the listings and records say" keeps the cadastre data, the
-listings, what the photos show and the sources.
+listings and what the photos show.
+
+The page is in Spanish and English only: `<html data-idiomas="es en">` tells
+`/js/i18n.js` to leave out the site's other languages.
 
 ## Files
 
 - `index.html` — structure only; every visible text is an i18n key.
 - `js/house.js` — **the one place with measurements**: lot outline, rooms, spaces,
-  doors, glass walls, railings and stair ramps, in meters. x grows east, y north,
+  the street front (doors, windows, gate), inside doors, furniture, glass walls,
+  railings and stair ramps, in meters. x grows east, y north,
   (0, 0) is the lot's south-east corner on the building line.
 - `js/plan.js` — draws the plan (SVG) and the room list from `house.js`; hover,
   click and zoom.
 - `js/page.js` — switches between the two views and loads the 3D code the first
   time it is opened, so looking at the plan never downloads three.js.
 - `js/walk.js` — the 3D model and the walking physics. Walls come from the room
-  outlines: every edge is a wall unless a door opens it.
+  outlines: every edge is a wall unless a door opens it. Floors, railings and
+  stone are textures drawn on canvases, so nothing is downloaded but three.js.
 - `css/norita.css`
-- `i18n/es.json`, `i18n/en.json` — every text. `i18n/l33t.json` is generated:
-  `python norita-ranch/make_l33t.py` after changing `en.json`.
+- `i18n/es.json`, `i18n/en.json` — every text.
 
 ## Changing the house
 
 Fix a room in `js/house.js` and both views follow. Rooms are numbered for
 corrections ("14 is L-shaped"), so keep a number once it is given and use the
-next free one for anything new. Doors only exist in the 3D model; most are
-guesses.
+next free one for anything new. Inside doors and furniture only exist in the
+3D model; most doors are guesses. A piece of furniture's `at` is its middle,
+placed so its back touches the wall's face, half a wall (7.5 cm) in from the
+room's edge.
 
 After touching texts, check that no key is missing in any language:
 

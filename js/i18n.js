@@ -35,6 +35,11 @@
     { cod: "en", et: "EN", nom: "English" },
     { cod: "l33t", et: "1337", nom: "L33t5p34k", bcp: "en-x-l33t" }
   ];
+  /* A page can offer fewer of them: <html data-idiomas="es en">. */
+  var PROPIOS = (document.documentElement.getAttribute("data-idiomas") || "").split(/\s+/).filter(Boolean);
+  if (PROPIOS.length) {
+    IDIOMAS = IDIOMAS.filter(function (i) { return PROPIOS.indexOf(i.cod) !== -1; });
+  }
   function ficha(c) {
     for (var i = 0; i < IDIOMAS.length; i++) if (IDIOMAS[i].cod === c) return IDIOMAS[i];
     return null;
@@ -95,14 +100,19 @@
     }
   }
 
-  function aplicar(cod) {
+  /* The choice is saved only when someone clicks a language: a page with
+     fewer languages falling back to its default must not overwrite the one
+     picked on another page. */
+  function aplicar(cod, guardar) {
     if (!soportado(cod)) cod = POR_DEFECTO;
     return traer(cod).then(function (j) {
       textos = j;
       actual = cod;
       window.I18N.listo = true;
       document.documentElement.lang = (ficha(cod) || {}).bcp || cod;
-      try { localStorage.setItem(LK, cod); } catch (e) { /* modo privado */ }
+      if (guardar) {
+        try { localStorage.setItem(LK, cod); } catch (e) { /* modo privado */ }
+      }
       pintar();
       botones();
       // El juego redibuja sus carteles cuando cambia el idioma. Va por evento
@@ -124,7 +134,7 @@
         b.title = i.nom;
         b.setAttribute("lang", i.bcp || i.cod);
         b.dataset.cod = i.cod;
-        b.addEventListener("click", function () { aplicar(i.cod); });
+        b.addEventListener("click", function () { aplicar(i.cod, true); });
         cont.appendChild(b);
       });
     }

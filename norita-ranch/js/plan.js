@@ -222,9 +222,9 @@
     if (floor === 0) {
       var f = H.facade[0];
       seg(f.from, f.to, "#2B2B28", 5);
-      seg(f.gate[0], f.gate[1], "#6B6A65", 2, "4 3");
+      seg(f.gate.from, f.gate.to, "#6B6A65", 2, "4 3");
       f.windows.forEach(function (w) { seg(w[0], w[1], "#6E9BC4", 7); });
-      f.doors.forEach(function (d) { seg(d[0], d[1], "#8A4B2A", 7); });
+      f.doors.forEach(function (d) { seg(d.from, d.to, "#8A4B2A", 7); });
       H.glass.forEach(function (g) {
         if (g.level !== 0) return;
         var a = g.x !== undefined ? [g.x, g.from] : [g.from, g.y];
@@ -235,7 +235,7 @@
       var u = H.facade[1];
       seg(u.from, u.to, "#2B2B28", 4);
       u.windows.forEach(function (w) { seg(w[0], w[1], "#6E9BC4", 6); });
-      u.doors.forEach(function (d) { seg(d[0], d[1], "#8A4B2A", 6); });
+      u.doors.forEach(function (d) { seg(d.from, d.to, "#8A4B2A", 6); });
     }
   }
 
@@ -258,7 +258,8 @@
       at((pv[0] + pv[2]) / 2, (pv[1] + pv[3]) / 2, plain(t("space.pavers")), { size: 11, fill: "#3A3935", anchor: "middle" });
       at(-2.33, 17.65, plain(t("facade.gate")), small);
       at(-1.94, 14.45, plain(t("facade.aptdoor")), small);
-      at(-1.1, 9.8, plain(t("facade.windows")), small);
+      at(-1.3, 11.0, plain(t("facade.windows")), small);
+      at(-0.67, 7.4, plain(t("facade.entrance")), { size: 12, fill: "#3A3935", bold: true });
       at(0.13, 2.92, plain(t("facade.window")), small);
       at(0.67, 0.49, plain(t("facade.door")), small);
     } else {
@@ -338,6 +339,18 @@
       info.innerHTML = t(item.info);
       b.appendChild(mark); b.appendChild(name); b.appendChild(tag); b.appendChild(info);
       li.appendChild(b);
+      // A second button takes you into the room in the 3D view (js/page.js
+      // handles it). Roofs have nowhere to stand.
+      if (item.kind !== "roof") {
+        var go = document.createElement("button");
+        go.type = "button";
+        go.className = "ri-walk";
+        go.setAttribute("data-walk", H.idOf(item));
+        go.title = t("rooms.walk");
+        go.setAttribute("aria-label", t("rooms.walk") + ": " + (item.n ? item.n + ", " : "") + name.textContent);
+        go.innerHTML = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.6 16.4 6.3v7.4L10 17.4 3.6 13.7V6.3z M3.6 6.3 10 10l6.4-3.7M10 10v7.4"/></svg>';
+        li.appendChild(go);
+      }
       list.appendChild(li);
     });
     light(pinned);

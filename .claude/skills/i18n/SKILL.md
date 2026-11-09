@@ -75,9 +75,13 @@ No hay que tocar el HTML.
 A page in a folder can keep its texts in its own `<folder>/i18n/<language>.json`
 instead of the site's: `js/i18n.js` fetches `i18n/` relative to the page, so it
 finds them on its own, and `revisar.py` checks each such folder against the
-files inside it. `norita-ranch/` works this way. It still needs one file per
-language in `IDIOMAS`; its `l33t.json` comes from its `en.json` with
-`python norita-ranch/make_l33t.py`.
+files inside it. `norita-ranch/` works this way.
+
+Such a page can offer fewer languages than the site: `<html data-idiomas="es en">`
+leaves the others out of the buttons, and the folder needs a file only for
+those. A language saved on another page that this one doesn't offer is ignored
+here, not overwritten: `js/i18n.js` saves a choice only when a button is
+clicked. `norita-ranch/` offers Spanish and English.
 
 ## Nombres de clave
 

@@ -3,7 +3,7 @@
      element names its key (data-i18n, data-i18n-attr), as on the home page.
      js/plan.js draws the floor plan and js/walk.js the 3D walk, both from the
      measurements in js/house.js. -->
-<html lang="es">
+<html lang="es" data-idiomas="es en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -102,7 +102,9 @@
    <button type="button" id="toggle-full" class="tog" aria-pressed="false" data-i18n="walk.full"></button>
   </div>
   <p class="level" id="level" aria-live="polite"></p>
-  <canvas class="minimap" id="minimap" data-i18n-attr="aria-label=walk.minimap"></canvas>
+  <div class="crosshair" id="crosshair" hidden></div>
+  <p class="prompt" id="prompt" hidden></p>
+  <canvas class="minimap" id="minimap" data-i18n-attr="aria-label=walk.minimap;title=walk.minimap.title"></canvas>
   <p class="hint" id="hint"></p>
   <div class="joy" id="joy" hidden aria-hidden="true"><div class="knob"></div></div>
   <div class="start" id="start" hidden><button type="button" id="start-btn" class="primary"></button></div>
@@ -153,17 +155,6 @@
   <li data-i18n="facts.unknown.02"></li>
   <li data-i18n="facts.unknown.03"></li>
   <li data-i18n="facts.unknown.04"></li>
- </ul>
- <h3 data-i18n="facts.sources.title"></h3>
- <ul class="sources">
-  <li><a href="https://www.linkspropiedades.com.ar/prop?00=MzM2&amp;01=1" data-i18n="facts.sources.01"></a></li>
-  <li><a href="https://www.zonaprop.com.ar/propiedades/clasificado/veclcain-venta-de-norita-ranch-56968980.html" data-i18n="facts.sources.02"></a></li>
-  <li><a href="https://www.alquilerargentina.com/alojamientos/ph44-Casa-NORITA-RANCH-La-Cumbre.html" data-i18n="facts.sources.03"></a></li>
-  <li><a href="https://www.tripadvisor.com.ar/Hotel_Review-g669021-d1211851-Reviews-Norita_Ranch-La_Cumbre_Province_of_Cordoba_Central_Argentina.html" data-i18n="facts.sources.04"></a></li>
-  <li><a href="https://hosteria-norita-ranch.hotelvip.com.ar/" data-i18n="facts.sources.05"></a></li>
-  <li><a href="http://www.guiahoteleraon-line.com/argentina/cordoba/la-cumbre/alojamientos/hoteleria/hosterias/11839/hosteria-norita-ranch/" data-i18n="facts.sources.06"></a></li>
-  <li><a href="https://mapascordoba.gob.ar/" data-i18n="facts.sources.07"></a></li>
-  <li><a href="https://www.google.com/maps/@-30.98077,-64.4926,40m/data=!3m1!1e3" data-i18n="facts.sources.08"></a></li>
  </ul>
 </details>
 

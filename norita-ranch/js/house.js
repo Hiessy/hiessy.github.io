@@ -36,7 +36,7 @@
      lab: where the plan writes the name: [x, y, anchor], anchor s|m|e
      line: number, name and note on one line */
   var rooms = [
-    { n: 1, level: 0, kind: "living", name: t("name.sitting"), note: t("note.01"), info: t("info.01"), src: "photos", rect: [-5.0, 4.8, 0, 13.6], street: true, lab: [-4.7, 6.7, "s"] },
+    { n: 1, level: 0, kind: "living", name: t("name.sitting"), note: t("note.01"), info: t("info.01"), src: "confirmed", rect: [-5.0, 4.8, 0, 13.6], street: true, lab: [-4.7, 9.4, "s"] },
     { n: 2, level: 0, kind: "hall", name: t("name.unknown"), note: t("note.02"), info: t("info.02"), src: "guess", rect: [-8.0, 10.3, -5.0, 13.6] },
     { n: 3, level: 0, kind: "bedroom", name: t("name.guest"), note: t("note.03"), info: t("info.03"), src: "confirmed", rect: [-13.1, 10.3, -8.0, 15.4], lab: [-8.3, 11.4, "e"] },
     { n: 4, level: 0, kind: "bath", name: t("name.bath"), info: t("info.04"), src: "guess", rect: [-13.1, 13.2, -11.3, 15.4], inner: true },
@@ -107,49 +107,177 @@
     bench: [-25.4, 11.2]
   };
 
-  /* Openings on the building line, as y ranges. */
+  /* Openings on the building line, as y ranges. The double glass door is the
+     sitting room's main entrance (the owners: one of the three big "windows"
+     is that door). */
   var facade = {
-    0: { from: 0, to: 15.4, gate: [15.4, 19.35],
-         doors: [[0.1, 0.85], [14.0, 14.9]],
-         windows: [[2.0, 3.8], [6.3, 8.5], [8.7, 10.9], [11.1, 13.3]] },
+    0: { from: -0.1, to: 15.4,
+         gate: { from: 15.4, to: 19.35, kind: "gate" },
+         doors: [{ from: 0.1, to: 0.85, kind: "wood", name: t("facade.door") },
+                 { from: 6.3, to: 8.5, kind: "double-glass", name: t("facade.entrance") },
+                 { from: 14.0, to: 14.9, kind: "red", name: t("facade.aptdoor") }],
+         windows: [[2.0, 3.8], [8.7, 10.9], [11.1, 13.3]],
+         stone: [[13.35, 14.0], [14.9, 15.4]] },
     1: { from: 13.6, to: 19.4,
-         doors: [[16.6, 18.6]],
+         doors: [{ from: 16.6, to: 18.6, kind: "slide-glass" }],
          windows: [[13.8, 14.6], [15.2, 16.2]] }
   };
 
   /* Door openings inside the house: a gap in the wall on x = c or y = c,
-     between `from` and `to`. Most are guesses; the plan doesn't draw them. */
+     between `from` and `to`. kind: wood, white (baths), glass, slide-glass
+     or open (a doorway with no door); swing: the side it opens into, n s e w.
+     Most are guesses; the plan doesn't draw them. */
   var doors = [
-    { level: 0, y: 1.1, from: -4.2, to: -3.4 },
-    { level: 0, y: 1.1, from: -10.4, to: -9.6 },
-    { level: 0, x: -11.2, from: 0.0, to: 0.9 },
-    { level: 0, x: -13.1, from: 0.2, to: 1.0 },
-    { level: 0, y: 4.8, from: -12.6, to: -11.7 },
-    { level: 0, x: -16.6, from: 2.0, to: 2.8 },
-    { level: 0, x: -16.6, from: 0.0, to: 0.8 },
-    { level: 0, y: 3.4, from: -15.0, to: -14.0 },
-    { level: 0, x: -13.1, from: 6.5, to: 7.5 },
-    { level: 0, x: -19.4, from: 6.2, to: 7.2 },
-    { level: 0, y: 10.3, from: -15.6, to: -14.6 },
-    { level: 0, x: -5.0, from: 5.6, to: 9.6 },
-    { level: 0, y: 10.3, from: -7.0, to: -6.2 },
-    { level: 0, y: 10.3, from: -10.5, to: -9.7 },
-    { level: 0, y: 13.2, from: -12.5, to: -11.8 },
-    { level: 0, y: 15.4, from: -9.5, to: -8.7 },
-    { level: 0, y: 3.0, from: -6.0, to: -5.3 },
-    { level: 0, y: 3.0, from: -7.9, to: -7.2 },
-    { level: 0, x: -20.9, from: 2.0, to: 2.7 },
-    { level: 0, y: 1.0, from: -26.9, to: -26.2 },
-    { level: 0, y: 3.4, from: -22.7, to: -21.9 },
-    { level: 0, y: 3.4, from: -27.0, to: -26.2 },
-    { level: 1, x: -7.4, from: 13.6, to: 14.8 },
-    { level: 1, x: -7.4, from: 15.6, to: 16.4 },
-    { level: 1, x: -7.4, from: 17.6, to: 18.4 },
-    { level: 1, x: -10.4, from: 14.2, to: 15.8 },
-    { level: 1, y: 17.2, from: -15.4, to: -14.4 },
-    { level: 1, y: 17.2, from: -12.2, to: -11.4 },
-    { level: 1, x: -16.2, from: 14.4, to: 16.4 },
-    { level: 2, x: -24.0, from: 1.2, to: 2.0 }
+    { level: 0, y: 1.1, from: -4.2, to: -3.4, kind: "wood", swing: "n" },
+    { level: 0, y: 1.1, from: -10.4, to: -9.6, kind: "wood", swing: "n" },
+    { level: 0, x: -11.2, from: 0.0, to: 0.9, kind: "wood", swing: "w" },
+    { level: 0, x: -13.1, from: 0.2, to: 1.0, kind: "wood", swing: "w" },
+    { level: 0, y: 4.8, from: -12.6, to: -11.7, kind: "wood", swing: "n" },
+    { level: 0, x: -16.6, from: 2.0, to: 2.8, kind: "white", swing: "w" },
+    { level: 0, x: -16.6, from: 0.0, to: 0.8, kind: "white", swing: "w" },
+    { level: 0, y: 3.4, from: -15.0, to: -14.0, kind: "wood", swing: "n" },
+    { level: 0, x: -13.1, from: 6.5, to: 7.5, kind: "glass", swing: "w" },
+    { level: 0, x: -19.4, from: 6.2, to: 7.2, kind: "glass", swing: "w" },
+    { level: 0, y: 10.3, from: -15.6, to: -14.6, kind: "glass", swing: "n" },
+    { level: 0, x: -5.0, from: 5.6, to: 9.6, kind: "open" },
+    { level: 0, y: 10.3, from: -7.0, to: -6.2, kind: "wood", swing: "n" },
+    { level: 0, y: 10.3, from: -10.5, to: -9.7, kind: "wood", swing: "n" },
+    { level: 0, y: 13.2, from: -12.2, to: -11.5, kind: "white", swing: "n" },
+    { level: 0, y: 15.4, from: -9.5, to: -8.7, kind: "wood", swing: "s" },
+    { level: 0, y: 3.0, from: -6.0, to: -5.3, kind: "white", swing: "s" },
+    { level: 0, y: 3.0, from: -7.9, to: -7.2, kind: "white", swing: "s" },
+    { level: 0, x: -20.9, from: 2.0, to: 2.7, kind: "white", swing: "e" },
+    { level: 0, y: 1.0, from: -26.9, to: -26.2, kind: "white", swing: "s" },
+    { level: 0, y: 3.4, from: -22.7, to: -21.9, kind: "wood", swing: "s" },
+    { level: 0, y: 3.4, from: -27.0, to: -26.2, kind: "wood", swing: "s" },
+    { level: 1, x: -7.4, from: 13.6, to: 14.8, kind: "open" },
+    { level: 1, x: -7.4, from: 15.6, to: 16.4, kind: "wood", swing: "e" },
+    { level: 1, x: -7.4, from: 17.6, to: 18.4, kind: "white", swing: "w" },
+    { level: 1, x: -10.4, from: 14.2, to: 15.8, kind: "open" },
+    { level: 1, y: 17.2, from: -15.4, to: -14.4, kind: "open" },
+    { level: 1, y: 17.2, from: -12.2, to: -11.4, kind: "white", swing: "n" },
+    { level: 1, x: -16.2, from: 14.4, to: 16.4, kind: "slide-glass" },
+    { level: 2, x: -24.0, from: 1.2, to: 2.0, kind: "wood", swing: "w" }
+  ];
+
+  /* Furniture, from the listing photos. at: [x, y] is the middle of the
+     piece, set so its back touches the wall's face (walls are 15 cm thick and
+     room edges run down their middle). rot turns it counterclockwise in
+     degrees, 0 facing north (a bed's foot, a chair's seat, a sofa's front).
+     Colors are hex numbers. Baths are furnished from their outline and the
+     side their door is on. */
+  var GREEN = 0x1f5c46, TEAL = 0x1d6b5a, WOOD = 0x6b4423, DARK = 0x3f2716;
+  var furniture = [
+    // 1 sitting room: rattan set, pink armchairs, mirror and console
+    { level: 0, type: "sofa", at: [-4.48, 12.0], rot: 270, w: 1.9, frame: 0x8a5a2b, color: 0xd98c5f },
+    { level: 0, type: "armchair", at: [-2.75, 11.0], rot: 90, frame: 0x8a5a2b, color: 0xd98c5f },
+    { level: 0, type: "armchair", at: [-2.95, 12.85], rot: 110, frame: 0x8a5a2b, color: 0xd98c5f },
+    { level: 0, type: "coffee", at: [-3.7, 12.0], rot: 90, w: 1.0, d: 0.55 },
+    { level: 0, type: "console", at: [-3.4, 13.33], rot: 180 },
+    { level: 0, type: "lamp", at: [-4.65, 13.2] },
+    { level: 0, type: "closet", at: [-4.66, 10.3], rot: 270, w: 1.2 },
+    { level: 0, type: "armchair", at: [-4.3, 5.3], rot: 0, frame: DARK, color: 0xd6336c },
+    { level: 0, type: "armchair", at: [-3.1, 5.3], rot: 0, frame: DARK, color: 0xd6336c },
+    { level: 0, type: "side", at: [-3.7, 5.15] },
+    // 3 guest room: three singles, wardrobe
+    { level: 0, type: "bed", at: [-12.6, 11.42], rot: 0, w: 0.9, color: GREEN },
+    { level: 0, type: "bed", at: [-11.35, 11.42], rot: 0, w: 0.9, color: GREEN },
+    { level: 0, type: "bed", at: [-8.6, 11.42], rot: 0, w: 0.9, color: GREEN },
+    { level: 0, type: "nightstand", at: [-9.35, 10.58], rot: 0 },
+    { level: 0, type: "wardrobe", at: [-8.36, 14.0], rot: 90, w: 1.2 },
+    // 5 dining room: six tables with mustard cloths, sideboard, chandeliers
+    { level: 0, type: "dining", at: [-11.0, 6.2], cloth: 0xc9a227 },
+    { level: 0, type: "dining", at: [-11.0, 8.7], cloth: 0xc9a227 },
+    { level: 0, type: "dining", at: [-8.6, 6.2], cloth: 0xc9a227 },
+    { level: 0, type: "dining", at: [-8.6, 8.7], cloth: 0xc9a227 },
+    { level: 0, type: "dining", at: [-6.3, 6.2], cloth: 0xc9a227 },
+    { level: 0, type: "dining", at: [-6.3, 8.7], cloth: 0xc9a227 },
+    { level: 0, type: "sideboard", at: [-12.3, 9.98], rot: 180, w: 1.4 },
+    { level: 0, type: "chandelier", at: [-9.8, 7.45], h: 2.7 },
+    { level: 0, type: "chandelier", at: [-7.4, 7.45], h: 2.7 },
+    // 7 guest room on the street: three singles, terracotta floor
+    { level: 0, type: "bed", at: [-4.3, 3.68], rot: 180, w: 0.9, color: TEAL, frame: WOOD },
+    { level: 0, type: "bed", at: [-3.05, 3.68], rot: 180, w: 0.9, color: TEAL, frame: WOOD },
+    { level: 0, type: "bed", at: [-1.8, 3.68], rot: 180, w: 0.9, color: TEAL, frame: WOOD },
+    { level: 0, type: "nightstand", at: [-3.67, 4.52], rot: 180, w: 0.3 },
+    { level: 0, type: "nightstand", at: [-2.42, 4.52], rot: 180, w: 0.3 },
+    { level: 0, type: "wardrobe", at: [-6.24, 3.9], rot: 270, w: 1.2 },
+    // 9 guest room: double bed, wardrobe
+    { level: 0, type: "bed", at: [-9.5, 3.68], rot: 180, w: 1.45, color: GREEN, frame: DARK },
+    { level: 0, type: "nightstand", at: [-10.5, 4.52], rot: 180 },
+    { level: 0, type: "nightstand", at: [-8.5, 4.52], rot: 180 },
+    { level: 0, type: "wardrobe", at: [-10.84, 2.2], rot: 270, w: 1.2 },
+    // 12 kitchen, 13 laundry, 14 pantry
+    { level: 0, type: "counter", at: [-14.85, -0.37], rot: 0, w: 3.3, cabinet: 0x6b3f22, sink: 0.6, stove: -0.9 },
+    { level: 0, type: "fridge", at: [-13.53, 2.98], rot: 180 },
+    { level: 0, type: "heater", at: [-13.5, 2.1], rot: 90 },
+    { level: 0, type: "dining", at: [-15.2, 1.6], w: 0.8, chairs: 2 },
+    { level: 0, type: "washer", at: [-18.02, 3.02], rot: 180 },
+    { level: 0, type: "tub", at: [-17.3, 3.07], rot: 180 },
+    { level: 0, type: "shelf", at: [-18.0, -0.47], rot: 0, w: 2.6, d: 0.4 },
+    { level: 0, type: "shelf", at: [-19.14, 2.3], rot: 270, w: 1.8, d: 0.35 },
+    // 15 glazed room: reception desk, sofas, café tables
+    { level: 0, type: "desk", at: [-13.52, 8.8], rot: 90, w: 1.6 },
+    { level: 0, type: "sofa", at: [-17.4, 3.91], rot: 0, w: 2.0, frame: 0xe8e2d4, color: 0xf3eee2 },
+    { level: 0, type: "sofa", at: [-18.9, 8.6], rot: 270, w: 1.9, frame: 0x6f6f6a, color: 0x8d8d88 },
+    { level: 0, type: "coffee", at: [-17.4, 4.95], rot: 0, w: 1.0, d: 0.5 },
+    { level: 0, type: "cafe", at: [-16.4, 9.3] },
+    { level: 0, type: "cafe", at: [-14.8, 9.3] },
+    { level: 0, type: "cafe", at: [-15.6, 5.0] },
+    { level: 0, type: "pendant", at: [-17.0, 7.0], h: 3.1 },
+    { level: 0, type: "pendant", at: [-15.0, 7.0], h: 3.1 },
+    // 16 and 18 guest rooms on the galería
+    { level: 0, type: "bed", at: [-22.85, 0.27], rot: 0, w: 0.9, color: GREEN, frame: 0xb8b8b8 },
+    { level: 0, type: "bed", at: [-21.3, 0.27], rot: 0, w: 0.9, color: GREEN, frame: 0xb8b8b8 },
+    { level: 0, type: "nightstand", at: [-22.07, -0.58], rot: 0, w: 0.4 },
+    { level: 0, type: "wardrobe", at: [-19.76, 0.35], rot: 90, w: 1.2 },
+    { level: 0, type: "bed", at: [-24.52, 0.0], rot: 90, w: 0.9, color: GREEN, frame: 0xb8b8b8 },
+    { level: 0, type: "bed", at: [-24.52, 1.25], rot: 90, w: 0.9, color: GREEN, frame: 0xb8b8b8 },
+    { level: 0, type: "bed", at: [-24.52, 2.5], rot: 90, w: 0.9, color: GREEN, frame: 0xb8b8b8 },
+    { level: 0, type: "nightstand", at: [-23.67, 0.62], rot: 90, w: 0.3 },
+    { level: 0, type: "nightstand", at: [-23.67, 1.87], rot: 90, w: 0.3 },
+    // baths
+    { level: 0, type: "bath", room: 4, door: "s" },
+    { level: 0, type: "bath", room: 8, door: "n" },
+    { level: 0, type: "bath", room: 10, door: "n" },
+    { level: 0, type: "bath", room: 17, door: "w" },
+    { level: 0, type: "bath", room: 19, door: "n" },
+    { level: 1, type: "bath", room: 22, door: "s" },
+    { level: 1, type: "bath", room: 24, door: "e" },
+    // outside: galería, grill, carport, garden
+    { level: 0, type: "dining", at: [-24.9, 4.35], w: 1.2, d: 0.7, chairs: 4, wood: true },
+    { level: 0, type: "dining", at: [-21.0, 4.35], w: 1.2, d: 0.7, chairs: 4, wood: true },
+    { level: 0, type: "dining", at: [-30.6, 1.6], w: 1.6, d: 0.8, chairs: 4, wood: true, metal: true },
+    { level: 0, type: "counter", at: [-31.9, -0.8], rot: 0, w: 1.0, cabinet: 0xd9d4c8, sink: 0 },
+    { level: 0, type: "car", at: [-35.6, 2.1], rot: 270, color: 0xf2f2f0 },
+    { level: 0, type: "car", at: [-35.6, 4.75], rot: 270, color: 0x2b3a55 },
+    { level: 0, type: "bench", at: [-25.4, 11.2], rot: 180 },
+    { level: 0, type: "dining", at: [-23.9, 11.5], w: 0.8, round: true, chairs: 3, metal: true },
+    { level: 0, type: "plant", at: [-19.7, 5.6] },
+    { level: 0, type: "plant", at: [-27.15, 5.6] },
+    { level: 0, type: "plant", at: [-13.4, 10.6] },
+    { level: 0, type: "bush", at: [-20.1, 8.4] },
+    { level: 0, type: "bush", at: [-20.2, 9.5] },
+    { level: 0, type: "bush", at: [-36.5, 17.4] },
+    { level: 0, type: "bush", at: [-29.5, 18.0] },
+    { level: 0, type: "bush", at: [-21.5, 18.5] },
+    { level: 0, type: "bush", at: [-27.0, 6.0] },
+    // 20 to 25: the apartment
+    { level: 1, type: "daybed", at: [-13.4, 14.13], rot: 0, color: 0x4b7a3a },
+    { level: 1, type: "daybed", at: [-13.3, 16.67], rot: 180, color: 0x4b7a3a },
+    { level: 1, type: "dining", at: [-15.0, 15.35], w: 0.8, d: 1.2, chairs: 4, seat: 0xeadfc8, wood: true },
+    { level: 1, type: "tv", at: [-11.1, 13.9], rot: 0 },
+    { level: 1, type: "lamp", at: [-15.9, 16.9] },
+    { level: 1, type: "counter", at: [-14.2, 19.02], rot: 180, w: 2.4, cabinet: 0xf2f0ea, sink: -0.4, stove: 0.7 },
+    { level: 1, type: "fridge", at: [-15.78, 18.98], rot: 180 },
+    { level: 1, type: "heater", at: [-15.81, 17.9], rot: 270 },
+    { level: 1, type: "wardrobe", at: [-8.9, 16.64], rot: 180, w: 1.2 },
+    { level: 1, type: "bed", at: [-5.4, 18.28], rot: 180, w: 1.5, color: "zebra", frame: 0x1c1c1c },
+    { level: 1, type: "nightstand", at: [-6.5, 19.12], rot: 180, color: 0x1c1c1c },
+    { level: 1, type: "nightstand", at: [-4.3, 19.12], rot: 180, color: 0x1c1c1c },
+    // 26 and the roof terrace
+    { level: 2, type: "shelf", at: [-27.14, 1.7], rot: 270, w: 2.0, d: 0.35 },
+    { level: 2, type: "dining", at: [-19.0, 1.4], w: 0.7, round: true, chairs: 2, metal: true }
   ];
 
   /* Walls that are glass: the glazed room's north and west sides. */
@@ -173,9 +301,10 @@
   ];
 
   /* Stairs as ramps: the height goes from h1 at `from` to h2 at `to` along
-     `axis`, inside `across` on the other axis. */
+     `axis`, inside `across` on the other axis. The apartment's starts a
+     meter in from its red street door, leaving room for the door to open. */
   var ramps = [
-    { id: "aptstair", axis: "x", from: -2.6, to: -7.4, h1: 0, h2: FLOOR[1], across: [13.6, 14.8] },
+    { id: "aptstair", axis: "x", from: -3.5, to: -7.4, h1: 0, h2: FLOOR[1], across: [13.6, 14.8] },
     { id: "steelstair", axis: "y", from: 2.8, to: 0.0, h1: 0, h2: FLOOR[2], across: [-28.4, -27.4] }
   ];
 
@@ -198,6 +327,7 @@
     garden: garden,
     facade: facade,
     doors: doors,
+    furniture: furniture,
     glass: glass,
     railings: railings,
     ramps: ramps,

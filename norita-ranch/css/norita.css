@@ -49,7 +49,7 @@ a:hover { color: #163A69; }
 .lede { margin: 0; color: var(--soft); }
 
 /* The two views */
-.views { display: flex; gap: 4px; margin: 20px 0 16px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+.views { display: flex; gap: 4px; margin: 20px 0 16px; border-bottom: 1px solid var(--line); overflow-x: auto; scroll-margin-top: 60px; }
 .views button {
   font: inherit; font-weight: 600; min-height: 46px; padding: 10px 16px; white-space: nowrap;
   border: 0; border-bottom: 3px solid transparent; background: none; color: var(--soft); cursor: pointer;
@@ -93,8 +93,10 @@ a:hover { color: #163A69; }
 
 /* The room list */
 .rooms { padding: 14px 12px 8px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; }
-@media (min-width: 1100px) {
-  .rooms { position: sticky; top: 66px; max-height: calc(100vh - 82px); overflow: auto; }
+/* The plan stays on screen while the list scrolls past it. */
+@media (max-width: 1099px) {
+  .sheet-box { position: sticky; top: 54px; z-index: 5; background: var(--bg); padding-bottom: 6px; }
+  .zoom-hint { display: none; }
 }
 .rooms h2 { margin: 0 0 4px; padding: 0 4px; font-size: 18px; }
 .rooms .hint { margin: 0 0 8px; padding: 0 4px; font-size: 13px; color: var(--soft); }
@@ -121,6 +123,16 @@ a:hover { color: #163A69; }
 .tag-photos { background: #E1ECF7; color: #1F4E8C; }
 .tag-guess { background: #F1ECE2; color: #6B5B3E; }
 .ri-info { grid-column: 2 / -1; font-size: 13.5px; line-height: 1.45; color: var(--soft); }
+/* Beside each room, a button that walks you into it in 3D. */
+.room-list li { display: flex; align-items: flex-start; gap: 4px; }
+.room-list li > .ri { flex: 1 1 auto; min-width: 0; }
+.ri-walk {
+  flex: 0 0 auto; display: grid; place-items: center; width: 40px; height: 40px; margin-top: 2px; padding: 0;
+  border: 1px solid var(--line); border-radius: 8px; background: var(--card); cursor: pointer;
+}
+.ri-walk svg { width: 20px; height: 20px; fill: none; stroke: var(--dark); stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
+.ri-walk:hover { background: var(--accent-soft); border-color: #F0B47C; }
+.ri-walk:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* Key and areas */
 .legend { display: grid; gap: 14px 32px; margin: 20px 0 6px; }
@@ -169,7 +181,19 @@ a:hover { color: #163A69; }
   font-size: 13px; font-weight: 600; background: rgba(255, 255, 255, 0.88); border-radius: 7px;
 }
 .level:empty { display: none; }
-.minimap { position: absolute; right: 10px; bottom: 10px; width: 236px; height: 126px; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 8px; }
+/* The crosshair grows over a door you can open, and says so underneath. */
+.crosshair {
+  position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; margin: -4px 0 0 -4px;
+  border-radius: 50%; background: rgba(255, 255, 255, 0.92); box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.45);
+  pointer-events: none; transition: transform 0.12s, background-color 0.12s;
+}
+.crosshair.on { transform: scale(1.7); background: var(--hl); }
+.prompt {
+  position: absolute; left: 50%; top: calc(50% + 20px); transform: translateX(-50%);
+  margin: 0; padding: 6px 12px; font-size: 14px; font-weight: 600; white-space: nowrap;
+  color: #FFFFFF; background: rgba(31, 31, 28, 0.8); border-radius: 8px; pointer-events: none;
+}
+.minimap { position: absolute; right: 10px; bottom: 10px; width: 236px; height: 126px; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 8px; cursor: pointer; }
 .stage .hint {
   position: absolute; left: 10px; right: 258px; bottom: 10px; margin: 0; padding: 6px 10px;
   font-size: 13px; background: rgba(255, 255, 255, 0.88); border-radius: 8px;
@@ -204,6 +228,5 @@ a:hover { color: #163A69; }
 .facts h3 { margin-top: 18px; }
 .facts ul { margin: 0; padding-left: 20px; }
 .facts li { margin: 3px 0; font-size: 15px; }
-.facts .sources li { font-size: 14px; }
 
 .foot { padding: 18px 16px 40px; font-size: 13.5px; color: var(--soft); }

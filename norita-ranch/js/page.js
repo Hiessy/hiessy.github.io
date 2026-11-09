@@ -4,7 +4,7 @@
    straight away. */
 (function () {
   "use strict";
-  var walk = null, loading = null, view = "plan";
+  var walk = null, loading = null, view = "plan", goal = null;
 
   function t(k) { return window.I18N && window.I18N.listo ? window.I18N.t(k) : ""; }
   function $(id) { return document.getElementById(id); }
@@ -18,14 +18,22 @@
     else if (key === "walk.loadfail") m.textContent = t("walk.loadfail");
   }
 
+  /* A room picked in the list ("walk here in 3D"): go there once the model
+     is up. */
+  function arrive() {
+    if (goal && walk && walk.goTo) walk.goTo(goal);
+    goal = null;
+  }
+
   function openWalk() {
-    if (walk) { walk.resume(); return; }
+    if (walk) { walk.resume(); arrive(); return; }
     if (loading) return;
     message("walk.loading");
     loading = import("./walk.js").then(function (m) {
       walk = m;
       message(null);
       m.start();
+      arrive();
       if (view !== "walk") m.pause();
     }).catch(function (e) {
       console.error(e);
@@ -60,6 +68,14 @@
       });
     });
     show(location.hash === "#3d" ? "walk" : "plan", true);
+  });
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("[data-walk]");
+    if (!b) return;
+    goal = b.getAttribute("data-walk");
+    var tabs = document.querySelector(".views");
+    if (tabs) tabs.scrollIntoView({ block: "start" });
+    show("walk");
   });
   window.addEventListener("hashchange", function () {
     show(location.hash === "#3d" ? "walk" : "plan", true);
