@@ -1,0 +1,259 @@
+<!doctype html>
+<!-- Structure only: every visible text lives in i18n/<language>.json and each
+     element names its key (data-i18n, data-i18n-attr), as on the home page.
+     js/plan.js draws the floor plan and js/walk.js the 3D walk, both from the
+     measurements in js/house.js. -->
+<html lang="es" data-idiomas="es en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title data-i18n="meta.title">Ranch</title>
+<meta name="description" data-i18n-attr="content=meta.description" content="">
+<link rel="stylesheet" href="css/ranch.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+
+<header class="top">
+ <div class="wrap top-row">
+  <a class="brand" href="/" data-i18n="brand"></a>
+  <div class="lang" id="lang"><!-- js/i18n.js adds the language buttons --></div>
+ </div>
+</header>
+
+<main class="wrap">
+
+<section class="intro">
+ <p class="kicker" data-i18n="intro.kicker"></p>
+ <h1 data-i18n="intro.title"></h1>
+ <p class="lede" data-i18n="intro.lede"></p>
+</section>
+
+<div class="views" role="tablist" data-i18n-attr="aria-label=views.aria">
+ <button type="button" role="tab" id="tab-plan" class="on" aria-controls="view-plan" aria-selected="true" data-i18n="views.plan"></button>
+ <button type="button" role="tab" id="tab-walk" aria-controls="view-walk" aria-selected="false" data-i18n="views.walk"></button>
+ <button type="button" role="tab" id="tab-photos" aria-controls="view-photos" aria-selected="false" data-i18n="views.photos"></button>
+ <button type="button" role="tab" id="tab-history" aria-controls="view-history" aria-selected="false" data-i18n="views.history"></button>
+</div>
+
+<section id="view-plan" class="view" role="tabpanel" aria-labelledby="tab-plan">
+ <div class="floors" role="group" data-i18n-attr="aria-label=floors.aria">
+  <button type="button" data-floor="0" class="on" aria-pressed="true" data-i18n="floors.ground"></button>
+  <button type="button" data-floor="1" aria-pressed="false" data-i18n="floors.upper"></button>
+ </div>
+ <div class="plan-grid">
+  <div class="sheet-box">
+   <div class="sheet">
+    <svg id="plan" role="img" data-i18n-attr="aria-label=plan.aria"></svg>
+    <div class="room-peek" id="room-peek" hidden></div>
+    <div class="zoom" role="group" data-i18n-attr="aria-label=plan.zoom">
+     <button type="button" id="zoom-in" data-i18n-attr="aria-label=plan.zoomin;title=plan.zoomin"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg></button>
+     <button type="button" id="zoom-out" data-i18n-attr="aria-label=plan.zoomout;title=plan.zoomout"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12"/></svg></button>
+     <button type="button" id="zoom-fit" data-i18n-attr="aria-label=plan.fit;title=plan.fit"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 7V3h4M13 3h4v4M17 13v4h-4M7 17H3v-4"/></svg></button>
+    </div>
+   </div>
+   <p class="zoom-hint" data-i18n="plan.zoomhint"></p>
+  </div>
+  <aside class="rooms" data-i18n-attr="aria-label=rooms.title">
+   <h2 data-i18n="rooms.title"></h2>
+   <p class="hint" data-i18n="rooms.hint"></p>
+   <ol class="room-list" id="room-list"></ol>
+  </aside>
+ </div>
+ <div class="legend">
+  <div class="key">
+   <h3 data-i18n="key.title"></h3>
+   <ul>
+    <li><i class="sw k-bedroom"></i><span data-i18n="key.bedrooms"></span></li>
+    <li><i class="sw k-bath"></i><span data-i18n="key.baths"></span></li>
+    <li><i class="sw k-living"></i><span data-i18n="key.living"></span></li>
+    <li><i class="sw k-service"></i><span data-i18n="key.service"></span></li>
+    <li><i class="sw k-hall"></i><span data-i18n="key.hall"></span></li>
+    <li><i class="sw k-covered"></i><span data-i18n="key.covered"></span></li>
+    <li><i class="sw k-garden"></i><span data-i18n="key.garden"></span></li>
+    <li><i class="sw k-gravel"></i><span data-i18n="key.gravel"></span></li>
+    <li><i class="sw k-marks"></i><span data-i18n="key.marks"></span></li>
+    <li><i class="sw k-roof"></i><span data-i18n="key.roofs"></span></li>
+   </ul>
+  </div>
+  <div class="areas">
+   <h3 data-i18n="areas.title"></h3>
+   <p data-i18n="areas.01"></p>
+   <p data-i18n="areas.02"></p>
+   <p class="soft" data-i18n="areas.03"></p>
+  </div>
+ </div>
+</section>
+
+<section id="view-walk" class="view" role="tabpanel" aria-labelledby="tab-walk" hidden>
+ <div class="stage" id="stage">
+  <canvas id="walk-canvas" data-i18n-attr="aria-label=walk.aria"></canvas>
+  <div class="hud-bar">
+   <div class="seg" role="group" data-i18n-attr="aria-label=walk.modes">
+    <button type="button" id="mode-walk" class="on" aria-pressed="true" data-i18n="walk.mode.walk"></button>
+    <button type="button" id="mode-orbit" aria-pressed="false" data-i18n="walk.mode.orbit"></button>
+   </div>
+   <button type="button" id="toggle-roofs" class="tog on" aria-pressed="true" data-i18n="walk.roofs"></button>
+   <button type="button" id="toggle-labels" class="tog on" aria-pressed="true" data-i18n="walk.labels"></button>
+   <button type="button" id="toggle-full" class="tog" aria-pressed="false" data-i18n="walk.full"></button>
+  </div>
+  <p class="level" id="level" aria-live="polite"></p>
+  <div class="crosshair" id="crosshair" hidden></div>
+  <p class="prompt" id="prompt" hidden></p>
+  <canvas class="minimap" id="minimap" data-i18n-attr="aria-label=walk.minimap;title=walk.minimap.title"></canvas>
+  <p class="hint" id="hint"></p>
+  <div class="joy" id="joy" hidden aria-hidden="true"><div class="knob"></div></div>
+  <button type="button" class="jump" id="jump" hidden></button>
+  <div class="start" id="start" hidden><button type="button" id="start-btn" class="primary"></button></div>
+  <p class="msg" id="walk-msg" hidden></p>
+ </div>
+ <p class="walk-note" data-i18n="walk.note"></p>
+</section>
+
+<section id="view-photos" class="view" role="tabpanel" aria-labelledby="tab-photos" hidden>
+ <p class="photos-intro" data-i18n="photos.intro"></p>
+ <div id="photo-groups"><!-- js/gallery.js draws the groups --></div>
+ <p class="photos-credit" data-i18n="photos.credit"></p>
+</section>
+
+<section id="view-history" class="view story" role="tabpanel" aria-labelledby="tab-history" hidden>
+ <p class="story-lede" data-i18n="history.lede"></p>
+ <div class="story-grid">
+  <div>
+   <h2 data-i18n="history.time.title"></h2>
+   <ol class="timeline">
+    <li><span class="when" data-i18n="history.time.01.when"></span><p data-i18n="history.time.01"></p></li>
+    <li><span class="when" data-i18n="history.time.02.when"></span><p data-i18n="history.time.02"></p></li>
+    <li><span class="when" data-i18n="history.time.03.when"></span><p data-i18n="history.time.03"></p></li>
+    <li><span class="when" data-i18n="history.time.04.when"></span><p data-i18n="history.time.04"></p></li>
+    <li><span class="when" data-i18n="history.time.05.when"></span><p data-i18n="history.time.05"></p></li>
+    <li class="house"><span class="when" data-i18n="history.time.06.when"></span><p data-i18n="history.time.06"></p></li>
+    <li class="house"><span class="when" data-i18n="history.time.07.when"></span><p data-i18n="history.time.07"></p></li>
+    <li class="house"><span class="when" data-i18n="history.time.08.when"></span><p data-i18n="history.time.08"></p></li>
+    <li class="house"><span class="when" data-i18n="history.time.09.when"></span><p data-i18n="history.time.09"></p></li>
+    <li class="house"><span class="when" data-i18n="history.time.10.when"></span><p data-i18n="history.time.10"></p></li>
+    <li class="house"><span class="when" data-i18n="history.time.11.when"></span><p data-i18n="history.time.11"></p></li>
+    <li class="house"><span class="when" data-i18n="history.time.12.when"></span><p data-i18n="history.time.12"></p></li>
+   </ol>
+  </div>
+  <div>
+   <h2 data-i18n="history.owners.title"></h2>
+   <p data-i18n="history.owners.01"></p>
+   <p data-i18n="history.owners.02"></p>
+   <p data-i18n="history.owners.03"></p>
+
+   <h2 data-i18n="history.reviews.title"></h2>
+   <div class="scores">
+    <div class="score"><b data-i18n="history.score.ta.n"></b><span data-i18n="history.score.ta"></span></div>
+    <div class="score"><b data-i18n="history.score.google.n"></b><span data-i18n="history.score.google"></span></div>
+    <div class="score"><b data-i18n="history.score.vip.n"></b><span data-i18n="history.score.vip"></span></div>
+   </div>
+   <p class="meters-title" data-i18n="history.meters.title"></p>
+   <ul class="meters">
+    <li style="--v:5.0"><span data-i18n="history.meter.value"></span><i></i><b data-i18n="history.meter.value.n"></b></li>
+    <li style="--v:4.8"><span data-i18n="history.meter.rooms"></span><i></i><b data-i18n="history.meter.rooms.n"></b></li>
+    <li style="--v:4.8"><span data-i18n="history.meter.location"></span><i></i><b data-i18n="history.meter.location.n"></b></li>
+    <li style="--v:4.7"><span data-i18n="history.meter.sleep"></span><i></i><b data-i18n="history.meter.sleep.n"></b></li>
+    <li style="--v:4.3"><span data-i18n="history.meter.clean"></span><i></i><b data-i18n="history.meter.clean.n"></b></li>
+    <li style="--v:4.2"><span data-i18n="history.meter.service"></span><i></i><b data-i18n="history.meter.service.n"></b></li>
+   </ul>
+   <h3 data-i18n="history.liked.title"></h3>
+   <ul class="said">
+    <li data-i18n="history.liked.01"></li>
+    <li data-i18n="history.liked.02"></li>
+    <li data-i18n="history.liked.03"></li>
+    <li data-i18n="history.liked.04"></li>
+    <li data-i18n="history.liked.05"></li>
+   </ul>
+   <h3 data-i18n="history.disliked.title"></h3>
+   <ul class="said">
+    <li data-i18n="history.disliked.01"></li>
+    <li data-i18n="history.disliked.02"></li>
+    <li data-i18n="history.disliked.03"></li>
+   </ul>
+
+   <h2 data-i18n="history.area.title"></h2>
+   <ul class="said">
+    <li data-i18n="history.area.01"></li>
+    <li data-i18n="history.area.02"></li>
+    <li data-i18n="history.area.03"></li>
+    <li data-i18n="history.area.04"></li>
+    <li data-i18n="history.area.05"></li>
+   </ul>
+  </div>
+ </div>
+</section>
+
+<dialog class="viewer" id="photo-viewer" data-i18n-attr="aria-label=photos.viewer">
+ <div class="pv-stage">
+  <img id="pv-img" alt="">
+  <button type="button" class="pv-nav pv-prev" id="pv-prev" data-i18n-attr="aria-label=photos.prev;title=photos.prev"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6"/></svg></button>
+  <button type="button" class="pv-nav pv-next" id="pv-next" data-i18n-attr="aria-label=photos.next;title=photos.next"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7.5 4 6 6-6 6"/></svg></button>
+  <button type="button" class="pv-close" id="pv-close" data-i18n-attr="aria-label=photos.close;title=photos.close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5 5 15"/></svg></button>
+ </div>
+ <div class="pv-bar">
+  <p class="pv-cap"><span class="pv-count" id="pv-count"></span> <span id="pv-cap"></span></p>
+  <div class="pv-acts" id="pv-acts"></div>
+ </div>
+</dialog>
+
+<details class="facts">
+ <summary data-i18n="facts.title"></summary>
+ <p data-i18n="facts.intro"></p>
+ <h3 data-i18n="facts.cadastre.title"></h3>
+ <ul>
+  <li data-i18n="facts.cadastre.01"></li>
+  <li data-i18n="facts.cadastre.02"></li>
+  <li data-i18n="facts.cadastre.03"></li>
+  <li data-i18n="facts.cadastre.04"></li>
+  <li data-i18n="facts.cadastre.05"></li>
+ </ul>
+ <h3 data-i18n="facts.sale.title"></h3>
+ <ul>
+  <li data-i18n="facts.sale.01"></li>
+  <li data-i18n="facts.sale.02"></li>
+  <li data-i18n="facts.sale.03"></li>
+  <li data-i18n="facts.sale.04"></li>
+ </ul>
+ <h3 data-i18n="facts.rental.title"></h3>
+ <ul>
+  <li data-i18n="facts.rental.01"></li>
+  <li data-i18n="facts.rental.02"></li>
+ </ul>
+ <h3 data-i18n="facts.photos.title"></h3>
+ <ul>
+  <li data-i18n="facts.photos.01"></li>
+  <li data-i18n="facts.photos.02"></li>
+  <li data-i18n="facts.photos.03"></li>
+  <li data-i18n="facts.photos.04"></li>
+  <li data-i18n="facts.photos.05"></li>
+  <li data-i18n="facts.photos.06"></li>
+ </ul>
+ <h3 data-i18n="facts.unknown.title"></h3>
+ <ul>
+  <li data-i18n="facts.unknown.01"></li>
+  <li data-i18n="facts.unknown.02"></li>
+  <li data-i18n="facts.unknown.03"></li>
+  <li data-i18n="facts.unknown.04"></li>
+ </ul>
+</details>
+
+</main>
+
+<footer class="wrap foot"><p data-i18n="foot.note"></p></footer>
+
+<script src="/js/i18n.js" defer></script>
+<script src="js/house.js" defer></script>
+<script src="js/gallery.js" defer></script>
+<script src="js/plan.js" defer></script>
+<script src="js/page.js" defer></script>
+<script src="/js/visits.js" defer></script>
+</body>
+</html>

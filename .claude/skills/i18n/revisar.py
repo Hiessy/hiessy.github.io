@@ -11,7 +11,7 @@ archivos entre sí. Informa tres cosas distintas:
 Sale con 1 si hay algo de las dos primeras, así sirve en un hook o antes de
 commitear. Las huérfanas no hacen fallar: molestan, pero no rompen nada.
 
-Pages with texts of their own: a folder with its own `i18n/` (norita-ranch/,
+Pages with texts of their own: a folder with its own `i18n/` (ranch/,
 for one) answers for the files inside it, because js/i18n.js fetches the
 dictionary relative to the page. Each dictionary is checked against the files
 it serves, and its lines carry the folder's name.
