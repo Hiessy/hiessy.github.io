@@ -264,7 +264,7 @@ const TOP_SHADOW = { shadowSide: THREE.FrontSide };
 const M = {};
 function palette() {
   Object.assign(M, {
-    wall: mat(0xf3f0e9), trim: mat(0xfafaf7), glass: mat(0xbcd6ea, GLASS), wood: mat(0x6b4423, { roughness: 0.75 }),
+    wall: mat(0xf3f0e9), trim: mat(0xfafaf7), casing: mat(0x5a3a22, { roughness: 0.6 }), glass: mat(0xbcd6ea, GLASS), wood: mat(0x6b4423, { roughness: 0.75 }),
     dark: mat(0x3f2716, { roughness: 0.7 }), light: mat(0xa77b4f, { roughness: 0.75 }), white: mat(0xf4f3ef, { roughness: 0.4 }),
     steel: mat(0xb8bcbf, { roughness: 0.35, metalness: 0.6 }), black: mat(0x1d1d1d, { roughness: 0.5 }),
     chrome: mat(0xc4c7ca, { roughness: 0.25, metalness: 0.8 }), granite: mat(0x6f6a64, { roughness: 0.4 }),
@@ -405,6 +405,9 @@ function computeWalls() {
     for (let i = i0; i < i1; i++) { if (add) s.add(i); else s.delete(i); }
   }
   function edge(level, p, q) {
+    // the building line has its own wall, with the street doors and windows
+    // (see the front, in buildScene)
+    if (Math.abs(p[0] - H.streetX(p[1])) < 1e-6 && Math.abs(q[0] - H.streetX(q[1])) < 1e-6) return;
     if (Math.abs(p[0] - q[0]) < 1e-6) cells(opaque, keyOf(level, "V", p[0]), p[1], q[1], true);
     else if (Math.abs(p[1] - q[1]) < 1e-6) cells(opaque, keyOf(level, "H", p[1]), p[0], q[0], true);
   }
@@ -447,7 +450,7 @@ const SIDE = { n: [0, 1], s: [0, -1], e: [1, 0], w: [-1, 0] };
 
 function leafMaterial(kind) {
   if (kind === "red") return new THREE.MeshStandardMaterial({ color: 0x8b3a22, roughness: 0.6 });
-  if (kind === "white") return new THREE.MeshStandardMaterial({ color: 0xf1efe9, roughness: 0.5 });
+  if (kind === "white") return new THREE.MeshStandardMaterial({ color: 0xc3cfd6, roughness: 0.5 });
   return new THREE.MeshStandardMaterial({ color: 0x6e4426, roughness: 0.65 });
 }
 /* One leaf, hinged at its local origin, running along +x for `w`. */
@@ -462,7 +465,8 @@ function makeLeaf(kind, w, h) {
     return g;
   }
   if (kind === "glass" || kind === "double-glass" || kind === "slide-glass") {
-    const frame = new THREE.MeshStandardMaterial({ color: kind === "glass" ? 0xf3f2ee : 0xe9e7e0, roughness: 0.4 });
+    // dark frames, so a glass door reads against white walls
+    const frame = new THREE.MeshStandardMaterial({ color: 0x5a3a22, roughness: 0.55 });
     const pane = new THREE.Mesh(new THREE.BoxGeometry(w - 0.1, h - 0.1, 0.015), M.glass);
     pane.position.set(w / 2, h / 2, 0);
     pane.renderOrder = 2;
@@ -486,8 +490,8 @@ function makeLeaf(kind, w, h) {
   p.castShadow = true;
   g.add(p);
   // two raised panels, so a wooden door reads as a door
-  if (kind !== "white") {
-    const panel = new THREE.MeshStandardMaterial({ color: kind === "red" ? 0x7a3220 : 0x5e3a20, roughness: 0.65 });
+  {
+    const panel = new THREE.MeshStandardMaterial({ color: kind === "red" ? 0x7a3220 : kind === "white" ? 0xaebcc4 : 0x5e3a20, roughness: 0.65 });
     [[h * 0.72, h * 0.36], [h * 0.27, h * 0.36]].forEach((pp) => {
       const b = new THREE.Mesh(new THREE.BoxGeometry(w * 0.66, pp[1], 0.06), panel);
       b.position.set(w / 2, pp[0], 0);
@@ -582,15 +586,19 @@ function buildDoors() {
     // the wall above every opening
     const lintel = bar(a[0], a[1], b[0], b[1], base + (d.kind === "open" ? 2.15 : DOOR_H + 0.03), base + WALL_H[d.level], WALL_T, M.wall);
     if (lintel) S.static.add(lintel);
+    // a dark wooden casing round every opening, doorways included, so each
+    // door stands out from the white walls
+    const top = d.kind === "open" ? 2.15 : DOOR_H + 0.03;
+    const ang = Math.atan2(b[1] - a[1], b[0] - a[0]);
+    [a, b].forEach((p) => {
+      const jamb = new THREE.Mesh(new THREE.BoxGeometry(0.09, top, WALL_T + 0.05), M.casing);
+      jamb.position.set(p[0], base + top / 2, -p[1]);
+      jamb.rotation.y = ang;
+      S.static.add(jamb);
+    });
+    const head = bar(a[0], a[1], b[0], b[1], base + top, base + top + 0.09, WALL_T + 0.05, M.casing);
+    if (head) S.static.add(head);
     if (d.kind === "open") return;
-    if (d.kind !== "slide-glass") {
-      [a, b].forEach((p) => {
-        const jamb = new THREE.Mesh(new THREE.BoxGeometry(0.06, DOOR_H + 0.05, WALL_T + 0.03), M.trim);
-        jamb.position.set(p[0], base + (DOOR_H + 0.05) / 2, -p[1]);
-        jamb.rotation.y = Math.atan2(b[1] - a[1], b[0] - a[0]);
-        S.static.add(jamb);
-      });
-    }
     addDoor(a, b, base, d.kind, SIDE[d.swing] || [0, 1]);
   });
   // Doors and the gate on the building line open inward, to the west. Those
