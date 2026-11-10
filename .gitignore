@@ -5,3 +5,6 @@ target/
 
 # configuración local del MCP de MercadoLibre: no va al sitio publicado
 .mcp.json
+
+# raw material for the ranch page (videos, plans, private papers): never published
+ranch/resources/

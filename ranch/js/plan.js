@@ -8,7 +8,7 @@
   var NS = "http://www.w3.org/2000/svg";
 
   /* Both floors share one transform: 30 px per meter. */
-  var K = 30, OX = 1287.5, OY = 794;
+  var K = 30, OX = 1287.5, OY = 838;
   function X(x) { return OX + K * x; }
   function Y(y) { return OY - K * y; }
   /* The whole drawing, and the part of it on screen: zooming and panning only
@@ -101,9 +101,9 @@
 
   /* The sidewalk and street run along the building line. */
   function street(parent) {
-    var e = [0.9840, 0.1779];
+    var e = H.OUT;
     function band(o1, o2) {
-      var ys = [-3.2, 23.6], c = [];
+      var ys = [-2.4, 25.4], c = [];
       [[ys[0], o1], [ys[0], o2], [ys[1], o2], [ys[1], o1]].forEach(function (q) {
         c.push([H.streetX(q[0]) + q[1] * e[0], q[0] + q[1] * e[1]]);
       });
@@ -244,39 +244,42 @@
     var G = H.garden;
     function at(x, y, s, o) { return text(parent, X(x), Y(y), s, o); }
     var small = { size: 12, fill: "#3A3935" };
-    at(5.6, 9.57, plain(t("street.name")), { size: 13, fill: "#3A3935", anchor: "middle", rotate: -100.25 });
+    var L = H.extras.labels;
+    at(6.2, 9.9, plain(t("street.name")), { size: 13, fill: "#3A3935", anchor: "middle", rotate: -90 });
     if (floor === 0) {
-      at(-38.87, 16.88, plain(t("space.garden")), { size: 14, fill: "#2F4A22", bold: true });
-      at(-24.25, 17.07, plain(t("space.tracks")), small);
-      at(-32.4, 8.26, plain(t("space.gravel")), small);
+      at(L.garden[0], L.garden[1], plain(t("space.garden")), { size: 14, fill: "#2F4A22", bold: true });
+      at(L.tracks[0], L.tracks[1], plain(t("space.tracks")), small);
+      at(L.gravel[0], L.gravel[1], plain(t("space.gravel")), small);
       el("circle", { cx: X(G.statue[0]), cy: Y(G.statue[1]), r: 5, fill: "#2B2B28" }, parent);
       at(G.statue[0] + 0.4, G.statue[1], plain(t("space.statue")), small);
       el("circle", { cx: X(G.bench[0]), cy: Y(G.bench[1]), r: 5, fill: "#2B2B28" }, parent);
-      at(G.bench[0] + 0.4, G.bench[1], plain(t("space.bench")), small);
+      at(G.bench[0] - 0.4, G.bench[1], plain(t("space.bench")), { size: 12, fill: "#3A3935", anchor: "end" });
       at(G.tree.c[0], G.tree.c[1], plain(t("space.tree")), { size: 13, bold: true, fill: "#2F4A22", anchor: "middle" });
       var pv = G.pavers;
       at((pv[0] + pv[2]) / 2, (pv[1] + pv[3]) / 2, plain(t("space.pavers")), { size: 11, fill: "#3A3935", anchor: "middle" });
-      at(-2.33, 17.65, plain(t("facade.gate")), small);
-      at(-1.94, 14.45, plain(t("facade.aptdoor")), small);
-      at(-1.3, 11.0, plain(t("facade.windows")), small);
-      at(-0.67, 7.4, plain(t("facade.entrance")), { size: 12, fill: "#3A3935", bold: true });
-      at(0.13, 2.92, plain(t("facade.window")), small);
-      at(0.67, 0.49, plain(t("facade.door")), small);
+      at(0.35, 17.9, plain(t("facade.gate")), small);
+      at(0.35, 13.25, plain(t("facade.aptdoor")), small);
+      at(0.35, 10.7, plain(t("facade.windows")), small);
+      at(0.35, 7.1, plain(t("facade.entrance")), { size: 12, fill: "#3A3935", bold: true });
+      at(0.35, 2.4, plain(t("facade.window")), small);
     } else {
-      at(-38.25, 16.17, plain(t("space.garden.below")), { size: 13, fill: "#4A5E3C" });
+      at(L.garden[0], L.garden[1], plain(t("space.garden.below")), { size: 13, fill: "#4A5E3C" });
     }
-    at(-21.63, 19.95, plain(t("dim.north")), { size: 12, fill: "#4A4944", anchor: "middle" });
-    at(-21.63, -1.97, plain(t("dim.south")), { size: 12, fill: "#4A4944", anchor: "middle" });
-    at(-40.79, 8.37, plain(t("dim.west")), { size: 12, fill: "#4A4944", anchor: "middle", rotate: -90 });
+    at(-25.0, 23.3, plain(t("dim.north")), { size: 12, fill: "#4A4944", anchor: "middle", rotate: 5.8 });
+    at(-22.0, 1.15, plain(t("dim.south")), { size: 12, fill: "#4A4944", anchor: "middle", rotate: 4.6 });
+    at(-37.9, 13.2, plain(t("dim.west")), { size: 12, fill: "#4A4944", anchor: "middle", rotate: -90 });
 
-    // north arrow
-    var nx = X(10.5);
-    el("line", { x1: nx, y1: Y(21.0), x2: nx, y2: Y(22.5) + 6, stroke: "#2B2B28", "stroke-width": 2 }, parent);
-    el("path", { d: "M" + (nx - 6) + " " + (Y(22.5) + 8) + " L" + nx + " " + (Y(22.5) - 4) + " L" + (nx + 6) + " " + (Y(22.5) + 8) + " Z", fill: "#2B2B28" }, parent);
-    text(parent, nx, Y(23.05), plain(t("plan.north")), { size: 16, bold: true, anchor: "middle" });
+    // north arrow, turned like the street: true north is H.NORTH degrees
+    // clockwise from the plan's up
+    var ax = X(5.4), ay = Y(21.2), rad = H.NORTH * Math.PI / 180, len = 34;
+    var tip = [ax + Math.sin(rad) * len, ay - Math.cos(rad) * len];
+    var arrow = el("g", { transform: "rotate(" + H.NORTH + " " + ax + " " + ay + ")" }, parent);
+    el("line", { x1: ax, y1: ay + 10, x2: ax, y2: ay - len + 8, stroke: "#2B2B28", "stroke-width": 2 }, arrow);
+    el("path", { d: "M" + (ax - 6) + " " + (ay - len + 10) + " L" + ax + " " + (ay - len - 2) + " L" + (ax + 6) + " " + (ay - len + 10) + " Z", fill: "#2B2B28" }, arrow);
+    text(parent, tip[0], tip[1] - 8, plain(t("plan.north")), { size: 16, bold: true, anchor: "middle" });
 
     // scale bar
-    var sx = X(-40.25), sy = Y(-2.45);
+    var sx = X(-37.0), sy = Y(-1.7);
     el("rect", { x: sx, y: sy, width: 5 * K, height: 8, fill: "#2B2B28" }, parent);
     el("rect", { x: sx + 5 * K, y: sy, width: 5 * K, height: 8, fill: "#FFFFFF", stroke: "#2B2B28" }, parent);
     text(parent, sx, sy + 20, "0", { size: 11, fill: "#4A4944", anchor: "middle" });
@@ -310,6 +313,7 @@
   }
 
   function tagText(src) {
+    if (src === "plan") return t("tag.plan");
     if (src === "confirmed") return t("tag.confirmed");
     if (src === "photos") return t("tag.photos");
     return t("tag.guess");

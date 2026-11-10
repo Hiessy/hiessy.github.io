@@ -15,10 +15,12 @@ the former Hostería Norita Ranch, in four views:
   touch screens), the furniture follows the listing photos and the
   neighbours' buildings come from the cadastre. A click on the little map
   takes you there.
-- **Photos** (`#photos`): the 54 different listing photos, grouped by part of
+- **Photos** (`#photos`): the agency's two walkthrough videos (no sound, with
+  chapter buttons), the 54 different listing photos, grouped by part of
   the house with the same room's photos together, and a viewer with arrows,
   keys and swipes. A photo of a known room has a tag that lights it on the
-  plan, and the viewer can walk you there in 3D.
+  plan, and the viewer can walk you there in 3D. At the end, the 2015 survey's
+  drawings, cut without the title block that names the owner.
 - **History** (`#history`): a timeline of the town and the house, who owned it,
   the guests' reviews and ratings, and what is around it.
 
@@ -34,8 +36,11 @@ old address, only forwards here.
 - `index.html` — structure only; every visible text is an i18n key.
 - `js/house.js` — **the one place with measurements**: lot outline, rooms, spaces,
   the street front (doors, windows, gate), inside doors, furniture, glass walls,
-  railings, stair ramps and the neighbours' footprints, in meters. x grows
-  east, y north, (0, 0) is the lot's south-east corner on the building line.
+  railings, stair ramps, the neighbours' footprints and the scene's extras, in
+  meters. The axes follow the house: y runs north along the building line, x
+  grows toward the street, (0, 0) is the lot's south-east corner, and true
+  north is `NORTH` (10.24°) clockwise from +y. Every wall is parallel to an
+  axis, which the 3D walls need.
 - `js/plan.js` — draws the plan (SVG) and the room list from `house.js`; hover,
   click and zoom. `PLAN.show(id)` lights a room from another view.
 - `js/gallery.js` — the photo list (group, room, caption key), the grid, the
@@ -45,6 +50,10 @@ old address, only forwards here.
 - `js/walk.js` — the 3D model and the walking physics. Walls come from the room
   outlines: every edge is a wall unless a door opens it. Floors, railings and
   stone are textures drawn on canvases, so nothing is downloaded but three.js.
+- `videos/` — the walkthroughs at 432 px wide, H.264, no audio, with posters.
+- `plans/` — the survey's ground floor, upper floor, facade and sections.
+- `resources/` — the raw material the user drops in (videos, PDFs). Ignored by
+  git and never published: it can hold private papers.
 - `photos/NN.jpg` (up to 1400 px) and `photos/small/NN.jpg` (480 px), numbered
   in the order of `gallery.js`, without their EXIF data.
 - `css/ranch.css`
@@ -70,9 +79,12 @@ The page needs HTTP, like the home page (`python -m http.server 8123`, then
 
 ## Where the data comes from
 
-The lot outline and areas are the Córdoba cadastre's (IDECOR WFS, layer
-`idecor:parcelas`, parcel 23-01-29-11-04-059-053: 765 m² land, 414 m² built);
-the neighbours are the parcels around it, each shrunk to its built area.
+Rooms, walls, doors and the lot outline come from the survey plan of August
+2015 ("plano de transcripción y relevamiento", 1:100), read on a meter grid.
+The cadastre (IDECOR WFS, layer `idecor:parcelas`, parcel
+23-01-29-11-04-059-053: 765 m² land, 414 m² built) gives the areas and the
+neighbours, the parcels around it, each shrunk to its built area and turned
+into the house's axes.
 Buildings were placed from the Google satellite view, Street View and the
 listing photos (Zonaprop, Links Propiedades, AlquilerArgentina: 85 files, 54
 different pictures), then corrected by us after the visit. The history comes

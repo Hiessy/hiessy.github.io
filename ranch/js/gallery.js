@@ -21,37 +21,107 @@
     { id: "kitchen", name: t("photos.group.kitchen") },
     { id: "bedrooms", name: t("photos.group.bedrooms") },
     { id: "baths", name: t("photos.group.baths") },
-    { id: "apartment", name: t("photos.group.apartment") }
+    { id: "apartment", name: t("photos.group.apartment") },
+    { id: "plans", name: t("photos.group.plans") }
   ];
 
   /* In order, a part of the house at a time and the same room's photos
      together: [group, room (number, space id or ""), caption key] */
   var LIST = [
-    ["street", "drive", t("photo.01")], ["street", "3", t("photo.02")], ["street", "drive", t("photo.03")],
-    ["street", "20", t("photo.04")], ["street", "drive", t("photo.05")],
-    ["garden", "", t("photo.06")], ["garden", "", t("photo.07")], ["garden", "15", t("photo.08")],
-    ["garden", "15", t("photo.09")], ["galeria", "galeria", t("photo.10")], ["galeria", "galeria", t("photo.11")],
-    ["galeria", "galeria", t("photo.12")], ["galeria", "26", t("photo.13")], ["back", "grill", t("photo.14")],
+    ["street", "drive", t("photo.01")], ["street", "15", t("photo.02")], ["street", "drive", t("photo.03")],
+    ["street", "wbalcony", t("photo.04")], ["street", "drive", t("photo.05")],
+    ["garden", "", t("photo.06")], ["garden", "", t("photo.07")], ["garden", "20", t("photo.08")],
+    ["garden", "20", t("photo.09")], ["galeria", "galeria", t("photo.10")], ["galeria", "galeria", t("photo.11")],
+    ["galeria", "galeria", t("photo.12")], ["galeria", "34", t("photo.13")], ["back", "grill", t("photo.14")],
     ["back", "steelstair", t("photo.15")], ["back", "carport", t("photo.16")],
-    ["sitting", "1", t("photo.17")], ["sitting", "1", t("photo.18")], ["sitting", "1", t("photo.19")],
-    ["sitting", "1", t("photo.20")], ["sitting", "", t("photo.21")], ["sitting", "", t("photo.22")],
-    ["dining", "5", t("photo.23")], ["dining", "5", t("photo.24")], ["dining", "5", t("photo.25")],
-    ["dining", "5", t("photo.26")], ["dining", "5", t("photo.27")],
-    ["glazed", "15", t("photo.28")], ["glazed", "15", t("photo.29")], ["glazed", "15", t("photo.30")],
-    ["glazed", "15", t("photo.31")], ["glazed", "15", t("photo.32")], ["glazed", "15", t("photo.33")],
-    ["kitchen", "12", t("photo.34")],
+    ["sitting", "14", t("photo.17")], ["sitting", "14", t("photo.18")], ["sitting", "14", t("photo.19")],
+    ["sitting", "14", t("photo.20")], ["sitting", "1", t("photo.21")], ["sitting", "1", t("photo.22")],
+    ["dining", "12", t("photo.23")], ["dining", "12", t("photo.24")], ["dining", "12", t("photo.25")],
+    ["dining", "12", t("photo.26")], ["dining", "12", t("photo.27")],
+    ["glazed", "20", t("photo.28")], ["glazed", "20", t("photo.29")], ["glazed", "20", t("photo.30")],
+    ["glazed", "20", t("photo.31")], ["glazed", "20", t("photo.32")], ["glazed", "20", t("photo.33")],
+    ["kitchen", "16", t("photo.34")],
     ["bedrooms", "", t("photo.35")], ["bedrooms", "", t("photo.36")], ["bedrooms", "", t("photo.37")],
     ["bedrooms", "", t("photo.38")], ["bedrooms", "", t("photo.39")], ["baths", "", t("photo.40")],
     ["baths", "", t("photo.41")], ["baths", "", t("photo.42")], ["baths", "", t("photo.43")],
     ["baths", "", t("photo.44")], ["baths", "", t("photo.45")],
-    ["apartment", "23", t("photo.46")], ["apartment", "20", t("photo.47")], ["apartment", "20", t("photo.48")],
-    ["apartment", "20", t("photo.49")], ["apartment", "21", t("photo.50")], ["apartment", "21", t("photo.51")],
-    ["apartment", "21", t("photo.52")], ["apartment", "25", t("photo.53")], ["apartment", "25", t("photo.54")]
+    ["apartment", "32", t("photo.46")], ["apartment", "27", t("photo.47")], ["apartment", "27", t("photo.48")],
+    ["apartment", "27", t("photo.49")], ["apartment", "31", t("photo.50")], ["apartment", "31", t("photo.51")],
+    ["apartment", "31", t("photo.52")], ["apartment", "30", t("photo.53")], ["apartment", "30", t("photo.54")]
   ];
   var PHOTOS = LIST.map(function (p, i) {
     var f = (i < 9 ? "0" : "") + (i + 1) + ".jpg";
     return { i: i, group: p[0], room: p[1], cap: p[2], big: "photos/" + f, small: "photos/small/" + f };
   });
+  /* The 2015 survey's drawings, cut without the title block that names the
+     owner (plans/NAME.png, plans/NAME-small.jpg). */
+  [["ground", t("plans.ground")], ["upper", t("plans.upper")], ["facade", t("plans.facade")], ["sections", t("plans.sections")]]
+    .forEach(function (d) {
+      PHOTOS.push({ i: PHOTOS.length, group: "plans", room: "", cap: d[1], big: "plans/" + d[0] + ".png", small: "plans/" + d[0] + "-small.jpg", plan: true });
+    });
+
+  /* The agency's two walkthrough videos, without sound, with chapters:
+     [seconds, chapter key]. */
+  var VIDEOS = [
+    { src: "videos/house.mp4", poster: "videos/house.jpg", title: t("video.house"),
+      chapters: [[0, t("chapter.street")], [18, t("chapter.drive")], [55, t("chapter.garden")], [75, t("chapter.wing")],
+                 [140, t("chapter.glazed")], [168, t("chapter.corridor")], [205, t("chapter.rooms")],
+                 [228, t("chapter.dining")], [298, t("chapter.hall")]] },
+    { src: "videos/apartment.mp4", poster: "videos/apartment.jpg", title: t("video.apartment"),
+      chapters: [[0, t("chapter.stair")], [16, t("chapter.landing")], [28, t("chapter.living")], [40, t("chapter.balcony")],
+                 [52, t("chapter.bath")], [64, t("chapter.bedroom")], [92, t("chapter.kitchen")]] }
+  ];
+  function clock(sec) { return Math.floor(sec / 60) + ":" + (sec % 60 < 10 ? "0" : "") + (sec % 60); }
+
+  function drawVideos() {
+    var box = $("videos");
+    if (!box) return;
+    var playing = Array.prototype.map.call(box.querySelectorAll("video"), function (v) { return v.currentTime; });
+    box.innerHTML = "";
+    VIDEOS.forEach(function (v, k) {
+      var fig = document.createElement("figure");
+      fig.className = "vid";
+      var vid = document.createElement("video");
+      vid.controls = true;
+      vid.preload = "none";
+      vid.muted = true;
+      vid.playsInline = true;
+      vid.poster = v.poster;
+      vid.src = v.src;
+      vid.setAttribute("aria-label", plain(tr(v.title)));
+      if (playing[k]) vid.currentTime = playing[k];
+      fig.appendChild(vid);
+      var cap = document.createElement("figcaption");
+      var title = document.createElement("p");
+      title.className = "vid-title";
+      title.textContent = tr(v.title);
+      cap.appendChild(title);
+      var ch = document.createElement("div");
+      ch.className = "chapters";
+      var lab = document.createElement("span");
+      lab.textContent = tr(t("video.jump"));
+      ch.appendChild(lab);
+      v.chapters.forEach(function (c) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.innerHTML = "<b>" + clock(c[0]) + "</b> " + tr(c[1]);
+        b.addEventListener("click", function () {
+          // with preload "none" the time can only be set once the video knows its length
+          function go() {
+            vid.currentTime = c[0];
+            var p = vid.play();
+            if (p && p.catch) p.catch(function () {});
+          }
+          if (vid.readyState >= 1) go();
+          else { vid.addEventListener("loadedmetadata", go, { once: true }); vid.load(); }
+        });
+        ch.appendChild(b);
+      });
+      cap.appendChild(ch);
+      fig.appendChild(cap);
+      box.appendChild(fig);
+    });
+  }
 
   function tr(k) { return window.I18N && window.I18N.listo ? window.I18N.t(k) : ""; }
   function plain(s) { var d = document.createElement("div"); d.innerHTML = s; return d.textContent; }
@@ -112,6 +182,7 @@
         var b = document.createElement("button");
         b.type = "button";
         b.className = "pthumb";
+        if (p.plan) b.classList.add("pplan");
         b.setAttribute("data-photo", p.i);
         var img = document.createElement("img");
         img.src = p.small;
@@ -280,6 +351,7 @@
   function init() {
     bindPeek();
     draw();
+    drawVideos();
     bindViewer();
     var box = $("photo-groups");
     if (box) box.addEventListener("click", function (e) {
@@ -288,6 +360,7 @@
     });
     document.addEventListener("idioma", function () {
       draw();
+      drawVideos();
       if (peekId) { var id = peekId; peekId = null; peek(id); }
       if (dlg && dlg.open) show(at);
     });

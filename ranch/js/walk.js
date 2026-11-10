@@ -23,19 +23,12 @@ const DOOR_H = 2.05;
 const EYE = 1.6, BODY = 1.75, RADIUS = 0.22, STEP = 0.45, GRAVITY = 9.8;
 const RES = 0.05;
 const REACH = 3.2;
-const CENTER = { x: -18, y: 9 };
+const CENTER = H.extras.center;
+const X = H.extras;
 const DEG = Math.PI / 180;
 
 /* Floor finishes, from the photos where there are any. */
-const FINISH = {
-  1: "white", 2: "white", 3: "calcareo", 4: "bathtile", 5: "checker", 6: "white", 7: "terracotta",
-  8: "bathtile", 9: "parquet", 10: "bathtile", 11: "white", 12: "kitchen", 13: "kitchen", 14: "kitchen",
-  15: "white", 16: "parquet", 17: "bathtile", 18: "calcareo", 19: "bathtile",
-  20: "cream", 21: "cream", 22: "bathtile", 23: "cream", 24: "bathtile", 25: "cream", 26: "concrete",
-  drive: "pavers", aptstair: "white", patio: "pavers", galeria: "terracotta", grill: "gravel",
-  carport: "gravel", wbalcony: "cream", sbalcony: "cream", terrace: "terrace", walkway: "terrace",
-  roofstrip: "roofing"
-};
+/* Floor finishes come with each room in js/house.js (fin). */
 
 function t(k) { return window.I18N && window.I18N.listo ? window.I18N.t(k) : ""; }
 function plain(s) {
@@ -603,7 +596,7 @@ function buildDoors() {
   // Doors and the gate on the building line open inward, to the west. Those
   // on the street get a stone sill, which also covers the step from the
   // sidewalk up to the floor.
-  const inward = [-0.9840, -0.1779];
+  const inward = [-H.OUT[0], -H.OUT[1]];
   const sill = (from, to) => {
     const m = bar(H.streetX(from), from, H.streetX(to), to, 0, 0.04, WALL_T + 0.1, M.sill);
     if (m) S.static.add(m);
@@ -1024,7 +1017,7 @@ function buildLabels() {
     const c = center(s);
     put(plain(t(s.name)).replace(/\s*·.*$/, ""), "", c[0], c[1], F[s.level] + 2.1);
   });
-  put(plain(t("space.garden")).replace(/\s*\(.*\)$/, ""), "", -34.5, 15.5, 1.8);
+  put(plain(t("space.garden")).replace(/\s*\(.*\)$/, ""), "", X.labels.garden[0], X.labels.garden[1], 1.8);
 }
 
 /* ---------- the scene ---------- */
@@ -1078,7 +1071,7 @@ function buildScene() {
   ground.receiveShadow = true;
   scene.add(ground);
   S.static.add(flat(H.lot, texMat("grass"), 0.004));
-  const e = [0.9840, 0.1779];
+  const e = H.OUT;
   const band = (o1, o2) => [[-40, o1], [-40, o2], [70, o2], [70, o1]]
     .map((q) => [H.streetX(q[0]) + q[1] * e[0], q[0] + q[1] * e[1]]);
   S.static.add(flat(band(0, 2.5), texMat("sidewalk"), 0.012));
@@ -1121,17 +1114,16 @@ function buildScene() {
   cy(statue, 0.12, 0.2, 0.75, 0, 1.48, 0, M.white, 12);
   ball(statue, 0.11, 0, 1.95, 0, M.white, 2);
   place(statue, G.statue[0], G.statue[1], 0, 0);
-  tree(H.streetX(4.4) + 1.3, 4.4, 0.8);
-  tree(H.streetX(12.2) + 1.3, 12.2, 0.75);
+  X.trees.forEach((tr) => tree(tr[0], tr[1], tr[2]));
   const post = new THREE.Group();
   cy(post, 0.06, 0.08, 6.5, 0, 3.25, 0, mat(0x55585b), 8);
   bx(post, 1.4, 0.06, 0.06, -0.7, 6.4, 0, mat(0x55585b));
   bx(post, 0.4, 0.12, 0.2, -1.35, 6.32, 0, M.glow);
-  place(post, H.streetX(16.5) + 2.2, 16.5, 0, 180);
+  place(post, X.lamp[0], X.lamp[1], 0, 180);
 
   // Floors, each with its finish; a bath inside a room sits a hair above it.
   H.rooms.concat(H.spaces).forEach((r) => {
-    const fin = FINISH[H.idOf(r)];
+    const fin = r.fin;
     if (!fin) return;
     const y = (r.level === 0 ? 0.03 : F[r.level] + 0.005) + (r.inner ? 0.006 : 0);
     S.static.add(flat(H.polyOf(r), texMat(fin), y));
@@ -1142,8 +1134,7 @@ function buildScene() {
     if (r.level !== 1 || r.id === "stairwell") return;
     S.static.add(slab(H.polyOf(r), mat(0xe9e5dc, TOP_SHADOW), F[1], 0.2));
   });
-  S.static.add(slab(rectPoly([-27.4, -0.95, -13.1, 3.4]), mat(0xd9d3c7, TOP_SHADOW), F[2], 0.18));
-  S.static.add(slab(rectPoly([-28.4, -0.95, -27.4, 0.0]), mat(0x8f8a80, TOP_SHADOW), F[2], 0.08));
+  S.static.add(slab(rectPoly(X.wing), mat(0xd9d3c7, TOP_SHADOW), F[2], 0.18));
 
   // Walls inside and around the rooms; glass on the glazed room.
   computeWalls().forEach((w) => {
@@ -1165,15 +1156,10 @@ function buildScene() {
       if (rail) S.static.add(rail);
     }
   });
-  // The stair to the apartment runs inside its own walls, from a landing
-  // behind the red street door.
-  const aptX = H.ramps[0].from;
-  collider(-7.4, 14.8, aptX, 14.8, 0, WALL_H[0], WALL_T / 2);
-  S.static.add(bar(-7.4, 14.8, aptX, 14.8, 0, WALL_H[0], WALL_T, M.wall));
 
   // The front on the building line: windows with frames, door openings,
   // stone at the foot by the apartment door.
-  const out = [0.9840, 0.1779];
+  const out = H.OUT;
   [0, 1].forEach((lv) => {
     const f = H.facade[lv], base = F[lv], top = base + WALL_H[lv];
     const open = [];
@@ -1209,7 +1195,7 @@ function buildScene() {
           S.static.add(j);
         }
         // the bedroom window on the street has white bars
-        if (lv === 0 && p.a < 4) {
+        if (lv === 0 && f.bars && p.a === f.bars[0]) {
           for (let k = 1; k < 8; k++) {
             const yy = p.a + (p.b - p.a) * k / 8, xx = H.streetX(yy) + out[0] * 0.09;
             const rod = new THREE.Mesh(new THREE.BoxGeometry(0.025, 1.2, 0.025), M.trim);
@@ -1229,14 +1215,21 @@ function buildScene() {
     });
   });
   // The pier between the gate and the neighbour.
-  S.static.add(bar(H.streetX(19.35), 19.35, H.lot[1][0], H.lot[1][1], 0, 2.7, 0.3, M.wall));
-  collider(H.streetX(19.35), 19.35, H.lot[1][0], H.lot[1][1], 0, 2.7, 0.15);
+  const gy = H.facade[0].gate.to;
+  if (Math.hypot(H.streetX(gy) - H.lot[1][0], gy - H.lot[1][1]) > 0.05) {
+    S.static.add(bar(H.streetX(gy), gy, H.lot[1][0], H.lot[1][1], 0, 2.7, 0.3, M.wall));
+    collider(H.streetX(gy), gy, H.lot[1][0], H.lot[1][1], 0, 2.7, 0.15);
+  }
 
-  // Boundary walls: low along the drive, garden height elsewhere.
-  const L = H.lot;
-  const sNorth = (-16.2 - L[1][0]) / (L[2][0] - L[1][0]);
-  const q = [-16.2, L[1][1] + sNorth * (L[2][1] - L[1][1])];
-  [[L[1], q, 1.2], [q, L[2], 1.8], [L[2], L[3], 1.8], [L[3], L[4], 1.8], [L[4], L[5], 1.8], [L[5], L[6], 1.8], [L[6], L[0], 1.8]]
+  // Boundary walls: low along the drive, garden height elsewhere. Every lot
+  // edge but the street's gets one; the north side splits where the drive
+  // ends (X.lowWall).
+  const L = H.lot, edges = [];
+  for (let i = 1; i < L.length; i++) edges.push([L[i], L[(i + 1) % L.length]]);
+  const [n0, n1] = edges[0];
+  const sN = (X.lowWall - n0[0]) / (n1[0] - n0[0]);
+  const q = [X.lowWall, n0[1] + sN * (n1[1] - n0[1])];
+  [[n0, q, 1.2], [q, n1, 1.8]].concat(edges.slice(1).map((e2) => [e2[0], e2[1], 1.8]))
     .forEach((r) => {
       const m = bar(r[0][0], r[0][1], r[1][0], r[1][1], 0, r[2], 0.2, M.fence);
       if (m) S.static.add(m);
@@ -1244,8 +1237,9 @@ function buildScene() {
       if (cap) S.static.add(cap);
       collider(r[0][0], r[0][1], r[1][0], r[1][1], 0, r[2], 0.1);
     });
-  [-4.4, -7.8, -11.2, -14.6, -16.05].forEach((x) => {
-    const yb = L[1][1] + ((x - L[1][0]) / (L[2][0] - L[1][0])) * (L[2][1] - L[1][1]) - 0.2;
+  // Piers along the drive, under the apartment's edge.
+  X.columns.forEach((x) => {
+    const yb = n0[1] + ((x - n0[0]) / (n1[0] - n0[0])) * (n1[1] - n0[1]) - 0.2;
     const col = new THREE.Mesh(new THREE.BoxGeometry(0.25, F[1] - 0.2, 0.25), M.wall);
     col.position.set(x, (F[1] - 0.2) / 2, -yb);
     S.static.add(col);
@@ -1266,11 +1260,12 @@ function buildScene() {
     if (top && !r.glass) S.static.add(top);
     collider(a[0], a[1], b[0], b[1], base, base + 1.0, 0.05);
   });
-  [[-27.4, -23.9], [-22.9, -19.4]].forEach((s) => {
+  const by = X.balusterY;
+  X.balusters.forEach((s) => {
     const len = s[1] - s[0];
-    const m = bar(s[0], 5.3, s[1], 5.3, 0.05, 0.95, 0.04, new THREE.MeshStandardMaterial({ map: texFor("balusters", len, 0.9), alphaTest: 0.5, side: THREE.DoubleSide }));
+    const m = bar(s[0], by, s[1], by, 0.05, 0.95, 0.04, new THREE.MeshStandardMaterial({ map: texFor("balusters", len, 0.9), alphaTest: 0.5, side: THREE.DoubleSide }));
     if (m) S.static.add(m);
-    collider(s[0], 5.3, s[1], 5.3, 0, 0.95, 0.04);
+    collider(s[0], by, s[1], by, 0, 0.95, 0.04);
   });
 
   // Stairs: solid steps up to the apartment, open steel ones to the roof.
@@ -1302,9 +1297,12 @@ function buildScene() {
   bx(grill, 1.5, 1.6, 0.7, 0, 0.8, 0, M.brick);
   bx(grill, 1.1, 0.5, 0.08, 0, 1.0, -0.33, M.black);
   bx(grill, 0.6, 1.9, 0.5, 0, 2.55, 0.05, M.brick);
-  place(grill, -30.0, -0.55, 0, 0);
-  collider(-30.75, -0.55, -29.25, -0.55, 0, 1.6, 0.35);
-  [[-37.8, 7.4], [-35.5, 7.4], [-33.2, 7.4], [-33.2, 0.3], [-27.3, 5.2], [-24.6, 5.2], [-21.9, 5.2], [-19.5, 5.2], [-32.7, 2.7]].forEach((p) => {
+  place(grill, X.grill[0], X.grill[1], 0, X.grill[2]);
+  {
+    const gd = [Math.cos(X.grill[2] * DEG) * 0.75, Math.sin(X.grill[2] * DEG) * 0.75];
+    collider(X.grill[0] - gd[0], X.grill[1] - gd[1], X.grill[0] + gd[0], X.grill[1] + gd[1], 0, 1.6, 0.35);
+  }
+  X.posts.forEach((p) => {
     const m = new THREE.Mesh(new THREE.BoxGeometry(0.1, 2.5, 0.1), M.trim);
     m.position.set(p[0], 1.25, -p[1]);
     m.castShadow = true;
@@ -1314,7 +1312,8 @@ function buildScene() {
   const ch = new THREE.Group();
   bx(ch, 0.6, 1.5, 0.6, 0, 0.75, 0, M.brick);
   bx(ch, 0.72, 0.08, 0.72, 0, 1.54, 0, mat(0x8c8579));
-  place(ch, -14.1, 0.3, 2, 0);
+  place(ch, X.chimney[0], X.chimney[1], 0, 0);
+  ch.position.y = H.roofs[0].h + 0.6;
 
   buildFurniture();
   buildDoors();
@@ -1399,18 +1398,20 @@ function buildRoofs() {
 
   // Apartment: a flat roof with an overhang on the garden side and wooden
   // rafter tails under it, as in the photos.
-  const apt = [[-16.65, 13.4], [H.streetX(13.4), 13.4], [H.streetX(19.4), 19.4], [-16.65, 19.4]];
+  const A = X.apartment, ax0 = A[0] - 0.45;
+  const apt = [[ax0, A[1] - 0.2], [H.streetX(A[1] - 0.2), A[1] - 0.2], [H.streetX(A[3]), A[3]], [ax0, A[3]]];
   const topH = F[1] + WALL_H[1] + 0.16;
   roofs.add(slab(apt, mat(0x8a8178, TOP_SHADOW), topH, 0.16));
-  const fascia = bar(-16.68, 13.4, -16.68, 19.4, topH - 0.24, topH, 0.05, mat(0x7a4a2a, { roughness: 0.7 }));
+  const fascia = bar(ax0 - 0.03, A[1] - 0.2, ax0 - 0.03, A[3], topH - 0.24, topH, 0.05, mat(0x7a4a2a, { roughness: 0.7 }));
   if (fascia) roofs.add(fascia);
-  for (let yy = 13.6; yy < 19.3; yy += 0.6) {
-    const tail = bar(-16.65, yy, -16.15, yy, topH - 0.26, topH - 0.16, 0.07, mat(0x7a4a2a, { roughness: 0.7 }));
+  for (let yy = A[1]; yy < A[3] - 0.1; yy += 0.6) {
+    const tail = bar(ax0, yy, A[0] + 0.05, yy, topH - 0.26, topH - 0.16, 0.07, mat(0x7a4a2a, { roughness: 0.7 }));
     if (tail) roofs.add(tail);
   }
-  roofs.add(slab(rectPoly([-27.4, 0.0, -24.0, 3.4]), mat(0x9a8f80, TOP_SHADOW), F[2] + WALL_H[2] + 0.12, 0.12));
+  const T = X.tower;
+  roofs.add(slab(rectPoly(T.rect), mat(0x9a8f80, TOP_SHADOW), F[2] + WALL_H[2] + 0.12, 0.12));
   const tank = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.5, 1.0, 18), mat(0x222222, { roughness: 0.5 }));
-  tank.position.set(-25.7, F[2] + WALL_H[2] + 0.65, -1.7);
+  tank.position.set(T.tank[0], F[2] + WALL_H[2] + 0.65, -T.tank[1]);
   roofs.add(tank);
 
   // White ceilings under the roofs, seen only from inside.
@@ -1419,8 +1420,8 @@ function buildRoofs() {
   // last centimeters below a roof, and that strip stays hidden above it.
   const ceiling = new THREE.MeshStandardMaterial({ color: 0xf6f4ee, side: THREE.BackSide, emissive: 0xf6f4ee, emissiveIntensity: 0.22 });
   roofs.add(flat([[m.rect[0], y1], [H.streetX(y1), y1], [ex2, y2], [m.rect[0], y2]], ceiling, WALL_H[0] - 0.08));
-  roofs.add(flat([[-16.2, 13.6], [H.streetX(13.6), 13.6], [H.streetX(19.4), 19.4], [-16.2, 19.4]], ceiling, F[1] + WALL_H[1] - 0.08));
-  roofs.add(flat(rectPoly([-27.4, 0.0, -24.0, 3.4]), ceiling, F[2] + WALL_H[2] - 0.08));
+  roofs.add(flat(rectPoly(A), ceiling, F[1] + WALL_H[1] - 0.08));
+  roofs.add(flat(rectPoly(T.rect), ceiling, F[2] + WALL_H[2] - 0.08));
 
   roofs.traverse((o) => { if (o.isMesh && !o.material.transparent && o.material !== ceiling) o.castShadow = true; });
   S.roofs = merge(roofs);
@@ -1547,7 +1548,7 @@ function tapAt(clientX, clientY) {
 
 /* ---------- the little map ---------- */
 
-const MAP = { x0: -41.2, x1: 3.4, y0: -2.2, y1: 20.6 };
+const MAP = H.extras.map;
 function mapFrame(W, Hh) {
   const k = Math.min(W / (MAP.x1 - MAP.x0), Hh / (MAP.y1 - MAP.y0));
   return { k, ox: (W - k * (MAP.x1 - MAP.x0)) / 2, oy: (Hh - k * (MAP.y1 - MAP.y0)) / 2 };
