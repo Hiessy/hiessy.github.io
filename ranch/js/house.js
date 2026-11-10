@@ -42,7 +42,7 @@
     { n: 2, level: 0, kind: "bedroom", name: t("name.bedroom"), note: t("note.02"), info: t("info.02"), src: "plan", fin: "terracotta", poly: [[-5, 0.5], [0, 0.5], [0, 4.65], [-3.2, 4.65], [-3.2, 3.45], [-5, 3.45]], lab: [-2.3, 2.2, "m"] },
     { n: 3, level: 0, kind: "bedroom", name: t("name.bedroom"), info: t("info.03"), src: "plan", fin: "parquet", poly: [[-5, 3.45], [-3.2, 3.45], [-3.2, 4.65], [-2.2, 4.65], [-2.2, 7.95], [-5, 7.95]], lab: [-3.6, 6.3, "m"] },
     { n: 4, level: 0, kind: "living", name: t("name.sitting"), note: t("note.04"), info: t("info.04"), src: "plan", fin: "white", rect: [-5, 7.95, -2.2, 12.35] },
-    { n: 5, level: 0, kind: "bath", name: t("name.bath"), info: t("info.05"), src: "plan", fin: "bathtile", rect: [-1.7, 14.25, 0, 16.15], street: true },
+    { n: 5, level: 0, kind: "stair", name: t("space.aptstair"), note: t("space.aptstair.note"), info: t("info.05"), src: "plan", fin: "white", poly: [[-2.1, 12.35], [0, 12.35], [0, 16.15], [-1.7, 16.15], [-1.7, 14.25], [-2.1, 14.25]], treads: "y", lab: [-1.0, 14.2, "m"] },
     { n: 6, level: 0, kind: "bedroom", name: t("name.bedroom"), note: t("note.06"), info: t("info.06"), src: "plan", fin: "parquet", poly: [[-5, 12.35], [-2.1, 12.35], [-2.1, 14.25], [-1.7, 14.25], [-1.7, 16.15], [-5, 16.15]], lab: [-3.4, 14.6, "m"] },
     // the middle row
     { n: 7, level: 0, kind: "service", name: t("name.store"), info: t("info.07"), src: "plan", fin: "white", rect: [-8.9, 0.9, -5, 2.2] },
@@ -68,31 +68,30 @@
     { n: 25, level: 0, kind: "bedroom", name: t("name.guest"), info: t("info.25"), src: "plan", fin: "parquet", rect: [-26.05, 2.5, -23.1, 7.0] },
     { n: 26, level: 0, kind: "bath", name: t("name.bath"), info: t("info.26"), src: "plan", fin: "bathtile", rect: [-27.35, 2.75, -26.05, 4.45] },
     // the apartment over the drive
-    { n: 27, level: 1, kind: "living", name: t("name.living"), note: t("note.27"), info: t("info.27"), src: "plan", fin: "cream", rect: [-6.05, 16.45, 0, 19.8], street: true },
-    { n: 28, level: 1, kind: "bath", name: t("name.bath"), info: t("info.28"), src: "plan", fin: "bathtile", rect: [-8.1, 16.45, -6.05, 17.6] },
+    { n: 27, level: 1, kind: "living", name: t("name.living"), note: t("note.27"), info: t("info.27"), src: "plan", fin: "cream", rect: [-6.05, 16.15, 0, 19.8], street: true },
+    { n: 28, level: 1, kind: "bath", name: t("name.bath"), info: t("info.28"), src: "plan", fin: "bathtile", rect: [-8.1, 16.15, -6.05, 17.6] },
     { n: 29, level: 1, kind: "bath", name: t("name.ensuite"), info: t("info.29"), src: "plan", fin: "bathtile", rect: [-8.1, 17.6, -6.05, 18.9] },
-    { n: 30, level: 1, kind: "bedroom", name: t("name.bedroom"), note: t("note.30"), info: t("info.30"), src: "plan", fin: "cream", rect: [-11.1, 16.45, -8.1, 19.8] },
+    { n: 30, level: 1, kind: "bedroom", name: t("name.bedroom"), note: t("note.30"), info: t("info.30"), src: "plan", fin: "cream", rect: [-11.1, 16.15, -8.1, 19.8] },
     { n: 31, level: 1, kind: "service", name: t("name.kitchen"), info: t("info.31"), src: "plan", fin: "cream", rect: [-13.1, 18.4, -11.1, 20.5] },
-    { n: 32, level: 1, kind: "hall", name: t("name.landing"), note: t("note.32"), info: t("info.32"), src: "plan", fin: "cream", poly: [[-2.1, 12.35], [-1.35, 12.35], [-1.35, 14.25], [0, 14.25], [0, 16.45], [-2.1, 16.45]], lab: [-1.05, 15.35, "m"] },
-    { n: 33, level: 1, kind: "hall", name: t("name.passage"), info: t("info.33"), src: "plan", fin: "cream", rect: [-8.1, 18.9, -6.05, 19.8] },
+    { n: 32, level: 1, kind: "hall", name: t("name.passage"), info: t("info.32"), src: "plan", fin: "cream", rect: [-8.1, 18.9, -6.05, 19.8] },
     // on the wing's roof
-    { n: 34, level: 2, kind: "service", name: t("name.tower"), note: t("note.34"), info: t("info.34"), src: "plan", fin: "concrete", rect: [-26.95, 3.5, -23.6, 6.05] }
+    { n: 33, level: 2, kind: "service", name: t("name.tower"), note: t("note.33"), info: t("info.33"), src: "plan", fin: "concrete", rect: [-26.95, 3.5, -23.6, 6.05] }
   ];
 
   /* Spaces without a number: covered outdoor areas, stairs, balconies. */
   var spaces = [
     { id: "drive", level: 0, kind: "covered", name: t("space.drive"), note: t("space.drive.note"), info: t("info.drive"), src: "plan", fin: "pavers", rect: [-13.0, 16.15, 0, 19.8], street: true },
-    { id: "aptstair", level: 0, kind: "stair", name: t("space.aptstair"), note: t("space.aptstair.note"), info: t("info.aptstair"), src: "plan", fin: "white", rect: [-2.1, 12.35, 0, 14.25], street: true, enclosed: true, treads: "x" },
     { id: "galeria", level: 0, kind: "covered", name: t("space.galeria"), note: t("space.galeria.note"), info: t("info.galeria"), src: "plan", fin: "terracotta", poly: [[-17.45, 5.05], [-16.0, 5.05], [-16.0, 7.85], [-26.05, 7.85], [-26.05, 7.0], [-17.45, 7.0]], outside: [-21.0, 8.3, "m"] },
     { id: "steelstair", level: 0, kind: "stair", name: t("space.steelstair"), info: t("info.steelstair"), src: "photos", rect: [-28.45, 4.4, -27.45, 7.2], treads: "y", outside: [-28.6, 7.6, "e"] },
     { id: "grill", level: 0, kind: "covered", name: t("space.grill"), note: t("space.grill.note"), info: t("info.grill"), src: "photos", fin: "gravel", rect: [-30.0, 3.2, -28.45, 7.4] },
     { id: "carport", level: 0, kind: "covered", name: t("space.carport"), note: t("space.carport.note"), info: t("info.carport"), src: "plan", fin: "gravel", poly: [[-30.0, 3.2], [-30.0, 7.4], [-33.0, 7.4], [-33.0, 12.5], [-36.9, 12.5], [-36.9, 3.4]], lab: [-34.9, 8.0, "m"] },
 
-    { id: "wbalcony", level: 1, kind: "balcony", name: t("space.balcony"), info: t("info.wbalcony"), src: "plan", fin: "cream", rect: [-13.1, 16.45, -11.1, 18.4], outside: [-13.4, 17.4, "e"] },
+    { id: "stairwell", level: 1, kind: "stair", name: t("space.aptstair"), info: t("info.stairwell"), src: "plan", poly: [[-2.1, 12.35], [0, 12.35], [0, 16.15], [-1.7, 16.15], [-1.7, 14.25], [-2.1, 14.25]], enclosed: true },
+    { id: "wbalcony", level: 1, kind: "balcony", name: t("space.balcony"), info: t("info.wbalcony"), src: "plan", fin: "cream", rect: [-13.1, 16.15, -11.1, 18.4], outside: [-13.4, 17.4, "e"] },
     { id: "sbalcony", level: 1, kind: "balcony", name: t("space.balcony.street"), info: t("info.sbalcony"), src: "plan", fin: "cream", poly: [[0, 16.45], [0.9, 16.45], [0.9, 19.8], [0, 19.8]], outside: [1.2, 18.1, "s"] },
 
     { id: "terrace", level: 2, kind: "terrace", name: t("space.terrace"), note: t("space.terrace.note"), info: t("info.terrace"), src: "plan", fin: "terrace", rect: [-23.6, 2.6, -15.95, 7.0] },
-    { id: "walkway", level: 2, kind: "terrace", name: t("space.walkway"), info: t("info.walkway"), src: "guess", fin: "terrace", poly: [[-27.45, 2.7], [-27.45, 7.0], [-23.6, 7.0], [-23.6, 6.05], [-26.95, 6.05], [-26.95, 2.7]], outside: [-27.7, 1.9, "s"] }
+    { id: "walkway", level: 2, kind: "terrace", name: t("space.walkway"), info: t("info.walkway"), src: "guess", fin: "terrace", poly: [[-28.45, 2.7], [-28.45, 4.4], [-27.45, 4.4], [-27.45, 7.0], [-23.6, 7.0], [-23.6, 6.05], [-26.95, 6.05], [-26.95, 2.7]], outside: [-27.7, 1.9, "s"] }
   ];
 
   /* Roofs one level down, for the upper plan and the 3D roofs. h is the
@@ -115,32 +114,39 @@
      balusters: the galería's low railing; grill and chimney positions. */
   var extras = {
     wing: [-27.45, 1.6, -15.95, 7.0],
+    landing: [-28.45, 2.7, -27.45, 4.4],   // top of the steel stair
     apartment: [-13.1, 12.35, 0, 20.5],
     tower: { rect: [-26.95, 3.5, -23.6, 6.05], tank: [-25.3, 4.8] },
     posts: [[-26.05, 7.8], [-23.5, 7.8], [-21.0, 7.8], [-18.5, 7.8], [-16.05, 7.8], [-30.0, 7.35], [-33.0, 7.35], [-33.0, 12.45], [-36.85, 12.45], [-29.95, 3.25]],
     columns: [-4.4, -7.4, -10.4, -12.9],
-    balusters: [[-26.05, -22.0], [-21.0, -16.05]],
+    balusters: [[-26.05, -22.0], [-21.0, -17.45]],
     balusterY: 7.85,
     grill: [-29.9, 5.4, 90],
     chimney: [-13.6, 3.2],
     lowWall: -13.0,             // the low wall along the drive ends here
-    labels: { garden: [-27.0, 15.0], tracks: [-22.0, 18.35], gravel: [-31.5, 9.6] },
+    labels: { garden: [-24.0, 10.6], tracks: [-24.0, 15.9], gravel: [-31.5, 9.6] },
     map: { x0: -39.2, x1: 3.4, y0: -1.0, y1: 24.6 },
     center: { x: -18, y: 11 },
     trees: [[2.2, 4.0, 0.8], [2.2, 11.6, 0.75]],
-    lamp: [2.4, 17.0]
+    lamp: [2.4, 17.0],
+    // the hostería's hanging sign on its post by the apartment door
+    sign: [0.75, 14.4],
+    // low steps outside the doors that lead out of the house, where the
+    // survey marks the floor higher than the garden: [x1, y1, x2, y2, height]
+    steps: [[-10.55, 16.15, -9.55, 16.5, 0.12], [-16.4, 6.25, -16.0, 7.35, 0.12], [-16.4, 9.55, -16.0, 10.65, 0.12],
+            [-13.65, 12.95, -12.55, 13.3, 0.12], [-22.0, 7.85, -21.0, 8.25, 0.1], [-17.4, 7.85, -16.4, 8.25, 0.1]]
   };
 
   var garden = {
     gravel: [-33.0, 7.4, -30.0, 12.5],
     pavers: [-16.0, 12.95, -13.0, 16.15],
     tracks: [
-      [[-13.0, 18.6], [-24.0, 19.2], [-31.5, 18.0], [-33.0, 11.6]],
-      [[-13.0, 17.1], [-23.5, 17.6], [-30.0, 16.4], [-33.0, 9.4]]
+      [[-13.0, 18.3], [-19.5, 16.6], [-27.0, 13.2], [-33.0, 11.4]],
+      [[-13.0, 16.8], [-19.5, 15.1], [-26.5, 11.7], [-33.0, 9.6]]
     ],
-    tree: { c: [-22.5, 12.0], r: 3.3 },
-    statue: [-18.6, 14.6],
-    bench: [-20.3, 14.7]
+    tree: { c: [-24.5, 18.6], r: 3.1 },
+    statue: [-29.0, 20.6],
+    bench: [-21.6, 19.9]
   };
 
   /* Openings on the building line, as y ranges, from the survey's table of
@@ -171,7 +177,6 @@
     { level: 0, x: -2.2, from: 8.35, to: 9.25, kind: "glass", swing: "w" },
     { level: 0, x: -5.0, from: 9.4, to: 12, kind: "open" },
     { level: 0, y: 12.35, from: -3.9, to: -2.9, kind: "wood", swing: "n" },
-    { level: 0, x: -1.7, from: 14.5, to: 15.4, kind: "white", swing: "w" },
     { level: 0, x: -5.0, from: 1.12, to: 2.02, kind: "white", swing: "w" },
     { level: 0, x: -5.0, from: 2.42, to: 3.33, kind: "white", swing: "w" },
     { level: 0, x: -5.0, from: 3.58, to: 4.48, kind: "white", swing: "w" },
@@ -197,8 +202,7 @@
     { level: 0, y: 7.0, from: -21.95, to: -21.05, kind: "wood", swing: "s" },
     { level: 0, y: 7.0, from: -25.45, to: -24.55, kind: "wood", swing: "s" },
     { level: 0, x: -26.05, from: 3.2, to: 4.1, kind: "white", swing: "w" },
-    { level: 1, x: -1.35, from: 12.35, to: 14.25, kind: "open" },
-    { level: 1, y: 16.45, from: -1.9, to: -0.5, kind: "open" },
+    { level: 1, y: 16.15, from: -1.6, to: -0.25, kind: "open" },
     { level: 1, x: -6.05, from: 16.62, to: 17.52, kind: "white", swing: "w" },
     { level: 1, x: -6.05, from: 18.88, to: 19.77, kind: "open" },
     { level: 1, y: 18.9, from: -7.7, to: -6.8, kind: "white", swing: "s" },
@@ -280,7 +284,6 @@
     { level: 0, type: "bed", at: [-23.65, 3.58], rot: 0, w: 0.9, color: TEAL, frame: WOOD },
     { level: 0, type: "nightstand", at: [-24.27, 2.73], rot: 0, w: 0.3 },
     // baths
-    { level: 0, type: "bath", room: 5, door: "w" },
     { level: 0, type: "bath", room: 8, door: "e" },
     { level: 0, type: "bath", room: 9, door: "e" },
     { level: 0, type: "bath", room: 10, door: "n" },
@@ -293,8 +296,8 @@
     { level: 0, type: "dining", at: [-29.2, 6.3], w: 1.0, d: 0.7, chairs: 2, wood: true, metal: true },
     { level: 0, type: "car", at: [-35.0, 5.6], rot: 270, color: 0xf2f2f0 },
     { level: 0, type: "car", at: [-35.0, 8.8], rot: 270, color: 0x2b3a55 },
-    { level: 0, type: "bench", at: [-20.3, 14.7], rot: 180 },
-    { level: 0, type: "dining", at: [-27.6, 11.6], w: 0.8, round: true, chairs: 3, metal: true },
+    { level: 0, type: "bench", at: [-21.6, 19.9], rot: 180 },
+    { level: 0, type: "dining", at: [-20.3, 20.5], w: 0.8, round: true, chairs: 3, metal: true },
     { level: 0, type: "dining", at: [-17.9, 10.9], w: 1.2, d: 0.7, chairs: 4, wood: true },
     { level: 0, type: "plant", at: [-16.3, 7.6] },
     { level: 0, type: "plant", at: [-25.8, 8.2] },
@@ -315,8 +318,8 @@
     { level: 1, type: "nightstand", at: [-8.4, 19.05], rot: 90, color: 0x1c1c1c },
     { level: 1, type: "counter", at: [-12.1, 20.12], rot: 180, w: 1.9, cabinet: 0xf2f0ea, sink: -0.4, stove: 0.5 },
     { level: 1, type: "fridge", at: [-12.75, 18.95], rot: 270 },
-    { level: 1, type: "wardrobe", at: [-1.8, 15.4], rot: 270, w: 1.0 },
-    // 34 and the roof terrace
+    { level: 1, type: "wardrobe", at: [-1.1, 19.52], rot: 180, w: 1.0 },
+    // 33 and the roof terrace
     { level: 2, type: "shelf", at: [-26.68, 5.45], rot: 270, w: 1.4, d: 0.35 },
     { level: 2, type: "dining", at: [-19.5, 4.4], w: 0.7, round: true, chairs: 2, metal: true }
   ];
@@ -332,9 +335,10 @@
     { level: 2, y: 7.0, from: -23.6, to: -15.95, deco: true },
     { level: 2, x: -15.95, from: 2.6, to: 7.0 },
     { level: 2, y: 7.0, from: -27.45, to: -23.6 },
-    { level: 2, x: -27.45, from: 2.7, to: 3.9 },
-    { level: 1, x: -13.1, from: 16.45, to: 18.4 },
-    { level: 1, y: 16.45, from: -13.1, to: -11.1 },
+    { level: 2, x: -28.45, from: 2.7, to: 4.4 },
+    { level: 2, y: 2.7, from: -28.45, to: -26.95 },
+    { level: 1, x: -13.1, from: 16.15, to: 18.4 },
+    { level: 1, y: 16.15, from: -13.1, to: -11.1 },
     { level: 1, a: [0.9, 16.45], b: [0.9, 19.8], glass: true },
     { level: 1, a: [0, 16.45], b: [0.9, 16.45], glass: true },
     { level: 1, a: [0, 19.8], b: [0.9, 19.8], glass: true }
@@ -372,10 +376,11 @@
 
   /* Stairs as ramps: the height goes from h1 at `from` to h2 at `to` along
      `axis`, inside `across` on the other axis. The apartment's climbs in its
-     own box behind the red street door; the steel one goes from the grill up
+     straight flight along the street wall, from the red door up to the
+     apartment's living room; the steel one goes from the grill up
      to the walkway on the wing's roof. */
   var ramps = [
-    { id: "aptstair", axis: "x", from: -0.3, to: -1.35, h1: 0, h2: FLOOR[1], across: [12.45, 14.15] },
+    { id: "aptstair", axis: "y", from: 12.9, to: 16.15, h1: 0, h2: FLOOR[1], across: [-1.6, -0.05] },
     { id: "steelstair", axis: "y", from: 7.2, to: 4.4, h1: 0, h2: FLOOR[2], across: [-28.45, -27.45] }
   ];
 

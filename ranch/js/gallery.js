@@ -34,7 +34,7 @@
     ["street", "wbalcony", t("photo.04")], ["street", "drive", t("photo.05")],
     ["garden", "", t("photo.06")], ["garden", "", t("photo.07")], ["garden", "20", t("photo.08")],
     ["garden", "20", t("photo.09")], ["galeria", "galeria", t("photo.10")], ["galeria", "galeria", t("photo.11")],
-    ["galeria", "galeria", t("photo.12")], ["galeria", "34", t("photo.13")], ["back", "grill", t("photo.14")],
+    ["galeria", "galeria", t("photo.12")], ["galeria", "33", t("photo.13")], ["back", "grill", t("photo.14")],
     ["back", "steelstair", t("photo.15")], ["back", "carport", t("photo.16")],
     ["sitting", "14", t("photo.17")], ["sitting", "14", t("photo.18")], ["sitting", "14", t("photo.19")],
     ["sitting", "14", t("photo.20")], ["sitting", "1", t("photo.21")], ["sitting", "1", t("photo.22")],
@@ -47,7 +47,7 @@
     ["bedrooms", "", t("photo.38")], ["bedrooms", "", t("photo.39")], ["baths", "", t("photo.40")],
     ["baths", "", t("photo.41")], ["baths", "", t("photo.42")], ["baths", "", t("photo.43")],
     ["baths", "", t("photo.44")], ["baths", "", t("photo.45")],
-    ["apartment", "32", t("photo.46")], ["apartment", "27", t("photo.47")], ["apartment", "27", t("photo.48")],
+    ["apartment", "5", t("photo.46")], ["apartment", "27", t("photo.47")], ["apartment", "27", t("photo.48")],
     ["apartment", "27", t("photo.49")], ["apartment", "31", t("photo.50")], ["apartment", "31", t("photo.51")],
     ["apartment", "31", t("photo.52")], ["apartment", "30", t("photo.53")], ["apartment", "30", t("photo.54")]
   ];

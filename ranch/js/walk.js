@@ -20,7 +20,7 @@ const F = H.FLOOR;
 const WALL_H = { 0: 2.7, 1: 2.5, 2: 2.2 };
 const WALL_T = 0.15;
 const DOOR_H = 2.05;
-const EYE = 1.6, BODY = 1.75, RADIUS = 0.22, STEP = 0.45, GRAVITY = 9.8;
+const EYE = 1.55, BODY = 1.7, RADIUS = 0.2, STEP = 0.45, GRAVITY = 9.8;
 const RES = 0.05;
 const REACH = 3.2;
 const CENTER = H.extras.center;
@@ -1143,6 +1143,7 @@ function buildScene() {
     S.static.add(slab(H.polyOf(r), mat(0xe9e5dc, TOP_SHADOW), F[1], 0.2));
   });
   S.static.add(slab(rectPoly(X.wing), mat(0xd9d3c7, TOP_SHADOW), F[2], 0.18));
+  S.static.add(slab(rectPoly(X.landing), mat(0x6b6b6b, TOP_SHADOW), F[2], 0.06));
 
   // Walls inside and around the rooms; glass on the glazed room.
   computeWalls().forEach((w) => {
@@ -1276,29 +1277,80 @@ function buildScene() {
     collider(s[0], by, s[1], by, 0, 0.95, 0.04);
   });
 
-  // Stairs: solid steps up to the apartment, open steel ones to the roof.
-  const ramp = H.ramps[0], steps = 16, run = (ramp.from - ramp.to) / steps;
-  for (let i = 0; i < steps; i++) {
-    const x2 = ramp.from - i * run, x1 = x2 - run, h = ((i + 1) / steps) * ramp.h2;
-    const m = new THREE.Mesh(new THREE.BoxGeometry(run, h, ramp.across[1] - ramp.across[0]), texMat("white"));
-    m.position.set((x1 + x2) / 2, h / 2, -(ramp.across[0] + ramp.across[1]) / 2);
+  // Stairs: solid steps up to the apartment, open steel ones to the roof,
+  // about 18 cm a riser. Each ramp runs along its axis from `from` to `to`.
+  const rampBox = (r, along0, along1, h0, h1, mat2) => {
+    const a0 = Math.min(along0, along1), a1 = Math.max(along0, along1), w = r.across[1] - r.across[0], c = (r.across[0] + r.across[1]) / 2;
+    const m = r.axis === "x"
+      ? new THREE.Mesh(new THREE.BoxGeometry(a1 - a0, h1 - h0, w), mat2)
+      : new THREE.Mesh(new THREE.BoxGeometry(w, h1 - h0, a1 - a0), mat2);
+    if (r.axis === "x") m.position.set((a0 + a1) / 2, (h0 + h1) / 2, -c);
+    else m.position.set(c, (h0 + h1) / 2, -(a0 + a1) / 2);
     m.castShadow = true; m.receiveShadow = true;
     S.static.add(m);
+  };
+  const ramp = H.ramps[0], steps = Math.round(ramp.h2 / 0.18), run = (ramp.to - ramp.from) / steps;
+  const tread = mat(0x8a5a33, { roughness: 0.6 });
+  for (let i = 0; i < steps; i++) {
+    const s0 = ramp.from + i * run, h = ((i + 1) / steps) * ramp.h2;
+    rampBox(ramp, s0, s0 + run, 0, h - 0.04, texMat("white"));
+    rampBox(ramp, s0 - run * 0.08, s0 + run, h - 0.04, h, tread);   // wooden tread with a nosing
   }
-  const sr = H.ramps[1], sSteps = 14, sRun = (sr.from - sr.to) / sSteps, steel = mat(0x4b4b4b, { roughness: 0.6, metalness: 0.4 });
+  // a handrail along the open side
+  {
+    const rx = ramp.across[0] + 0.05, len = Math.hypot(ramp.to - ramp.from, ramp.h2);
+    const rail = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.04, len), M.black);
+    rail.position.set(rx, ramp.h2 / 2 + 0.9, -(ramp.from + ramp.to) / 2);
+    rail.rotation.x = Math.atan2(ramp.h2, ramp.to - ramp.from);
+    S.static.add(rail);
+  }
+  const sr = H.ramps[1], sSteps = Math.round(sr.h2 / 0.19), sRun = (sr.to - sr.from) / sSteps, steel = mat(0x4b4b4b, { roughness: 0.6, metalness: 0.4 });
   for (let i = 0; i < sSteps; i++) {
-    const y = sr.from - (i + 0.5) * sRun, h = ((i + 1) / sSteps) * sr.h2;
-    const m = new THREE.Mesh(new THREE.BoxGeometry(sr.across[1] - sr.across[0], 0.04, sRun * 0.9), steel);
-    m.position.set((sr.across[0] + sr.across[1]) / 2, h, -y);
-    S.static.add(m);
+    const y0 = sr.from + i * sRun, h = ((i + 1) / sSteps) * sr.h2;
+    rampBox(sr, y0 + sRun * 0.05, y0 + sRun * 0.95, h - 0.04, h, steel);
   }
   sr.across.forEach((x) => {
     const len = Math.hypot(sr.from - sr.to, sr.h2);
-    const s = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.18, len), steel);
-    s.position.set(x, sr.h2 / 2, -(sr.from + sr.to) / 2);
-    s.rotation.x = -Math.atan2(sr.h2, sr.from - sr.to);
-    S.static.add(s);
+    const st = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.18, len), steel);
+    st.position.set(x, sr.h2 / 2, -(sr.from + sr.to) / 2);
+    st.rotation.x = -Math.atan2(sr.h2, sr.from - sr.to);
+    S.static.add(st);
   });
+
+  // Low steps outside the doors to the garden and the drive.
+  X.steps.forEach((r) => {
+    const m = slab(rectPoly(r), mat(0xc9bfae, { roughness: 0.85 }), r[4], r[4]);
+    S.static.add(m);
+  });
+
+  // The hostería's sign: a wooden post on the sidewalk with an arm and a
+  // board that faces both ways along the street. Kept out of the merged
+  // static meshes because its board has a painted face.
+  {
+    const g = new THREE.Group();
+    const wood = mat(0x5a3a22, { roughness: 0.7 });
+    bx(g, 0.1, 2.6, 0.1, 0, 1.3, 0, wood);
+    bx(g, 1.1, 0.06, 0.06, 0.5, 2.52, 0, wood);
+    const c = document.createElement("canvas");
+    c.width = 512; c.height = 192;
+    const k = c.getContext("2d");
+    k.fillStyle = "#3b2a1c"; k.fillRect(0, 0, 512, 192);
+    k.strokeStyle = "#d9c9a8"; k.lineWidth = 8; k.strokeRect(10, 10, 492, 172);
+    k.fillStyle = "#f3ead8"; k.textAlign = "center";
+    k.font = "italic bold 64px Georgia, serif"; k.fillText(t("walk.sign"), 256, 92);
+    k.font = "bold 38px Georgia, serif"; k.fillText(t("walk.sign.sub"), 256, 152);
+    const tx = new THREE.CanvasTexture(c);
+    tx.colorSpace = THREE.SRGBColorSpace;
+    const face = new THREE.MeshStandardMaterial({ map: tx, roughness: 0.7 });
+    const board = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.42, 0.03), [wood, wood, wood, wood, face, face]);
+    board.position.set(0.55, 2.2, 0);
+    board.castShadow = true;
+    g.add(board);
+    [0.2, 0.9].forEach((dx) => bx(g, 0.012, 0.1, 0.012, dx, 2.44, 0, M.black));
+    g.position.set(X.sign[0], 0, -X.sign[1]);
+    S.scene.add(g);
+    collider(X.sign[0] - 0.08, X.sign[1], X.sign[0] + 0.08, X.sign[1], 0, 2.6, 0.06);
+  }
 
   // The grill: brick block and chimney. Posts for the galería, carport, grill.
   const grill = new THREE.Group();
@@ -1484,28 +1536,47 @@ function jump() {
   if (p.vz !== 0 || p.feet - floorAt(p.x, p.y, p.feet) > 0.02) return;
   p.vz = JUMP;
 }
+/* A walk at a person's pace: speed builds up and eases off instead of
+   starting and stopping at once, the head bobs a little with each step, and
+   the eyes follow the feet smoothly up and down stairs. */
+const WALK = 1.35, RUN = 3.0, ACCEL = 9;
 function step(dt) {
   const p = S.player, k = S.keys;
   let f = (k.forward ? 1 : 0) - (k.back ? 1 : 0) + S.joy.f;
   let s = (k.right ? 1 : 0) - (k.left ? 1 : 0) + S.joy.s;
   const len = Math.hypot(f, s);
   if (len > 1) { f /= len; s /= len; }
-  const speed = k.run ? 3.4 : 1.7;
+  const speed = k.run ? RUN : WALK;
   const fx = -Math.sin(p.yaw), fy = Math.cos(p.yaw), rx = Math.cos(p.yaw), ry = Math.sin(p.yaw);
-  const q = { x: p.x + (fx * f + rx * s) * speed * dt, y: p.y + (fy * f + ry * s) * speed * dt };
+  const tx = (fx * f + rx * s) * speed, ty = (fy * f + ry * s) * speed;
+  const ease = 1 - Math.exp(-ACCEL * dt);
+  p.vx = (p.vx || 0) + (tx - (p.vx || 0)) * ease;
+  p.vy = (p.vy || 0) + (ty - (p.vy || 0)) * ease;
+  const q = { x: p.x + p.vx * dt, y: p.y + p.vy * dt };
   q.x = Math.max(-70, Math.min(40, q.x));
   q.y = Math.max(-40, Math.min(60, q.y));
   collide(q, p.feet);
+  if (dt > 0) { p.vx = (q.x - p.x) / dt; p.vy = (q.y - p.y) / dt; }
   p.x = q.x; p.y = q.y;
   const ground = floorAt(p.x, p.y, p.feet);
-  if (p.vz === 0 && p.feet - ground <= STEP) p.feet = ground;
+  const onGround = p.vz === 0 && p.feet - ground <= STEP;
+  if (onGround) p.feet = ground;
   else {
     p.vz -= GRAVITY * dt;
     p.feet += p.vz * dt;
     if (p.feet <= ground) { p.feet = ground; p.vz = 0; }
   }
-  S.camera.position.set(p.x, p.feet + EYE, -p.y);
-  S.camera.rotation.set(p.pitch, p.yaw, 0, "YXZ");
+  // head bob: about two steps a second at a walk, a few centimeters
+  const v = Math.hypot(p.vx, p.vy);
+  p.bob = (p.bob || 0) + (onGround ? v * dt * 4.4 : 0);
+  const amt = onGround ? Math.min(1, v / WALK) : 0;
+  p.bobAmt = (p.bobAmt || 0) + (amt - (p.bobAmt || 0)) * (1 - Math.exp(-6 * dt));
+  const up = Math.abs(Math.sin(p.bob)) * 0.028 * p.bobAmt, side = Math.sin(p.bob) * 0.012 * p.bobAmt;
+  // the eyes trail the feet a little, so stairs read as steps and not jolts
+  const eye = p.feet + EYE;
+  p.eye = dt > 0 && p.eye !== undefined && Math.abs(p.eye - eye) < 1.2 ? p.eye + (eye - p.eye) * (1 - Math.exp(-14 * dt)) : eye;
+  S.camera.position.set(p.x + rx * side, p.eye + up - 0.014 * p.bobAmt, -(p.y + ry * side));
+  S.camera.rotation.set(p.pitch, p.yaw, side * 0.6, "YXZ");
 }
 
 /* ---------- doors under the pointer ---------- */
@@ -1677,12 +1748,19 @@ function setToggle(id, on) {
   b.setAttribute("aria-pressed", on ? "true" : "false");
 }
 
+/* The aerial view is the overview's camera, pointed straight down. */
 function setMode(mode) {
+  const aerial = mode === "aerial";
+  if (aerial) mode = "orbit";
   S.mode = mode;
-  $("mode-walk").classList.toggle("on", mode === "walk");
-  $("mode-orbit").classList.toggle("on", mode === "orbit");
-  $("mode-walk").setAttribute("aria-pressed", mode === "walk" ? "true" : "false");
-  $("mode-orbit").setAttribute("aria-pressed", mode === "orbit" ? "true" : "false");
+  S.aerial = aerial;
+  const shown = aerial ? "aerial" : mode;
+  ["walk", "orbit", "aerial"].forEach((m) => {
+    const b = $("mode-" + m);
+    if (!b) return;
+    b.classList.toggle("on", shown === m);
+    b.setAttribute("aria-pressed", shown === m ? "true" : "false");
+  });
   setHover(null);
   if (mode === "orbit") {
     if (document.pointerLockElement) document.exitPointerLock();
@@ -1695,7 +1773,12 @@ function setMode(mode) {
       S.orbit.maxDistance = 110;
     }
     S.orbit.enabled = true;
-    S.camera.position.set(CENTER.x + 4, 22, -CENTER.y + 22);
+    S.orbit.minPolarAngle = 0;
+    if (aerial) {
+      // straight down from 40 m, north (the plan's top) up on screen
+      S.camera.position.set(CENTER.x - 1, 40, -CENTER.y + 0.01);
+      S.camera.up.set(0, 1, 0);
+    } else S.camera.position.set(CENTER.x + 4, 22, -CENTER.y + 22);
     S.orbit.target.set(CENTER.x - 1, 0, -CENTER.y);
     S.orbit.update();
     S.roofs.visible = false;
@@ -1825,6 +1908,7 @@ function bindControls() {
   // Buttons.
   $("mode-walk").addEventListener("click", () => setMode("walk"));
   $("mode-orbit").addEventListener("click", () => setMode("orbit"));
+  if ($("mode-aerial")) $("mode-aerial").addEventListener("click", () => setMode("aerial"));
   $("toggle-roofs").addEventListener("click", () => { S.roofs.visible = !S.roofs.visible; setToggle("toggle-roofs", S.roofs.visible); });
   $("toggle-labels").addEventListener("click", () => { S.labels.visible = !S.labels.visible; setToggle("toggle-labels", S.labels.visible); });
   $("toggle-full").addEventListener("click", () => {
