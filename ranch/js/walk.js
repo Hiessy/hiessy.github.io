@@ -1302,26 +1302,31 @@ function buildScene() {
     m.castShadow = true; m.receiveShadow = true;
     S.static.add(m);
   };
-  const ramp = H.ramps[0], steps = Math.round(ramp.h2 / 0.18), run = (ramp.to - ramp.from) / steps;
-  const tread = mat(0x8a5a33, { roughness: 0.6 });
-  for (let i = 0; i < steps; i++) {
-    const s0 = ramp.from + i * run, h = ((i + 1) / steps) * ramp.h2;
-    rampBox(ramp, s0, s0 + run, 0, h - 0.04, texMat("white"));
-    rampBox(ramp, s0 - run * 0.08, s0 + run, h - 0.04, h, tread);   // wooden tread with a nosing
-  }
-  // a black handrail on the street wall, as in the video, on brackets
+  // the apartment's winder: wedge steps round the newel, each a solid
+  // block with a wooden tread, filling the box out to its walls
   {
-    const rx = ramp.across[1] - 0.04, len = Math.hypot(ramp.to - ramp.from, ramp.h2);
-    const rail = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.04, len), M.black);
-    rail.position.set(rx, ramp.h2 / 2 + 0.9, -(ramp.from + ramp.to) / 2);
-    rail.rotation.x = Math.atan2(ramp.h2, ramp.to - ramp.from);
-    S.static.add(rail);
-    for (let i = 1; i < 4; i++) {
-      const u = i / 4, yy = ramp.from + (ramp.to - ramp.from) * u;
-      const b2 = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.03, 0.03), M.black);
-      b2.position.set(rx + 0.03, ramp.h2 * u + 0.88, -yy);
-      S.static.add(b2);
+    const r = H.ramps[0], steps = Math.round(r.h2 / 0.18), bx2 = r.box, tread = mat(0x8a5a33, { roughness: 0.6 });
+    const clip = (p) => [Math.max(bx2[0], Math.min(bx2[2], p[0])), Math.max(bx2[1], Math.min(bx2[3], p[1]))];
+    for (let i = 0; i < steps; i++) {
+      const a1 = r.a0 + (r.sweep * i) / steps, a2 = r.a0 + (r.sweep * (i + 1)) / steps, h = ((i + 1) / steps) * r.h2;
+      const outer = [], inner = [];
+      for (let k = 0; k <= 6; k++) {
+        const a = (a1 + ((a2 - a1) * k) / 6) * DEG;
+        outer.push(clip([r.c[0] + Math.cos(a) * 2, r.c[1] + Math.sin(a) * 2]));
+        inner.push([r.c[0] + Math.cos(a) * r.newel, r.c[1] + Math.sin(a) * r.newel]);
+      }
+      // the outer edge follows the box: add its corners the wedge sweeps past
+      const poly = inner.concat(outer.reverse());
+      const pts = [];
+      poly.forEach((p) => { if (!pts.length || Math.hypot(p[0] - pts[pts.length - 1][0], p[1] - pts[pts.length - 1][1]) > 1e-4) pts.push(p); });
+      if (r.sweep < 0) pts.reverse();
+      S.static.add(slab(pts, texMat("white"), h - 0.04, h - 0.04));
+      S.static.add(slab(pts, tread, h, 0.04));
     }
+    // the newel post
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(r.newel, r.newel, r.h2 + 0.9, 12), mat(0x5a3a22, { roughness: 0.6 }));
+    post.position.set(r.c[0], (r.h2 + 0.9) / 2, -r.c[1]);
+    S.static.add(post);
   }
   const sr = H.ramps[1], sSteps = Math.round(sr.h2 / 0.19), sRun = (sr.to - sr.from) / sSteps, steel = mat(0x4b4b4b, { roughness: 0.6, metalness: 0.4 });
   for (let i = 0; i < sSteps; i++) {
@@ -1511,6 +1516,18 @@ function buildRoofs() {
 
 /* The height of a stair at (x, y), or null off it. */
 function rampHeight(r, x, y) {
+  // a winding stair: the height follows the angle round its centre, inside
+  // its box and outside the newel
+  if (r.spiral) {
+    const b = r.box;
+    if (x < b[0] || x > b[2] || y < b[1] || y > b[3]) return null;
+    const dx = x - r.c[0], dy = y - r.c[1];
+    if (Math.hypot(dx, dy) < r.newel) return null;
+    let d = (Math.atan2(dy, dx) / DEG - r.a0) * Math.sign(r.sweep);
+    d = ((d % 360) + 360) % 360;
+    if (d > Math.abs(r.sweep)) return null;
+    return r.h1 + ((r.h2 - r.h1) * d) / Math.abs(r.sweep);
+  }
   const along = r.axis === "x" ? x : y, across = r.axis === "x" ? y : x;
   if (across < r.across[0] || across > r.across[1]) return null;
   if (along < Math.min(r.from, r.to) || along > Math.max(r.from, r.to)) return null;
@@ -1833,7 +1850,7 @@ function bindControls() {
     if (VIEW_KEYS[e.code] && canvas.offsetParent !== null) { setMode(VIEW_KEYS[e.code]); return; }
     // the overview and the aerial view fly like a ghost: WASD or arrows
     // across, E up, Q down, through walls
-    if (S.mode === "orbit" && (S.overStage || document.fullscreenElement)) {
+    if (S.mode === "orbit" && ghostKeysLive()) {
       const fly = Object.assign({ KeyE: "up", KeyQ: "down" }, map);
       if (!fly[e.code]) return;
       keys[fly[e.code]] = true;
@@ -1852,6 +1869,13 @@ function bindControls() {
     if (e.code === "KeyE") keys.up = false;
     if (e.code === "KeyQ") keys.down = false;
   });
+  // the ghost keys work whenever the 3D view is on screen
+  const ghostKeysLive = () => {
+    if (document.fullscreenElement) return true;
+    if (canvas.offsetParent === null) return false;
+    const r = canvas.getBoundingClientRect();
+    return r.bottom > 80 && r.top < window.innerHeight - 80;
+  };
   canvas.addEventListener("pointerenter", () => { S.overStage = true; });
   canvas.addEventListener("pointerleave", () => { S.overStage = false; Object.keys(keys).forEach((k) => { keys[k] = false; }); });
   // keep the buttons in sight when the page's sticky header covers the top
@@ -2027,7 +2051,7 @@ function fly(dt) {
   if (!f && !s && !u) return;
   const az = S.orbit.getAzimuthalAngle();
   const dist = S.camera.position.distanceTo(S.orbit.target);
-  const v = Math.max(4, dist * 0.7) * (k.run ? 2.5 : 1) * dt;
+  const v = Math.max(3, dist * 0.35) * (k.run ? 2.5 : 1) * dt;
   const dx = (-Math.sin(az) * f + Math.cos(az) * s) * v, dz = (-Math.cos(az) * f - Math.sin(az) * s) * v;
   S.camera.position.x += dx; S.camera.position.z += dz;
   S.orbit.target.x += dx; S.orbit.target.z += dz;

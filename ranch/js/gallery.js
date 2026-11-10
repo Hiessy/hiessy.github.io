@@ -30,7 +30,7 @@
   /* In order, a part of the house at a time and the same room's photos
      together: [group, room (number, space id or ""), caption key] */
   var LIST = [
-    ["street", "drive", t("photo.01")], ["street", "15", t("photo.02")], ["street", "drive", t("photo.03")],
+    ["street", "drive", t("photo.01")], ["street", "6", t("photo.02")], ["street", "drive", t("photo.03")],
     ["street", "wbalcony", t("photo.04")], ["street", "drive", t("photo.05")],
     ["garden", "", t("photo.06")], ["garden", "", t("photo.07")], ["garden", "20", t("photo.08")],
     ["garden", "20", t("photo.09")], ["galeria", "galeria", t("photo.10")], ["galeria", "galeria", t("photo.11")],

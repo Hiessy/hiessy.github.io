@@ -42,7 +42,7 @@
     { n: 2, level: 0, kind: "bedroom", name: t("name.bedroom"), note: t("note.02"), info: t("info.02"), src: "plan", fin: "terracotta", poly: [[-5, 0.5], [0, 0.5], [0, 4.65], [-3.2, 4.65], [-3.2, 3.45], [-5, 3.45]], lab: [-2.3, 2.2, "m"] },
     { n: 3, level: 0, kind: "bedroom", name: t("name.bedroom"), info: t("info.03"), src: "plan", fin: "parquet", poly: [[-5, 3.45], [-3.2, 3.45], [-3.2, 4.65], [-2.2, 4.65], [-2.2, 7.95], [-5, 7.95]], lab: [-3.6, 6.3, "m"] },
     { n: 4, level: 0, kind: "living", name: t("name.sitting"), note: t("note.04"), info: t("info.04"), src: "plan", fin: "white", rect: [-5, 7.95, -2.2, 12.35] },
-    { n: 5, level: 0, kind: "stair", name: t("space.aptstair"), note: t("space.aptstair.note"), info: t("info.05"), src: "plan", fin: "white", poly: [[-2.1, 12.35], [0, 12.35], [0, 16.15], [-1.7, 16.15], [-1.7, 14.25], [-2.1, 14.25]], treads: "y", lab: [-1.0, 14.2, "m"] },
+    { n: 5, level: 0, kind: "bath", name: t("name.bath"), info: t("info.05"), src: "plan", fin: "bathtile", rect: [-1.7, 14.25, 0, 16.15], street: true },
     { n: 6, level: 0, kind: "bedroom", name: t("name.bedroom"), note: t("note.06"), info: t("info.06"), src: "plan", fin: "parquet", poly: [[-5, 12.35], [-2.1, 12.35], [-2.1, 14.25], [-1.7, 14.25], [-1.7, 16.15], [-5, 16.15]], lab: [-3.4, 14.6, "m"] },
     // the middle row
     { n: 7, level: 0, kind: "service", name: t("name.store"), info: t("info.07"), src: "plan", fin: "white", rect: [-8.5, 0.9, -5, 2.2] },
@@ -52,16 +52,17 @@
     { n: 11, level: 0, kind: "bedroom", name: t("name.bedroom"), info: t("info.11"), src: "plan", fin: "calcareo", rect: [-8.5, 4.65, -5, 8.75] },
     { n: 12, level: 0, kind: "living", name: t("name.dining"), note: t("note.12"), info: t("info.12"), src: "plan", fin: "checker", rect: [-8.5, 8.75, -5, 12.35] },
     { n: 13, level: 0, kind: "bedroom", name: t("name.bedroom"), info: t("info.13"), src: "plan", fin: "calcareo", rect: [-8.5, 12.35, -5, 16.15] },
-    { n: 14, level: 0, kind: "hall", name: t("name.corridor"), info: t("info.14"), src: "plan", fin: "white", poly: [[-11.15, 4.65], [-9.75, 4.65], [-9.75, 1.0], [-8.5, 1.0], [-8.5, 15.1], [-11.15, 15.1]], lab: [-9.85, 10.6, "m"] },
-    { n: 15, level: 0, kind: "hall", name: t("name.vestibule"), note: t("note.15"), info: t("info.15"), src: "plan", fin: "white", rect: [-11.15, 15.1, -8.5, 16.15] },
+    { n: 14, level: 0, kind: "hall", name: t("name.corridor"), info: t("info.14"), src: "plan", fin: "white", rect: [-11.15, 4.65, -8.5, 15.1], lab: [-9.85, 10.6, "m"] },
+    { n: 15, level: 0, kind: "bath", name: t("name.bath"), info: t("info.15"), src: "guess", fin: "bathtile", rect: [-11.15, 15.1, -8.5, 16.15] },
+    { n: 34, level: 0, kind: "hall", name: t("name.passage"), info: t("info.34"), src: "plan", fin: "white", rect: [-9.75, 1.0, -8.5, 4.65] },
     // kitchen, laundry and the way to the wing
     { n: 16, level: 0, kind: "service", name: t("name.kitchen"), info: t("info.16"), src: "plan", fin: "kitchen", rect: [-13.1, 1.0, -9.75, 4.65] },
-    { n: 17, level: 0, kind: "service", name: t("name.laundry"), info: t("info.17"), src: "plan", fin: "kitchen", rect: [-14.35, 2.2, -13.1, 3.6] },
-    { n: 18, level: 0, kind: "hall", name: t("name.passage"), info: t("info.18"), src: "plan", fin: "white", poly: [[-15.95, 1.3], [-13.1, 1.3], [-13.1, 2.2], [-14.35, 2.2], [-14.35, 3.6], [-13.1, 3.6], [-13.1, 4.75], [-15.95, 4.75]], lab: [-15.15, 3.0, "m"] },
+    { n: 17, level: 0, kind: "service", name: t("name.laundry"), info: t("info.17"), src: "plan", fin: "kitchen", rect: [-14.25, 2.8, -13.1, 4.75] },
+    { n: 18, level: 0, kind: "hall", name: t("name.passage"), info: t("info.18"), src: "plan", fin: "white", poly: [[-15.6, 1.3], [-13.1, 1.3], [-13.1, 2.8], [-14.25, 2.8], [-14.25, 4.75], [-15.6, 4.75]], lab: [-14.9, 2.6, "m"] },
     { n: 19, level: 0, kind: "bath", name: t("name.bath"), info: t("info.19"), src: "plan", fin: "bathtile", rect: [-13.7, 4.75, -11.15, 6.45] },
-    { n: 20, level: 0, kind: "living", name: t("name.glazed"), note: t("note.20"), info: t("info.20"), src: "plan", fin: "white", poly: [[-16.0, 4.75], [-13.7, 4.75], [-13.7, 6.45], [-11.15, 6.45], [-11.15, 12.95], [-16.0, 12.95]], lab: [-13.6, 9.7, "m"] },
+    { n: 20, level: 0, kind: "living", name: t("name.glazed"), note: t("note.20"), info: t("info.20"), src: "plan", fin: "white", poly: [[-16.0, 5.05], [-15.6, 5.05], [-15.6, 4.75], [-13.7, 4.75], [-13.7, 6.45], [-11.15, 6.45], [-11.15, 12.95], [-16.0, 12.95]], lab: [-13.6, 9.7, "m"] },
     // the guest wing along the south side
-    { n: 21, level: 0, kind: "bedroom", name: t("name.guest"), info: t("info.21"), src: "plan", fin: "parquet", rect: [-19.0, 1.6, -15.95, 5.05] },
+    { n: 21, level: 0, kind: "bedroom", name: t("name.guest"), info: t("info.21"), src: "plan", fin: "parquet", rect: [-19.0, 1.6, -15.6, 5.05] },
     { n: 22, level: 0, kind: "bath", name: t("name.bath"), info: t("info.22"), src: "plan", fin: "bathtile", rect: [-19.95, 2.05, -19.0, 4.0] },
     { n: 23, level: 0, kind: "service", name: t("name.store"), info: t("info.23"), src: "plan", fin: "white", poly: [[-19.95, 4.0], [-19.0, 4.0], [-19.0, 5.05], [-17.45, 5.05], [-17.45, 7.0], [-19.95, 7.0]], lab: [-18.6, 6.0, "m"] },
     { n: 24, level: 0, kind: "bedroom", name: t("name.guest"), info: t("info.24"), src: "plan", fin: "calcareo", rect: [-23.1, 2.2, -19.95, 7.0] },
@@ -75,18 +76,20 @@
     { n: 31, level: 1, kind: "service", name: t("name.kitchen"), info: t("info.31"), src: "plan", fin: "cream", rect: [-13.1, 18.4, -11.0, 20.6] },
     { n: 32, level: 1, kind: "hall", name: t("name.corridor"), info: t("info.32"), src: "plan", fin: "cream", rect: [-11.0, 19.05, -6.05, 20.05], line: true, lab: [-10.8, 19.55, "s"] },
     // on the wing's roof
+    { n: 35, level: 1, kind: "hall", name: t("name.landing"), note: t("note.35"), info: t("info.35"), src: "plan", fin: "cream", poly: [[-1.05, 13.3], [0, 13.3], [0, 16.15], [-2.1, 16.15], [-2.1, 14.25], [-1.05, 14.25]], lab: [-1.05, 15.2, "m"] },
     { n: 33, level: 2, kind: "service", name: t("name.tower"), note: t("note.33"), info: t("info.33"), src: "plan", fin: "concrete", rect: [-26.95, 3.5, -23.6, 6.05] }
   ];
 
   /* Spaces without a number: covered outdoor areas, stairs, balconies. */
   var spaces = [
+    { id: "aptstair", level: 0, kind: "stair", name: t("space.aptstair"), note: t("space.aptstair.note"), info: t("info.aptstair"), src: "plan", fin: "white", rect: [-2.1, 12.35, 0, 14.25], street: true, enclosed: true, treads: "y" },
     { id: "drive", level: 0, kind: "covered", name: t("space.drive"), note: t("space.drive.note"), info: t("info.drive"), src: "plan", fin: "pavers", rect: [-13.0, 16.15, 0, 19.8], street: true },
     { id: "galeria", level: 0, kind: "covered", name: t("space.galeria"), note: t("space.galeria.note"), info: t("info.galeria"), src: "plan", fin: "terracotta", poly: [[-17.45, 5.05], [-16.0, 5.05], [-16.0, 7.85], [-26.05, 7.85], [-26.05, 7.0], [-17.45, 7.0]], outside: [-21.0, 8.3, "m"] },
     { id: "steelstair", level: 0, kind: "stair", name: t("space.steelstair"), info: t("info.steelstair"), src: "photos", rect: [-28.45, 4.4, -27.45, 7.2], treads: "y", outside: [-28.6, 7.6, "e"] },
     { id: "grill", level: 0, kind: "covered", name: t("space.grill"), note: t("space.grill.note"), info: t("info.grill"), src: "photos", fin: "gravel", rect: [-30.0, 3.2, -28.45, 7.4] },
     { id: "carport", level: 0, kind: "covered", name: t("space.carport"), note: t("space.carport.note"), info: t("info.carport"), src: "plan", fin: "gravel", poly: [[-30.0, 3.2], [-30.0, 7.4], [-33.0, 7.4], [-33.0, 12.5], [-36.9, 12.5], [-36.9, 3.4]], lab: [-34.9, 8.0, "m"] },
 
-    { id: "stairwell", level: 1, kind: "stair", name: t("space.aptstair"), info: t("info.stairwell"), src: "plan", poly: [[-2.1, 12.35], [0, 12.35], [0, 16.15], [-1.7, 16.15], [-1.7, 14.25], [-2.1, 14.25]], enclosed: true },
+    { id: "stairwell", level: 1, kind: "stair", name: t("space.aptstair"), info: t("info.stairwell"), src: "plan", rect: [-2.1, 12.35, 0, 14.25], street: true, enclosed: true },
     { id: "wbalcony", level: 1, kind: "balcony", name: t("space.balcony"), info: t("info.wbalcony"), src: "plan", fin: "cream", rect: [-13.1, 16.15, -11.0, 18.4], outside: [-13.4, 17.4, "e"] },
     { id: "sbalcony", level: 1, kind: "balcony", name: t("space.balcony.street"), info: t("info.sbalcony"), src: "plan", fin: "cream", poly: [[0, 16.45], [0.9, 16.45], [0.9, 19.8], [0, 19.8]], outside: [1.2, 18.1, "s"] },
 
@@ -134,7 +137,7 @@
     sign: [0.75, 14.4],
     // low steps outside the doors that lead out of the house, where the
     // survey marks the floor higher than the garden: [x1, y1, x2, y2, height]
-    steps: [[-10.55, 16.15, -9.55, 16.5, 0.12], [-16.4, 6.25, -16.0, 7.35, 0.12], [-16.4, 9.55, -16.0, 10.65, 0.12],
+    steps: [[-4.4, 16.15, -3.4, 16.5, 0.12], [-16.4, 6.25, -16.0, 7.35, 0.12], [-16.4, 9.55, -16.0, 10.65, 0.12],
             [-13.65, 12.95, -12.55, 13.3, 0.12], [-22.0, 7.85, -21.0, 8.25, 0.1], [-17.4, 7.85, -16.4, 8.25, 0.1]]
   };
 
@@ -159,7 +162,7 @@
          gate: { from: 16.15, to: 19.8, kind: "gate" },
          doors: [{ from: 6.4, to: 7.8, kind: "double-glass", name: t("facade.entrance") },
                  { from: 12.8, to: 13.7, kind: "red", name: t("facade.aptdoor") }],
-         windows: [[1.6, 3.2], [8.7, 10.6], [10.75, 12.25]],
+         windows: [[1.6, 3.2], [5.05, 6.2], [8.7, 10.6], [10.75, 12.25]],
          bars: [1.6, 3.2],
          stone: [[12.35, 12.8], [13.7, 16.15]] },
     1: { from: 12.35, to: 19.8,
@@ -174,27 +177,21 @@
      marks; which way each swings is read loosely. */
   var doors = [
     { level: 0, y: 4.65, from: -1.35, to: -0.45, kind: "wood", swing: "s" },
-    { level: 0, x: -2.2, from: 4.95, to: 5.85, kind: "wood", swing: "w" },
     { level: 0, x: -2.2, from: 8.35, to: 9.25, kind: "glass", swing: "w" },
     { level: 0, x: -5.0, from: 9.4, to: 12, kind: "open" },
-    { level: 0, y: 12.35, from: -3.9, to: -2.9, kind: "wood", swing: "n" },
-    { level: 0, x: -5.0, from: 1.12, to: 2.02, kind: "white", swing: "w" },
+    { level: 0, x: -5.0, from: 1.0, to: 1.9, kind: "wood", swing: "w" },
+    { level: 0, x: -8.5, from: 1.0, to: 1.9, kind: "wood", swing: "w" },
     { level: 0, x: -5.0, from: 2.42, to: 3.33, kind: "white", swing: "w" },
     { level: 0, x: -5.0, from: 3.58, to: 4.48, kind: "white", swing: "w" },
     { level: 0, y: 4.65, from: -8.4, to: -7.5, kind: "white", swing: "s" },
     { level: 0, x: -8.5, from: 6.25, to: 7.15, kind: "wood", swing: "e" },
     { level: 0, x: -8.5, from: 10.4, to: 11.4, kind: "wood", swing: "e" },
     { level: 0, x: -8.5, from: 13.85, to: 14.75, kind: "wood", swing: "e" },
-    { level: 0, y: 15.1, from: -10.8, to: -9.1, kind: "open" },
-    { level: 0, y: 16.15, from: -10.5, to: -9.6, kind: "wood", swing: "s" },
-    { level: 0, y: 4.65, from: -11.0, to: -10.1, kind: "wood", swing: "s" },
+    { level: 0, y: 4.65, from: -9.55, to: -8.65, kind: "wood", swing: "s" },
     { level: 0, x: -9.75, from: 1.15, to: 2.05, kind: "wood", swing: "w" },
-    { level: 0, x: -13.1, from: 2.45, to: 3.35, kind: "white", swing: "w" },
-    { level: 0, x: -13.1, from: 1.3, to: 2.2, kind: "open" },
-    { level: 0, y: 4.75, from: -15.65, to: -14.75, kind: "glass", swing: "n" },
-    { level: 0, x: -15.95, from: 3.25, to: 4.15, kind: "wood", swing: "w" },
+    { level: 0, x: -13.1, from: 3.65, to: 4.55, kind: "white", swing: "w" },
+    { level: 0, x: -13.1, from: 1.35, to: 2.25, kind: "wood", swing: "w" },
     { level: 0, x: -11.15, from: 5, to: 5.9, kind: "white", swing: "w" },
-    { level: 0, x: -11.15, from: 8, to: 9.6, kind: "open" },
     { level: 0, x: -16.0, from: 6.3, to: 7.3, kind: "glass", swing: "w" },
     { level: 0, x: -16.0, from: 9.6, to: 10.6, kind: "glass", swing: "w" },
     { level: 0, y: 12.95, from: -13.6, to: -12.6, kind: "glass", swing: "n" },
@@ -204,6 +201,16 @@
     { level: 0, y: 7.0, from: -20.95, to: -20.05, kind: "wood", swing: "s" },
     { level: 0, y: 7.0, from: -25.45, to: -24.55, kind: "wood", swing: "s" },
     { level: 0, x: -26.05, from: 3.2, to: 4.1, kind: "white", swing: "w" },
+    { level: 0, y: 7.95, from: -3.6, to: -2.7, kind: "wood", swing: "s" },
+    { level: 0, y: 16.15, from: -4.35, to: -3.45, kind: "wood", swing: "s" },
+    { level: 0, y: 14.25, from: -1.0, to: -0.1, kind: "white", swing: "n" },
+    { level: 0, x: -11.15, from: 10.15, to: 11.1, kind: "glass", swing: "w" },
+    { level: 0, x: -8.5, from: 15.2, to: 16.1, kind: "white", swing: "e" },
+    { level: 0, x: -15.6, from: 1.45, to: 2.45, kind: "open" },
+    { level: 0, y: 4.75, from: -15.5, to: -14.6, kind: "glass", swing: "n" },
+    { level: 1, y: 14.25, from: -2.1, to: 0, kind: "open" },
+    { level: 1, y: 13.3, from: -1.05, to: 0, kind: "open" },
+    { level: 1, x: -1.05, from: 13.3, to: 14.25, kind: "open" },
     { level: 1, y: 16.15, from: -1.55, to: -0.6, kind: "wood", swing: "n" },
     { level: 1, x: -6.05, from: 19.08, to: 20.0, kind: "open" },
     { level: 1, x: -8.2, from: 16.6, to: 17.5, kind: "white", swing: "w" },
@@ -236,20 +243,19 @@
     { level: 0, type: "chandelier", at: [-6.75, 10.55], h: 2.7 },
     // 14 corridor: the rattan sofas and chandeliers of the photos
     { level: 0, type: "sofa", at: [-10.85, 13.4], rot: 270, w: 1.7, frame: 0x8a5a2b, color: 0xc98a5a },
-    { level: 0, type: "armchair", at: [-9.3, 12.6], rot: 90, frame: 0x8a5a2b, color: 0xc98a5a },
-    { level: 0, type: "console", at: [-10.9, 11.0], rot: 270 },
+    { level: 0, type: "armchair", at: [-9.0, 12.6], rot: 90, frame: 0x8a5a2b, color: 0xc98a5a },
+    { level: 0, type: "console", at: [-10.9, 7.0], rot: 270 },
     { level: 0, type: "chandelier", at: [-10.0, 7.0], h: 2.7 },
     { level: 0, type: "chandelier", at: [-10.0, 12.0], h: 2.7 },
     // bedrooms in the front block
     { level: 0, type: "bed", at: [-3.75, 1.575], rot: 0, w: 0.9, color: TEAL, frame: WOOD },
     { level: 0, type: "bed", at: [-2.35, 1.575], rot: 0, w: 0.9, color: TEAL, frame: WOOD },
     { level: 0, type: "nightstand", at: [-3.05, 0.73], rot: 0, w: 0.3 },
-    { level: 0, type: "bed", at: [-3.6, 6.87], rot: 180, w: 1.45, color: GREEN, frame: DARK },
-    { level: 0, type: "nightstand", at: [-4.55, 7.7], rot: 180 },
-    { level: 0, type: "wardrobe", at: [-4.66, 5.4], rot: 270, w: 1.2 },
-    { level: 0, type: "bed", at: [-3.9, 13.6], rot: 270, w: 0.9, color: GREEN, frame: 0xb8b8b8 },
-    { level: 0, type: "bed", at: [-3.9, 15.15], rot: 270, w: 0.9, color: GREEN, frame: 0xb8b8b8 },
-    { level: 0, type: "nightstand", at: [-4.75, 14.4], rot: 270, w: 0.4 },
+    { level: 0, type: "bed", at: [-3.9, 6.2], rot: 270, w: 1.45, color: GREEN, frame: DARK },
+    { level: 0, type: "nightstand", at: [-4.75, 7.35], rot: 270 },
+    { level: 0, type: "bed", at: [-3.9, 13.55], rot: 270, w: 0.9, color: GREEN, frame: 0xb8b8b8 },
+    { level: 0, type: "bed", at: [-3.9, 14.75], rot: 270, w: 0.9, color: GREEN, frame: 0xb8b8b8 },
+    { level: 0, type: "nightstand", at: [-4.75, 12.75], rot: 270, w: 0.4 },
     { level: 0, type: "bed", at: [-6.08, 5.5], rot: 90, w: 0.9, color: GREEN, frame: 0xb8b8b8 },
     { level: 0, type: "bed", at: [-6.08, 6.7], rot: 90, w: 0.9, color: GREEN, frame: 0xb8b8b8 },
     { level: 0, type: "bed", at: [-6.08, 7.9], rot: 90, w: 0.9, color: GREEN, frame: 0xb8b8b8 },
@@ -258,11 +264,11 @@
     { level: 0, type: "bed", at: [-6.08, 15.5], rot: 90, w: 0.9, color: GREEN },
     // 16 kitchen, 17 laundry
     { level: 0, type: "counter", at: [-11.4, 1.375], rot: 0, w: 1.8, cabinet: 0x6b3f22, sink: 0.45, stove: -0.5 },
-    { level: 0, type: "fridge", at: [-12.75, 4.27], rot: 180 },
-    { level: 0, type: "washer", at: [-14.05, 3.25], rot: 270 },
-    { level: 0, type: "tub", at: [-14.05, 2.55], rot: 270 },
+    { level: 0, type: "fridge", at: [-10.1, 4.27], rot: 180 },
+    { level: 0, type: "washer", at: [-13.6, 3.1], rot: 0 },
+    { level: 0, type: "tub", at: [-14.0, 4.4], rot: 270 },
     // 20 glazed room: reception desk, sofas, breakfast tables
-    { level: 0, type: "desk", at: [-11.6, 11.6], rot: 270, w: 1.6 },
+    { level: 0, type: "desk", at: [-11.6, 12.0], rot: 270, w: 1.6 },
     { level: 0, type: "sofa", at: [-15.5, 8.2], rot: 270, w: 2.0, frame: 0xe8e2d4, color: 0xf3eee2 },
     { level: 0, type: "sofa", at: [-14.6, 12.5], rot: 180, w: 1.9, frame: 0x6f6f6a, color: 0x8d8d88 },
     { level: 0, type: "coffee", at: [-14.6, 8.2], rot: 90, w: 1.0, d: 0.5 },
@@ -281,6 +287,8 @@
     { level: 0, type: "bed", at: [-23.65, 3.58], rot: 0, w: 0.9, color: TEAL, frame: WOOD },
     { level: 0, type: "nightstand", at: [-24.27, 2.73], rot: 0, w: 0.3 },
     // baths
+    { level: 0, type: "bath", room: 5, door: "s" },
+    { level: 0, type: "bath", room: 15, door: "e" },
     { level: 0, type: "bath", room: 8, door: "e" },
     { level: 0, type: "bath", room: 9, door: "e" },
     { level: 0, type: "bath", room: 10, door: "n" },
@@ -312,7 +320,7 @@
     { level: 1, type: "dining", at: [-3.6, 18.9], w: 0.8, round: true, chairs: 2, seat: 0xeadfc8, wood: true },
     { level: 1, type: "tv", at: [-5.84, 17.3], rot: 270 },
     { level: 1, type: "lamp", at: [-0.35, 19.6] },
-    { level: 1, type: "wardrobe", at: [-2.2, 19.64], rot: 180, w: 1.0 },
+    { level: 1, type: "wardrobe", at: [-1.745, 15.2], rot: 270, w: 1.0 },
     { level: 1, type: "bed", at: [-9.55, 17.23], rot: 0, w: 1.3, color: "zebra", frame: 0x1c1c1c },
     { level: 1, type: "counter", at: [-12.25, 20.22], rot: 180, w: 1.6, cabinet: 0xf2f0ea, sink: -0.3, stove: 0.4 },
     { level: 1, type: "fridge", at: [-12.75, 18.8], rot: 270 },
@@ -323,7 +331,7 @@
 
   /* Walls that are glass: the glazed room's garden sides. */
   var glass = [
-    { level: 0, x: -16.0, from: 4.75, to: 12.95 },
+    { level: 0, x: -16.0, from: 5.05, to: 12.95 },
     { level: 0, y: 12.95, from: -16.0, to: -11.15 }
   ];
 
@@ -373,11 +381,12 @@
 
   /* Stairs as ramps: the height goes from h1 at `from` to h2 at `to` along
      `axis`, inside `across` on the other axis. The apartment's climbs in its
-     straight flight along the street wall, from the red door up to the
-     apartment's living room; the steel one goes from the grill up
+     winder in its box behind the red door, three quarters of a turn
+     clockwise (spiral: centre c, from angle a0 through sweep degrees,
+     angles counterclockwise from +x), out onto the landing over the bath; the steel one goes from the grill up
      to the walkway on the wing's roof. */
   var ramps = [
-    { id: "aptstair", axis: "y", from: 12.9, to: 16.15, h1: 0, h2: FLOOR[1], across: [-1.6, -0.05] },
+    { id: "aptstair", spiral: true, c: [-1.05, 13.3], newel: 0.12, box: [-2.1, 12.35, 0, 14.25], a0: 0, sweep: -270, h1: 0, h2: FLOOR[1] },
     { id: "steelstair", axis: "y", from: 7.2, to: 4.4, h1: 0, h2: FLOOR[2], across: [-28.45, -27.45] }
   ];
 
