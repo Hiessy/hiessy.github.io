@@ -22,6 +22,8 @@
     { id: "bedrooms", name: t("photos.group.bedrooms") },
     { id: "baths", name: t("photos.group.baths") },
     { id: "apartment", name: t("photos.group.apartment") },
+    { id: "old", name: t("photos.group.old"), credit: t("photos.old.credit"),
+      link: "https://www.tripadvisor.com.ar/Hotel_Review-g669021-d1211851-Reviews-Norita_Ranch-La_Cumbre_Province_of_Cordoba_Central_Argentina.html" },
     { id: "plans", name: t("photos.group.plans") }
   ];
 
@@ -53,6 +55,18 @@
     var f = (i < 9 ? "0" : "") + (i + 1) + ".jpg";
     return { i: i, group: p[0], room: p[1], cap: p[2], big: "photos/" + f, small: "photos/small/" + f };
   });
+  /* A guest's photos from January 2013, before the apartment was built. They
+     stay on Tripadvisor's server and are credited to the guest's review: the
+     site doesn't keep copies. */
+  var TA = "https://dynamic-media-cdn.tripadvisor.com/media/";
+  [["0c/0a", "", t("old.01")], ["0b/a7", "20", t("old.02")], ["0b/cf", "20", t("old.03")],
+   ["0b/b9", "20", t("old.04")], ["0b/93", "", t("old.05")], ["0b/79", "14", t("old.06")],
+   ["0b/5b", "14", t("old.07")], ["0b/4a", "12", t("old.08")], ["0b/35", "", t("old.09")]]
+    .forEach(function (o) {
+      var f = "03/7c/" + o[0] + "/norita-ranch.jpg";
+      PHOTOS.push({ i: PHOTOS.length, group: "old", room: o[1], cap: o[2], big: TA + "photo-o/" + f, small: TA + "photo-s/" + f, ext: true });
+    });
+
   /* The 2015 survey's drawings, cut without the title block that names the
      owner (plans/NAME.png, plans/NAME-small.jpg). */
   [["ground", t("plans.ground")], ["upper", t("plans.upper")], ["facade", t("plans.facade")], ["sections", t("plans.sections")]]
@@ -199,6 +213,17 @@
         ul.appendChild(li);
       });
       sec.appendChild(ul);
+      if (g.credit) {
+        var cr = document.createElement("p");
+        cr.className = "photos-credit";
+        var a = document.createElement("a");
+        a.href = g.link;
+        a.rel = "noopener";
+        a.target = "_blank";
+        a.textContent = tr(g.credit);
+        cr.appendChild(a);
+        sec.appendChild(cr);
+      }
       box.appendChild(sec);
     });
   }
