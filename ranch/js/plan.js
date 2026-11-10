@@ -13,7 +13,7 @@
   function Y(y) { return OY - K * y; }
   /* The whole drawing, and the part of it on screen: zooming and panning only
      move this window. */
-  var FULL = { x: 20, y: 90, w: 1640, h: 810 };
+  var FULL = { x: 117, y: 104, w: 1400, h: 815 };
   var vb = { x: FULL.x, y: FULL.y, w: FULL.w, h: FULL.h };
   var MIN_W = 240;
 
@@ -157,11 +157,96 @@
     var g = el("g", { class: "rm", "data-room": id }, parent);
     var fill = FILL[item.kind] || "#FFFFFF";
     if (item.treads) fill = "url(#pt-treads-" + item.treads + ")";
+    // the walls layer draws the walls; a room's own outline stays faint
     el("polygon", {
       class: "shape", points: pts(poly), fill: fill,
-      stroke: DASHED[item.kind] ? "#6B6A65" : "#2B2B28", "stroke-width": 2,
+      stroke: DASHED[item.kind] ? "#6B6A65" : "#B9B3A6", "stroke-width": DASHED[item.kind] ? 2 : 1,
       "stroke-dasharray": DASHED[item.kind] ? "6 4" : null
     }, g);
+  }
+
+  /* ---------- walls and doors, drawn like the survey ----------
+     Every room edge is a wall unless a door or glass opens it (the same rule
+     as the 3D view). A wall between two rooms is 15 cm, one with a room on
+     a single side 25 cm. Doors are gaps with their leaf and swing. */
+  var RES = 0.05;
+  function onFloor(level) { return floor === 0 ? level === 0 : level > 0; }
+  function wallsLayer(parent) {
+    var cells = {};
+    function key(o, c) { return o + "|" + c.toFixed(3); }
+    function mark(o, c, a, b, d) {
+      var k = key(o, c), set = cells[k] || (cells[k] = {});
+      var i0 = Math.round(Math.min(a, b) / RES), i1 = Math.round(Math.max(a, b) / RES);
+      for (var i = i0; i < i1; i++) set[i] = d === undefined ? (set[i] || 0) + 1 : d;
+    }
+    H.rooms.concat(H.spaces.filter(function (s) { return s.enclosed; })).forEach(function (r) {
+      if (!onFloor(r.level)) return;
+      var poly = H.polyOf(r);
+      for (var i = 0; i < poly.length; i++) {
+        var p = poly[i], q = poly[(i + 1) % poly.length];
+        if (Math.abs(p[0] - H.streetX(p[1])) < 1e-6 && Math.abs(q[0] - H.streetX(q[1])) < 1e-6) continue;
+        if (Math.abs(p[0] - q[0]) < 1e-6) mark("V", p[0], p[1], q[1]);
+        else if (Math.abs(p[1] - q[1]) < 1e-6) mark("H", p[1], p[0], q[0]);
+      }
+    });
+    function cut(d) { mark(d.x !== undefined ? "V" : "H", d.x !== undefined ? d.x : d.y, d.from, d.to, 0); }
+    H.glass.forEach(function (g) { if (onFloor(g.level)) cut(g); });
+    H.doors.forEach(function (d) { if (onFloor(d.level)) cut(d); });
+    Object.keys(cells).forEach(function (k) {
+      var o = k[0], c = Number(k.slice(2)), set = cells[k];
+      var idx = Object.keys(set).map(Number).filter(function (i) { return set[i] > 0; }).sort(function (a, b) { return a - b; });
+      var start = null, prev = null, n = 0;
+      function flush() {
+        if (start === null) return;
+        var a = start * RES, b = (prev + 1) * RES, w = (n > 1 ? 0.15 : 0.25) * K;
+        var p1 = o === "V" ? [c, a] : [a, c], p2 = o === "V" ? [c, b] : [b, c];
+        el("line", { x1: X(p1[0]), y1: Y(p1[1]), x2: X(p2[0]), y2: Y(p2[1]), stroke: "#2B2B28", "stroke-width": w, "stroke-linecap": "square" }, parent);
+      }
+      idx.forEach(function (i) {
+        var cnt = set[i] > 1 ? 2 : 1;
+        if (start === null) { start = prev = i; n = cnt; }
+        else if (i === prev + 1 && cnt === n) prev = i;
+        else { flush(); start = prev = i; n = cnt; }
+      });
+      flush();
+    });
+  }
+  var SIDE = { n: [0, 1], s: [0, -1], e: [1, 0], w: [-1, 0] };
+  /* A leaf hinged at h, closed along u for length L, swung open toward v. */
+  function leaf(parent, h, u, v, L, color) {
+    var arc = [];
+    for (var i = 0; i <= 12; i++) {
+      var a = (i / 12) * Math.PI / 2, cs = Math.cos(a), sn = Math.sin(a);
+      arc.push([h[0] + L * (cs * u[0] + sn * v[0]), h[1] + L * (cs * u[1] + sn * v[1])]);
+    }
+    el("polyline", { points: pts(arc), fill: "none", stroke: color, "stroke-width": 1.2, "stroke-dasharray": "4 3" }, parent);
+    el("line", { x1: X(h[0]), y1: Y(h[1]), x2: X(h[0] + L * v[0]), y2: Y(h[1] + L * v[1]), stroke: color, "stroke-width": 3, "stroke-linecap": "round" }, parent);
+  }
+  function doorsLayer(parent) {
+    var WOOD = "#8A4B2A", GLASS = "#3F78A8";
+    H.doors.forEach(function (d) {
+      if (!onFloor(d.level) || d.kind === "open") return;
+      var alongX = d.x === undefined;                  // the wall runs along x
+      var a = alongX ? [d.from, d.y] : [d.x, d.from], b = alongX ? [d.to, d.y] : [d.x, d.to];
+      var u = alongX ? [1, 0] : [0, 1], L = d.to - d.from, color = /glass/.test(d.kind) ? GLASS : WOOD;
+      if (d.kind === "slide-glass") {
+        var n = alongX ? [0, 0.06] : [0.06, 0], mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+        el("line", { x1: X(a[0] + n[0]), y1: Y(a[1] + n[1]), x2: X(mid[0] + n[0]), y2: Y(mid[1] + n[1]), stroke: GLASS, "stroke-width": 3 }, parent);
+        el("line", { x1: X(mid[0] - n[0] - u[0] * 0.1), y1: Y(mid[1] - n[1] - u[1] * 0.1), x2: X(b[0] - n[0]), y2: Y(b[1] - n[1]), stroke: GLASS, "stroke-width": 3 }, parent);
+        return;
+      }
+      leaf(parent, a, u, SIDE[d.swing] || [0, 1], L, color);
+    });
+    // on the building line: the double glass entrance and the apartment's door
+    var f = H.facade[floor === 0 ? 0 : 1], inward = [-H.OUT[0], -H.OUT[1]];
+    f.doors.forEach(function (d) {
+      var a = [H.streetX(d.from), d.from], b = [H.streetX(d.to), d.to], L = d.to - d.from;
+      if (d.kind === "slide-glass") return;
+      if (d.kind === "double-glass") {
+        leaf(parent, a, [0, 1], inward, L / 2, GLASS);
+        leaf(parent, b, [0, -1], inward, L / 2, GLASS);
+      } else leaf(parent, a, [0, 1], inward, L, WOOD);
+    });
   }
 
   function label(parent, item) {
@@ -304,6 +389,8 @@
     var all = items();
     all.filter(function (i) { return !i.inner; }).forEach(function (i) { shape(shapes, i); });
     all.filter(function (i) { return i.inner; }).forEach(function (i) { shape(shapes, i); });
+    wallsLayer(el("g", { class: "walls" }, svg));
+    doorsLayer(el("g", { class: "doors" }, svg));
     marks(el("g", { class: "marks" }, svg));
 
     var labels = el("g", { class: "labels" }, svg);

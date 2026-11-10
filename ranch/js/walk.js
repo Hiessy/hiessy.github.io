@@ -890,15 +890,26 @@ const BUILD = {
 /* Footprints [width, depth] of the pieces you can't walk through. */
 const BLOCK = {
   bed: (p) => [(p.w || 0.9) + 0.06, 2.0], daybed: () => [1.95, 0.9], sofa: (p) => [p.w || 1.9, 0.85],
-  armchair: () => [0.82, 0.85], dining: (p) => [p.w || 1.0, p.d || p.w || 1.0], counter: (p) => [p.w || 2, 0.6],
+  armchair: () => [0.82, 0.85], dining: (p) => {
+    const w = p.w || 1.0, d = p.d || w, n = p.chairs === undefined ? 4 : p.chairs;
+    return [w + (n >= 2 ? 1.0 : 0), d + (n >= 4 ? 1.0 : n === 3 ? 0.5 : 0)];
+  }, counter: (p) => [p.w || 2, 0.6],
   wardrobe: (p) => [p.w || 1.2, 0.56], closet: (p) => [p.w || 1.2, 0.5], desk: (p) => [(p.w || 1.6) + 0.06, 0.64],
   shelf: (p) => [p.w || 1.5, p.d || 0.4], fridge: () => [0.68, 0.68], sideboard: (p) => [p.w || 1.4, 0.45],
   car: () => [1.8, 4.3], washer: () => [0.6, 0.6], tub: () => [0.55, 0.5], tv: () => [1.0, 0.42],
-  coffee: (p) => [p.w || 1.0, p.d || 0.55], console: () => [1.0, 0.36]
+  coffee: (p) => [p.w || 1.0, p.d || 0.55], console: () => [1.0, 0.36],
+  nightstand: (p) => [p.w || 0.42, 0.38], side: () => [0.45, 0.45], lamp: () => [0.36, 0.36],
+  bench: () => [1.5, 0.5], plant: () => [0.45, 0.45], bush: () => [0.9, 0.9],
+  cafe: () => [1.6, 0.7]
 };
 function blockPiece(type, p, x, y, level, rot) {
   if (!BLOCK[type]) return;
-  const fp = BLOCK[type](p), hw = fp[0] / 2, hd = fp[1] / 2, a = (rot || 0) * DEG;
+  const fp = BLOCK[type](p);
+  solid(x, y, fp[0], fp[1], rot, level);
+}
+/* A solid box w by d (d toward the piece's front) at (x, y), turned rot. */
+function solid(x, y, w, d, rot, level) {
+  const hw = w / 2, hd = d / 2, a = (rot || 0) * DEG;
   const c = Math.cos(a), s = Math.sin(a);
   // local (lx, ly) with ly toward the front; front is plan +y before turning
   const pt = (lx, ly) => [x + lx * c - ly * s, y + lx * s + ly * c];
@@ -936,6 +947,8 @@ function bath(item, door, i) {
   else { shower = [x1, y2 - SH]; toi = [x1 + 0.38, y1 + 0.35, 270]; bas = [x2 - 0.6, y1 + 0.25, 0]; }
   place(toilet(), toi[0], toi[1], lv, toi[2]);
   place(basin(), bas[0], bas[1], lv, bas[2]);
+  // the toilet is solid; a pedestal basin is small enough to stand at
+  solid(toi[0], toi[1], 0.38, 0.55, toi[2], lv);
   const sx = shower[0], sy = shower[1];
   const tray = new THREE.Mesh(new THREE.BoxGeometry(SH, 0.05, SH), M.white);
   tray.position.set(sx + SH / 2, base + 0.03, -(sy + SH / 2));
@@ -1296,13 +1309,19 @@ function buildScene() {
     rampBox(ramp, s0, s0 + run, 0, h - 0.04, texMat("white"));
     rampBox(ramp, s0 - run * 0.08, s0 + run, h - 0.04, h, tread);   // wooden tread with a nosing
   }
-  // a handrail along the open side
+  // a black handrail on the street wall, as in the video, on brackets
   {
-    const rx = ramp.across[0] + 0.05, len = Math.hypot(ramp.to - ramp.from, ramp.h2);
+    const rx = ramp.across[1] - 0.04, len = Math.hypot(ramp.to - ramp.from, ramp.h2);
     const rail = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.04, len), M.black);
     rail.position.set(rx, ramp.h2 / 2 + 0.9, -(ramp.from + ramp.to) / 2);
     rail.rotation.x = Math.atan2(ramp.h2, ramp.to - ramp.from);
     S.static.add(rail);
+    for (let i = 1; i < 4; i++) {
+      const u = i / 4, yy = ramp.from + (ramp.to - ramp.from) * u;
+      const b2 = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.03, 0.03), M.black);
+      b2.position.set(rx + 0.03, ramp.h2 * u + 0.88, -yy);
+      S.static.add(b2);
+    }
   }
   const sr = H.ramps[1], sSteps = Math.round(sr.h2 / 0.19), sRun = (sr.to - sr.from) / sSteps, steel = mat(0x4b4b4b, { roughness: 0.6, metalness: 0.4 });
   for (let i = 0; i < sSteps; i++) {
@@ -1723,7 +1742,7 @@ function hud() {
     else level.textContent = t("walk.level.roof");
   }
   const hint = $("hint");
-  if (hint) hint.textContent = S.mode === "orbit" ? t("walk.hint.orbit") : touch ? t("walk.hint.touch") : t("walk.hint.desktop");
+  if (hint) hint.textContent = S.mode === "orbit" ? (touch ? t("walk.hint.orbit.touch") : t("walk.hint.orbit")) : touch ? t("walk.hint.touch") : t("walk.hint.desktop");
   const btn = $("start-btn");
   if (btn) btn.textContent = touch ? t("walk.start.touch") : t("walk.start");
   const startBox = $("start");
@@ -1750,6 +1769,7 @@ function setToggle(id, on) {
 
 /* The aerial view is the overview's camera, pointed straight down. */
 function setMode(mode) {
+  const prev = S.mode;
   const aerial = mode === "aerial";
   if (aerial) mode = "orbit";
   S.mode = mode;
@@ -1785,6 +1805,14 @@ function setMode(mode) {
   } else {
     if (S.orbit) S.orbit.enabled = false;
     S.roofs.visible = true;
+    if (prev === "orbit" && S.flown && S.orbit) {
+      const tx = S.orbit.target.x, ty = -S.orbit.target.z;
+      if (inside(tx, ty, H.lot)) {
+        const p = S.player, feet = standAt(tx, ty, 0), spot = freeSpot(tx, ty, feet, null);
+        p.x = spot[0]; p.y = spot[1]; p.feet = standAt(p.x, p.y, 0); p.vx = p.vy = p.vz = 0; p.eye = undefined;
+      }
+    }
+    S.flown = false;
     step(0);
   }
   setToggle("toggle-roofs", S.roofs.visible);
@@ -1797,7 +1825,21 @@ function bindControls() {
                 KeyA: "left", ArrowLeft: "left", KeyD: "right", ArrowRight: "right",
                 ShiftLeft: "run", ShiftRight: "run" };
   const live = () => S.running && S.mode === "walk" && (S.active || document.pointerLockElement === canvas);
+  // 1, 2 and 3 switch the view from anywhere, the mouse captured or not
+  const VIEW_KEYS = { Digit1: "walk", Numpad1: "walk", Digit2: "orbit", Numpad2: "orbit", Digit3: "aerial", Numpad3: "aerial" };
   document.addEventListener("keydown", (e) => {
+    if (!S.running || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if (VIEW_KEYS[e.code] && canvas.offsetParent !== null) { setMode(VIEW_KEYS[e.code]); return; }
+    // the overview and the aerial view fly like a ghost: WASD or arrows
+    // across, E up, Q down, through walls
+    if (S.mode === "orbit" && (S.overStage || document.fullscreenElement)) {
+      const fly = Object.assign({ KeyE: "up", KeyQ: "down" }, map);
+      if (!fly[e.code]) return;
+      keys[fly[e.code]] = true;
+      e.preventDefault();
+      return;
+    }
     if (!live()) return;
     if (e.code === "KeyE" && S.hover) { toggleDoor(S.hover); return; }
     if (e.code === "Space") { e.preventDefault(); jump(); return; }
@@ -1805,7 +1847,27 @@ function bindControls() {
     keys[map[e.code]] = true;
     if (e.code.indexOf("Arrow") === 0) e.preventDefault();
   });
-  document.addEventListener("keyup", (e) => { if (map[e.code]) keys[map[e.code]] = false; });
+  document.addEventListener("keyup", (e) => {
+    if (map[e.code]) keys[map[e.code]] = false;
+    if (e.code === "KeyE") keys.up = false;
+    if (e.code === "KeyQ") keys.down = false;
+  });
+  canvas.addEventListener("pointerenter", () => { S.overStage = true; });
+  canvas.addEventListener("pointerleave", () => { S.overStage = false; Object.keys(keys).forEach((k) => { keys[k] = false; }); });
+  // keep the buttons in sight when the page's sticky header covers the top
+  // of the 3D view
+  const bar = document.querySelector(".hud-bar"), lvl = $("level"), top = document.querySelector(".top");
+  const clearHeader = () => {
+    if (!bar || !top) return;
+    const r = $("stage").getBoundingClientRect();
+    const off = document.fullscreenElement ? 0 : Math.max(0, Math.min(top.getBoundingClientRect().bottom - r.top, r.height - 160));
+    bar.style.top = (10 + off) + "px";
+    if (lvl) lvl.style.top = (62 + off) + "px";
+  };
+  window.addEventListener("scroll", clearHeader, { passive: true });
+  window.addEventListener("resize", clearHeader);
+  document.addEventListener("fullscreenchange", clearHeader);
+  clearHeader();
   window.addEventListener("blur", () => { Object.keys(keys).forEach((k) => { keys[k] = false; }); });
 
   // Desktop: click to capture the mouse; if the browser refuses, drag to look.
@@ -1950,11 +2012,27 @@ function loop(now) {
     // the door in the middle of the screen, within reach, is the one a click
     // (or E) opens
     if (S.active && S.frame % 4 === 0) setHover(doorAt(0, 0, REACH));
-  } else if (S.orbit) S.orbit.update();
+  } else if (S.orbit) { fly(dt); S.orbit.update(); }
   if (S.mode === "walk" && levelOf(S.player) !== S.lastLevel) hud();
   S.renderer.render(S.scene, S.camera);
   S.frame = (S.frame || 0) + 1;
   if (S.frame % 3 === 0) drawMinimap();
+}
+
+/* Ghost flight for the overview and the aerial view: the camera and the
+   point it turns around move together, with no walls in the way. */
+function fly(dt) {
+  const k = S.keys;
+  const f = (k.forward ? 1 : 0) - (k.back ? 1 : 0), s = (k.right ? 1 : 0) - (k.left ? 1 : 0), u = (k.up ? 1 : 0) - (k.down ? 1 : 0);
+  if (!f && !s && !u) return;
+  const az = S.orbit.getAzimuthalAngle();
+  const dist = S.camera.position.distanceTo(S.orbit.target);
+  const v = Math.max(4, dist * 0.7) * (k.run ? 2.5 : 1) * dt;
+  const dx = (-Math.sin(az) * f + Math.cos(az) * s) * v, dz = (-Math.cos(az) * f - Math.sin(az) * s) * v;
+  S.camera.position.x += dx; S.camera.position.z += dz;
+  S.orbit.target.x += dx; S.orbit.target.z += dz;
+  S.camera.position.y = Math.max(1.5, S.camera.position.y + u * v);
+  S.flown = true;
 }
 
 /* ---------- public ---------- */

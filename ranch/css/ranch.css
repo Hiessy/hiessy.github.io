@@ -88,6 +88,8 @@ a:hover { color: #163A69; }
 
 /* Lighting a room up */
 #plan .rm, #plan .rml { cursor: pointer; transition: opacity 0.15s; }
+#plan .walls, #plan .doors { pointer-events: none; }
+.stage { scroll-margin-top: 62px; }
 #plan.hl .rm:not(.on), #plan.hl .rml:not(.on) { opacity: 0.25; }
 #plan .rm.on .shape { fill: var(--hl); stroke: var(--accent); stroke-width: 4; stroke-dasharray: none; }
 

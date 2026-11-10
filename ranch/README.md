@@ -9,10 +9,15 @@ the former Hostería Norita Ranch, in four views:
   lights it up in both places and shows its photos in a small strip over the
   plan; a click keeps it lit and zooms the plan to it. Beside each room, the
   cube button walks you into it in 3D and the camera opens its photos.
+- **Floor plan** draws walls and every door (leaf and swing) the way the
+  survey does, from the same room edges as the 3D view.
 - **3D walk** (`#3d`): a three.js model you walk around in first person, with
   stairs up to the apartment and to the roof terrace, and an overview mode.
   Doors start closed and open with a click (or E), Space jumps (a button on
-  touch screens), the furniture follows the listing photos and the
+  touch screens), keys 1, 2 and 3 switch between walking, the overview and
+  an aerial view (those two fly like a ghost with WASD, Q and E, through
+  walls), every piece of furniture is solid and kept out of doorways, the
+  furniture follows the listing photos and the
   neighbours' buildings come from the cadastre. A click on the little map
   takes you there.
 - **Photos** (`#photos`): the agency's two walkthrough videos (no sound, with
