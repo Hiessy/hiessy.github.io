@@ -88,7 +88,21 @@ a:hover { color: #163A69; }
 
 /* Lighting a room up */
 #plan .rm, #plan .rml { cursor: pointer; transition: opacity 0.15s; }
-#plan .walls, #plan .doors { pointer-events: none; }
+#plan .survey, #plan .cuts, #plan .marks, #plan .side { pointer-events: none; }
+/* the survey's own lines: widths stay in screen pixels whatever the zoom */
+#plan .survey path, #plan .side path { vector-effect: non-scaling-stroke; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+#plan .sv-wall { fill: #2B2B28 !important; stroke: #2B2B28; stroke-width: 0.6; }
+#plan .sv-thin { stroke: #35618E; stroke-width: 1; }
+#plan .sv-arcs { stroke: #8A857B; stroke-width: 0.8; }
+#plan .sv-proj { stroke: #B4783A; stroke-width: 0.9; }
+#plan .sv-fix { stroke: #4E8A63; stroke-width: 0.8; }
+#plan .sv-roof { stroke: #8C8A84; stroke-width: 0.8; }
+#plan .sv-cut { stroke: #2B2B28; stroke-width: 2.4; }
+#plan .side .sv-thin { stroke: #5C6B7A; stroke-width: 0.9; }
+#plan .side .ground { stroke: #7C9A68; stroke-width: 3; }
+#plan .cut { stroke: #9A3B2E; stroke-width: 1.2; stroke-dasharray: 14 4 2 4; opacity: 0.55; }
+#plan .cut-end { fill: #9A3B2E; }
+#plan.hl .survey .sv-fix, #plan.hl .cuts { opacity: 0.35; }
 .stage { scroll-margin-top: 62px; }
 #plan.hl .rm:not(.on), #plan.hl .rml:not(.on) { opacity: 0.25; }
 #plan .rm.on .shape { fill: var(--hl); stroke: var(--accent); stroke-width: 4; stroke-dasharray: none; }
@@ -211,6 +225,10 @@ a:hover { color: #163A69; }
 }
 .joy .knob { position: absolute; left: 36px; top: 36px; width: 52px; height: 52px; border-radius: 50%; background: rgba(43, 43, 40, 0.72); }
 .start { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(20, 24, 28, 0.16); }
+/* The "click to walk" veil covers the whole picture: the bar of buttons and
+   the little map stay above it, so they work before you start walking. */
+.start { z-index: 1; }
+.hud-bar, .minimap, .level { z-index: 2; }
 .primary {
   font: inherit; font-size: 16px; font-weight: 700; min-height: 50px; padding: 14px 22px;
   border: 0; border-radius: 10px; background: var(--dark); color: #FFFFFF; cursor: pointer;

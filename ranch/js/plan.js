@@ -1,5 +1,7 @@
-/* The floor plan view: draws js/house.js into the #plan SVG for the chosen
-   floor and lists the rooms beside it. Pointing at a room, on the plan or in
+/* The floor plan view: draws the survey (js/survey.js) and what js/house.js
+   says each room is into the #plan SVG, for the chosen floor, and lists the
+   rooms beside it. A third choice shows the survey's side views: its four
+   sections and the street front. Pointing at a room, on the plan or in
    the list, lights it up in both places; a click keeps it lit. Every text
    comes from i18n through I18N.t(). */
 (function () {
@@ -22,7 +24,7 @@
                terrace: "#FFFFFF", roof: "#E9E6DF" };
   var DASHED = { covered: true, balcony: true, terrace: true, roof: true };
 
-  var floor = 0;        // 0 ground floor, 1 upper level (levels 1 and 2)
+  var floor = 0;        // 0 ground floor, 1 upper level (levels 1 and 2), 2 the side views
   var pinned = null;    // the room a click keeps lit
   var svg, list;
 
@@ -49,7 +51,7 @@
     });
     return b;
   }
-  function visible(item) { return floor === 0 ? item.level === 0 : item.level > 0; }
+  function visible(item) { return floor === 0 ? item.level === 0 : floor === 1 && item.level > 0; }
 
   /* A guess at text width, close enough to wrap labels inside their rooms. */
   function width(s, size, bold) { return s.length * size * (bold ? 0.6 : 0.54); }
@@ -121,19 +123,16 @@
   }
 
   function gardenLayer(parent) {
-    var G = H.garden, r;
-    r = G.gravel;
-    el("rect", { x: X(r[0]), y: Y(r[3]), width: K * (r[2] - r[0]), height: K * (r[3] - r[1]),
-                 fill: "url(#pt-gravel)", stroke: "#C9C3B3" }, parent);
+    var G = H.garden;
+    el("polygon", { points: pts(G.gravel), fill: "url(#pt-gravel)", stroke: "#C9C3B3" }, parent);
     G.tracks.forEach(function (c) {
       var d = "M " + X(c[0][0]) + " " + Y(c[0][1]) + " C " +
         [c[1], c[2], c[3]].map(function (p) { return X(p[0]) + " " + Y(p[1]); }).join(", ");
       el("path", { d: d, stroke: "#B3AD9E", "stroke-width": 16, fill: "none" }, parent);
       el("path", { d: d, stroke: "#F3F0E8", "stroke-width": 12, fill: "none" }, parent);
     });
-    r = G.pavers;
-    el("rect", { x: X(r[0]), y: Y(r[3]), width: K * (r[2] - r[0]), height: K * (r[3] - r[1]),
-                 fill: "url(#pt-pavers)", stroke: "#C9C3B3" }, parent);
+    el("polygon", { points: pts(G.pavers), fill: "url(#pt-pavers)", stroke: "#C9C3B3" }, parent);
+    el("polyline", { points: pts(G.hedge), fill: "none", stroke: "#8FB07A", "stroke-width": 7, "stroke-linecap": "round", opacity: 0.7 }, parent);
     el("circle", { cx: X(G.tree.c[0]), cy: Y(G.tree.c[1]), r: K * G.tree.r,
                    fill: "rgba(110,150,86,0.28)", stroke: "#7C9A68", "stroke-width": 2 }, parent);
   }
@@ -143,11 +142,12 @@
       var poly = H.polyOf(r), b = bbox(poly);
       el("polygon", { points: pts(poly), fill: "#E9E6DF", stroke: "#9A978F", "stroke-width": 2,
                       "stroke-dasharray": "6 4" }, parent);
-      var lines = wrap(plain(t(r.name)), 11, false, K * (b.x2 - b.x1) - 16);
-      var cy = Y((b.y1 + b.y2) / 2) - (lines.length - 1) * 7;
+      if (r.terrace) return;                      // the terrace on it says so itself
+      var lab = r.lab || [(b.x1 + b.x2) / 2, (b.y1 + b.y2) / 2];
+      var lines = wrap(plain(t(r.name)), 11, false, Math.max(70, K * (b.x2 - b.x1) - 16));
+      var cy = Y(lab[1]) - (lines.length - 1) * 7;
       lines.forEach(function (s, i) {
-        text(parent, X((b.x1 + b.x2) / 2) - (r.street ? 18 : 0), cy + i * 14, s,
-             { size: 11, fill: "#4A4944", anchor: "middle" });
+        text(parent, X(lab[0]), cy + i * 14, s, { size: 11, fill: "#4A4944", anchor: "middle" });
       });
     });
   }
@@ -165,87 +165,32 @@
     }, g);
   }
 
-  /* ---------- walls and doors, drawn like the survey ----------
-     Every room edge is a wall unless a door or glass opens it (the same rule
-     as the 3D view). A wall between two rooms is 15 cm, one with a room on
-     a single side 25 cm. Doors are gaps with their leaf and swing. */
-  var RES = 0.05;
-  function onFloor(level) { return floor === 0 ? level === 0 : level > 0; }
-  function wallsLayer(parent) {
-    var cells = {};
-    function key(o, c) { return o + "|" + c.toFixed(3); }
-    function mark(o, c, a, b, d) {
-      var k = key(o, c), set = cells[k] || (cells[k] = {});
-      var i0 = Math.round(Math.min(a, b) / RES), i1 = Math.round(Math.max(a, b) / RES);
-      for (var i = i0; i < i1; i++) set[i] = d === undefined ? (set[i] || 0) + 1 : d;
-    }
-    H.rooms.concat(H.spaces.filter(function (s) { return s.enclosed; })).forEach(function (r) {
-      if (!onFloor(r.level)) return;
-      var poly = H.polyOf(r);
-      for (var i = 0; i < poly.length; i++) {
-        var p = poly[i], q = poly[(i + 1) % poly.length];
-        if (Math.abs(p[0] - H.streetX(p[1])) < 1e-6 && Math.abs(q[0] - H.streetX(q[1])) < 1e-6) continue;
-        if (Math.abs(p[0] - q[0]) < 1e-6) mark("V", p[0], p[1], q[1]);
-        else if (Math.abs(p[1] - q[1]) < 1e-6) mark("H", p[1], p[0], q[0]);
-      }
+  /* ---------- the survey's own drawing ----------
+     The walls are the survey's wall outlines, filled. Windows, door leaves
+     and their swings, fixtures and projections are its thin lines, redrawn.
+     They come in meters and centimeters (js/survey.js); one transform puts
+     them on the plan. */
+  function surveyLayer(parent) {
+    var SV = window.SURVEY, lv = floor === 0 ? 0 : 1, P = SV.plan[lv];
+    var g = el("g", { class: "survey", transform: "matrix(" + (K / 100) + " 0 0 " + (-K / 100) + " " + OX + " " + OY + ")" }, parent);
+    ["roof", "proj", "fix", "arcs", "thin"].forEach(function (k) {
+      if (P[k]) el("path", { class: "sv-" + k, d: P[k] }, g);
     });
-    function cut(d) { mark(d.x !== undefined ? "V" : "H", d.x !== undefined ? d.x : d.y, d.from, d.to, 0); }
-    H.glass.forEach(function (g) { if (onFloor(g.level)) cut(g); });
-    H.doors.forEach(function (d) { if (onFloor(d.level)) cut(d); });
-    Object.keys(cells).forEach(function (k) {
-      var o = k[0], c = Number(k.slice(2)), set = cells[k];
-      var idx = Object.keys(set).map(Number).filter(function (i) { return set[i] > 0; }).sort(function (a, b) { return a - b; });
-      var start = null, prev = null, n = 0;
-      function flush() {
-        if (start === null) return;
-        var a = start * RES, b = (prev + 1) * RES, w = (n > 1 ? 0.15 : 0.25) * K;
-        var p1 = o === "V" ? [c, a] : [a, c], p2 = o === "V" ? [c, b] : [b, c];
-        el("line", { x1: X(p1[0]), y1: Y(p1[1]), x2: X(p2[0]), y2: Y(p2[1]), stroke: "#2B2B28", "stroke-width": w, "stroke-linecap": "square" }, parent);
-      }
-      idx.forEach(function (i) {
-        var cnt = set[i] > 1 ? 2 : 1;
-        if (start === null) { start = prev = i; n = cnt; }
-        else if (i === prev + 1 && cnt === n) prev = i;
-        else { flush(); start = prev = i; n = cnt; }
+    var d = SV.walls[lv].map(function (w) {
+      var q = "";
+      for (var i = 0; i < w.length; i += 2) q += (i ? "L" : "M") + Math.round(w[i] * 100) + " " + Math.round(w[i + 1] * 100);
+      return q + "Z";
+    }).join("");
+    el("path", { class: "sv-wall", d: d }, g);
+  }
+  /* Where the survey cuts its sections: a line and its letter at both ends. */
+  function cutsLayer(parent) {
+    H.cuts.forEach(function (c) {
+      el("line", { class: "cut", x1: X(c.a[0]), y1: Y(c.a[1]), x2: X(c.b[0]), y2: Y(c.b[1]) }, parent);
+      [c.a, c.b].forEach(function (q) {
+        el("circle", { class: "cut-end", cx: X(q[0]), cy: Y(q[1]), r: 8.5 }, parent);
+        text(parent, X(q[0]), Y(q[1]) + 0.5, c.id, { size: 10.5, bold: true, fill: "#FFFFFF", anchor: "middle" });
       });
-      flush();
-    });
-  }
-  var SIDE = { n: [0, 1], s: [0, -1], e: [1, 0], w: [-1, 0] };
-  /* A leaf hinged at h, closed along u for length L, swung open toward v. */
-  function leaf(parent, h, u, v, L, color) {
-    var arc = [];
-    for (var i = 0; i <= 12; i++) {
-      var a = (i / 12) * Math.PI / 2, cs = Math.cos(a), sn = Math.sin(a);
-      arc.push([h[0] + L * (cs * u[0] + sn * v[0]), h[1] + L * (cs * u[1] + sn * v[1])]);
-    }
-    el("polyline", { points: pts(arc), fill: "none", stroke: color, "stroke-width": 1.2, "stroke-dasharray": "4 3" }, parent);
-    el("line", { x1: X(h[0]), y1: Y(h[1]), x2: X(h[0] + L * v[0]), y2: Y(h[1] + L * v[1]), stroke: color, "stroke-width": 3, "stroke-linecap": "round" }, parent);
-  }
-  function doorsLayer(parent) {
-    var WOOD = "#8A4B2A", GLASS = "#3F78A8";
-    H.doors.forEach(function (d) {
-      if (!onFloor(d.level) || d.kind === "open") return;
-      var alongX = d.x === undefined;                  // the wall runs along x
-      var a = alongX ? [d.from, d.y] : [d.x, d.from], b = alongX ? [d.to, d.y] : [d.x, d.to];
-      var u = alongX ? [1, 0] : [0, 1], L = d.to - d.from, color = /glass/.test(d.kind) ? GLASS : WOOD;
-      if (d.kind === "slide-glass") {
-        var n = alongX ? [0, 0.06] : [0.06, 0], mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
-        el("line", { x1: X(a[0] + n[0]), y1: Y(a[1] + n[1]), x2: X(mid[0] + n[0]), y2: Y(mid[1] + n[1]), stroke: GLASS, "stroke-width": 3 }, parent);
-        el("line", { x1: X(mid[0] - n[0] - u[0] * 0.1), y1: Y(mid[1] - n[1] - u[1] * 0.1), x2: X(b[0] - n[0]), y2: Y(b[1] - n[1]), stroke: GLASS, "stroke-width": 3 }, parent);
-        return;
-      }
-      leaf(parent, a, u, SIDE[d.swing] || [0, 1], L, color);
-    });
-    // on the building line: the double glass entrance and the apartment's door
-    var f = H.facade[floor === 0 ? 0 : 1], inward = [-H.OUT[0], -H.OUT[1]];
-    f.doors.forEach(function (d) {
-      var a = [H.streetX(d.from), d.from], b = [H.streetX(d.to), d.to], L = d.to - d.from;
-      if (d.kind === "slide-glass") return;
-      if (d.kind === "double-glass") {
-        leaf(parent, a, [0, 1], inward, L / 2, GLASS);
-        leaf(parent, b, [0, -1], inward, L / 2, GLASS);
-      } else leaf(parent, a, [0, 1], inward, L, WOOD);
     });
   }
 
@@ -263,11 +208,23 @@
            anchor: o[2] === "e" ? "end" : o[2] === "m" ? "middle" : "start" });
       return;
     }
-    if (!name && !num) return;
+    if ((!name && !num) || item.nolabel) return;
 
     var lab = item.lab || [(b.x1 + b.x2) / 2, (b.y1 + b.y2) / 2, "m"];
     var anchor = lab[2] === "s" ? "start" : lab[2] === "e" ? "end" : "middle";
     var ax = X(lab[0]), cy = Y(lab[1]);
+    // small rooms get their number alone; the list beside the plan says the rest
+    var pw = K * (b.x2 - b.x1), ph = K * (b.y2 - b.y1);
+    if (num && !item.line && (item.kind === "bath" || pw < 66 || ph < 46)) { pill(g, ax, cy, num, "middle"); return; }
+    if (pw < 104 || ph < 78) note = "";
+    if (item.vert) {
+      // a long narrow room: its name runs along it
+      var gv = el("g", { transform: "rotate(-90 " + ax.toFixed(1) + " " + cy.toFixed(1) + ")" }, g);
+      var half = width(name, 12, true) / 2;
+      if (num) pill(gv, ax - half - 14, cy, num, "middle");
+      text(gv, ax + (num ? 8 : 0), cy, name, { size: 12, bold: true, anchor: "middle" });
+      return;
+    }
 
     if (item.line) {
       var x = ax;
@@ -298,30 +255,11 @@
     });
   }
 
-  /* Windows, doors and the gate on the building line; glass walls in blue. */
+  /* The vehicle gate on the building line. */
   function marks(parent) {
-    function seg(y1, y2, color, w, dash) {
-      el("line", { x1: X(H.streetX(y1)), y1: Y(y1), x2: X(H.streetX(y2)), y2: Y(y2),
-                   stroke: color, "stroke-width": w, "stroke-dasharray": dash || null }, parent);
-    }
-    if (floor === 0) {
-      var f = H.facade[0];
-      seg(f.from, f.to, "#2B2B28", 5);
-      seg(f.gate.from, f.gate.to, "#6B6A65", 2, "4 3");
-      f.windows.forEach(function (w) { seg(w[0], w[1], "#6E9BC4", 7); });
-      f.doors.forEach(function (d) { seg(d.from, d.to, "#8A4B2A", 7); });
-      H.glass.forEach(function (g) {
-        if (g.level !== 0) return;
-        var a = g.x !== undefined ? [g.x, g.from] : [g.from, g.y];
-        var b = g.x !== undefined ? [g.x, g.to] : [g.to, g.y];
-        el("line", { x1: X(a[0]), y1: Y(a[1]), x2: X(b[0]), y2: Y(b[1]), stroke: "#6E9BC4", "stroke-width": 5 }, parent);
-      });
-    } else {
-      var u = H.facade[1];
-      seg(u.from, u.to, "#2B2B28", 4);
-      u.windows.forEach(function (w) { seg(w[0], w[1], "#6E9BC4", 6); });
-      u.doors.forEach(function (d) { seg(d.from, d.to, "#8A4B2A", 6); });
-    }
+    if (floor !== 0) return;
+    var g = H.gate;
+    el("line", { x1: X(g.a[0]), y1: Y(g.a[1]), x2: X(g.b[0]), y2: Y(g.b[1]), stroke: "#6B6A65", "stroke-width": 2.5, "stroke-dasharray": "4 3" }, parent);
   }
 
   /* Names written on the drawing outside any room. */
@@ -330,7 +268,7 @@
     function at(x, y, s, o) { return text(parent, X(x), Y(y), s, o); }
     var small = { size: 12, fill: "#3A3935" };
     var L = H.extras.labels;
-    at(6.2, 9.9, plain(t("street.name")), { size: 13, fill: "#3A3935", anchor: "middle", rotate: -90 });
+    at(6.0, 10.2, plain(t("street.name")), { size: 13, fill: "#3A3935", anchor: "middle", rotate: -87.6 });
     if (floor === 0) {
       at(L.garden[0], L.garden[1], plain(t("space.garden")), { size: 14, fill: "#2F4A22", bold: true });
       at(L.tracks[0], L.tracks[1], plain(t("space.tracks")), small);
@@ -340,19 +278,19 @@
       el("circle", { cx: X(G.bench[0]), cy: Y(G.bench[1]), r: 5, fill: "#2B2B28" }, parent);
       at(G.bench[0] - 0.4, G.bench[1], plain(t("space.bench")), { size: 12, fill: "#3A3935", anchor: "end" });
       at(G.tree.c[0], G.tree.c[1], plain(t("space.tree")), { size: 13, bold: true, fill: "#2F4A22", anchor: "middle" });
-      var pv = G.pavers;
-      at((pv[0] + pv[2]) / 2, (pv[1] + pv[3]) / 2, plain(t("space.pavers")), { size: 11, fill: "#3A3935", anchor: "middle" });
-      at(0.35, 17.9, plain(t("facade.gate")), small);
-      at(0.35, 13.25, plain(t("facade.aptdoor")), small);
-      at(0.35, 10.7, plain(t("facade.windows")), small);
-      at(0.35, 7.1, plain(t("facade.entrance")), { size: 12, fill: "#3A3935", bold: true });
-      at(0.35, 2.4, plain(t("facade.window")), small);
+      at(-15.4, 18.9, plain(t("space.pavers")), { size: 11, fill: "#3A3935", anchor: "middle" });
+      var front = function (y, str, o) { at(H.streetX(y) + 0.5, y, plain(str), o || small); };
+      front(18.5, t("facade.gate"));
+      front(14.1, t("facade.aptdoor"));
+      front(10.3, t("facade.windows"));
+      front(7.15, t("facade.entrance"), { size: 12, fill: "#3A3935", bold: true });
+      front(2.5, t("facade.window"));
     } else {
       at(L.garden[0], L.garden[1], plain(t("space.garden.below")), { size: 13, fill: "#4A5E3C" });
     }
-    at(-25.0, 23.3, plain(t("dim.north")), { size: 12, fill: "#4A4944", anchor: "middle", rotate: 5.8 });
-    at(-22.0, 1.15, plain(t("dim.south")), { size: 12, fill: "#4A4944", anchor: "middle", rotate: 4.6 });
-    at(-37.9, 13.2, plain(t("dim.west")), { size: 12, fill: "#4A4944", anchor: "middle", rotate: -90 });
+    at(-19.0, 22.5, plain(t("dim.north")), { size: 12, fill: "#4A4944", anchor: "middle", rotate: 5.1 });
+    at(-20.0, 0.75, plain(t("dim.south")), { size: 12, fill: "#4A4944", anchor: "middle", rotate: 5.3 });
+    at(-38.0, 13.4, plain(t("dim.west")), { size: 12, fill: "#4A4944", anchor: "middle", rotate: -87.2 });
 
     // north arrow, turned like the street: true north is H.NORTH degrees
     // clockwise from the plan's up
@@ -380,6 +318,7 @@
     while (svg.firstChild) svg.removeChild(svg.firstChild);
     applyView();
     defs();
+    if (floor === 2) { drawSides(); return; }
     var bg = el("g", { class: "bg" }, svg);
     street(bg);
     lotOutline(bg);
@@ -387,16 +326,66 @@
 
     var shapes = el("g", { class: "shapes" }, svg);
     var all = items();
-    all.filter(function (i) { return !i.inner; }).forEach(function (i) { shape(shapes, i); });
-    all.filter(function (i) { return i.inner; }).forEach(function (i) { shape(shapes, i); });
-    wallsLayer(el("g", { class: "walls" }, svg));
-    doorsLayer(el("g", { class: "doors" }, svg));
+    all.forEach(function (i) { shape(shapes, i); });
+    surveyLayer(svg);
     marks(el("g", { class: "marks" }, svg));
+    if (floor === 0) cutsLayer(el("g", { class: "cuts" }, svg));
 
     var labels = el("g", { class: "labels" }, svg);
     notes(el("g", { class: "notes" }, svg));
     all.forEach(function (i) { label(labels, i); });
     light(pinned);
+  }
+
+  /* ---------- the side views ----------
+     The survey's four sections and its street front, each drawn at the
+     plan's scale with its heights in meters above the sidewalk. Rows:
+     the street front and D-D (both along the street), A-A and C-C, B-B. */
+  var SIDES = [["F", "D"], ["A", "C"], ["B"]];
+  var sideBox = {};
+  function sideTitle(id) {
+    return id === "F" ? t("side.F") : id === "D" ? t("side.D") : id === "A" ? t("side.A") : id === "C" ? t("side.C") : t("side.B");
+  }
+  function sideInfo(id) {
+    return id === "F" ? t("side.F.info") : id === "D" ? t("side.D.info") : id === "A" ? t("side.A.info") : id === "C" ? t("side.C.info") : t("side.B.info");
+  }
+  function drawSides() {
+    var SV = window.SURVEY.sections;
+    var NAMES = { DORMITORIO: t("sec.bedroom"), HALL: t("sec.hall"), BANO: t("sec.bath"), PASO: t("sec.passage"),
+                  ESTAR: t("sec.living"), DEPOSITO: t("sec.store"), COCINA: t("sec.kitchen"), GARAGE: t("sec.garage"),
+                  COCHERAS: t("sec.garage"), "ESTAR-COMEDOR": t("sec.livdin") };
+    var top = FULL.y + 14;
+    SIDES.forEach(function (row) {
+      var high = Math.max.apply(null, row.map(function (id) { return SV[id].box[3]; }));
+      var low = Math.min.apply(null, row.map(function (id) { return SV[id].box[1]; }));
+      var oy = top + 34 + high * K, x = FULL.x + 26;
+      row.forEach(function (id) {
+        var s = SV[id], b = s.box, ox = x - b[0] * K, w = (b[2] - b[0]) * K;
+        var g = el("g", { class: "side", "data-side": id }, svg);
+        text(g, x, top + 12, plain(sideTitle(id)), { size: 14, bold: true });
+        el("line", { class: "ground", x1: x - 8, y1: oy, x2: x + w + 8, y2: oy }, g);
+        var d = el("g", { transform: "matrix(" + (K / 100) + " 0 0 " + (-K / 100) + " " + ox.toFixed(1) + " " + oy.toFixed(1) + ")" }, g);
+        el("path", { class: "sv-thin", d: s.thin }, d);
+        el("path", { class: "sv-cut", d: s.cut }, d);
+        s.names.forEach(function (n) {
+          text(g, ox + n[0] * K, oy - n[1] * K, plain(NAMES[n[2]] || n[2]), { size: 9.5, fill: "#3F6B4C" });
+        });
+        s.marks.forEach(function (m) {
+          text(g, ox + m[0] * K, oy - m[1] * K, m[2], { size: 9.5, fill: "#35618E", bold: true });
+        });
+        sideBox[id] = { x: x - 20, y: top - 6, w: w + 40, h: 34 + (high - low) * K + 26 };
+        x += w + 46;
+      });
+      top = oy - low * K + 30;
+    });
+    // a height scale for the eye: 1 m steps beside the first drawing of each row is too busy; one bar instead
+    var bx = FULL.x + FULL.w - 70, by = FULL.y + FULL.h - 30;
+    el("line", { x1: bx, y1: by, x2: bx, y2: by - 3 * K, stroke: "#2B2B28", "stroke-width": 2 }, svg);
+    [0, 1, 2, 3].forEach(function (m) {
+      el("line", { x1: bx - 4, y1: by - m * K, x2: bx + 4, y2: by - m * K, stroke: "#2B2B28", "stroke-width": 1.5 }, svg);
+    });
+    text(svg, bx + 10, by - 3 * K, "3 m", { size: 11, fill: "#4A4944" });
+    text(svg, bx + 10, by, "0", { size: 11, fill: "#4A4944" });
   }
 
   function tagText(src) {
@@ -408,6 +397,30 @@
 
   function drawList() {
     list.innerHTML = "";
+    if (floor === 2) {
+      SIDES.forEach(function (row) {
+        row.forEach(function (id) {
+          var li = document.createElement("li");
+          var b = document.createElement("button");
+          b.type = "button";
+          b.className = "ri";
+          b.setAttribute("data-side", id);
+          var mark = document.createElement("span");
+          mark.className = "pill";
+          mark.textContent = id === "F" ? "\u2302" : id;
+          var name = document.createElement("span");
+          name.className = "ri-name";
+          name.textContent = plain(sideTitle(id));
+          var info = document.createElement("span");
+          info.className = "ri-info";
+          info.innerHTML = sideInfo(id);
+          b.appendChild(mark); b.appendChild(name); b.appendChild(info);
+          li.appendChild(b);
+          list.appendChild(li);
+        });
+      });
+      return;
+    }
     var rooms = H.rooms.filter(visible).sort(function (a, b) { return a.n - b.n; });
     var spaces = H.spaces.filter(visible);
     rooms.concat(spaces).forEach(function (item) {
@@ -637,6 +650,17 @@
     list.addEventListener("click", function (e) {
       var cam = e.target.closest("[data-photos]");
       if (cam) { if (window.GALLERY) window.GALLERY.open(cam.getAttribute("data-photos")); return; }
+      var side = e.target.closest("[data-side]");
+      if (side) {
+        var sb = sideBox[side.getAttribute("data-side")];
+        if (sb) {
+          var w = Math.max(sb.w, sb.h * FULL.w / FULL.h) * 1.04, h = w * FULL.h / FULL.w;
+          if (vb.w < FULL.w - 1 && Math.abs(vb.x + vb.w / 2 - (sb.x + sb.w / 2)) < 2) fit();
+          else animateTo({ x: sb.x + sb.w / 2 - w / 2, y: sb.y + sb.h / 2 - h / 2, w: w, h: h });
+          showPlan();
+        }
+        return;
+      }
       var id = roomOf(e);
       if (!id) return;
       pinned = id !== pinned ? id : null;

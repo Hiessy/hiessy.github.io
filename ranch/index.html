@@ -47,6 +47,7 @@
  <div class="floors" role="group" data-i18n-attr="aria-label=floors.aria">
   <button type="button" data-floor="0" class="on" aria-pressed="true" data-i18n="floors.ground"></button>
   <button type="button" data-floor="1" aria-pressed="false" data-i18n="floors.upper"></button>
+  <button type="button" data-floor="2" aria-pressed="false" data-i18n="floors.side"></button>
  </div>
  <div class="plan-grid">
   <div class="sheet-box">
@@ -103,6 +104,7 @@
    </div>
    <button type="button" id="toggle-roofs" class="tog on" aria-pressed="true" data-i18n="walk.roofs"></button>
    <button type="button" id="toggle-labels" class="tog on" aria-pressed="true" data-i18n="walk.labels"></button>
+   <button type="button" id="sky-btn" class="tog" aria-pressed="false" data-i18n-attr="title=walk.sky.title"></button>
    <button type="button" id="toggle-full" class="tog" aria-pressed="false" data-i18n="walk.full"></button>
   </div>
   <p class="level" id="level" aria-live="polite"></p>
@@ -268,6 +270,7 @@
 <footer class="wrap foot"><p data-i18n="foot.note"></p></footer>
 
 <script src="/js/i18n.js" defer></script>
+<script src="js/survey.js" defer></script>
 <script src="js/house.js" defer></script>
 <script src="js/gallery.js" defer></script>
 <script src="js/plan.js" defer></script>

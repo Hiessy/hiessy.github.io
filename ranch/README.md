@@ -3,34 +3,37 @@
 <https://hiessy.github.io/ranch/> — the house in La Cumbre (López y Planes 132),
 the former Hostería Norita Ranch, in four views:
 
-- **Floor plan**: ground floor & site, and the upper level. Each room has a number
-  and a line in the list beside the plan saying what it is and how sure we are
-  (confirmed by us, seen in photos, or a guess). Pointing at a room or its line
-  lights it up in both places and shows its photos in a small strip over the
-  plan; a click keeps it lit and zooms the plan to it. Beside each room, the
-  cube button walks you into it in 3D and the camera opens its photos.
-- **Floor plan** draws walls and every door (leaf and swing) the way the
-  survey does, from the same room edges as the 3D view.
-- **3D walk** (`#3d`): a three.js model you walk around in first person, with
-  stairs up to the apartment and to the roof terrace, and an overview mode.
-  Doors start closed and open with a click (or E), Space jumps (a button on
-  touch screens), keys 1, 2 and 3 switch between walking, the overview and
-  an aerial view (those two fly like a ghost with WASD, Q and E, through
-  walls), every piece of furniture is solid and kept out of doorways, the
-  furniture follows the listing photos and the
-  neighbours' buildings come from the cadastre. A click on the little map
-  takes you there.
+- **Floor plan**: ground floor & site, the upper level, and the survey's side
+  views. The walls, doors (leaf and swing), windows and bath fixtures are the
+  2015 survey's own lines, redrawn. Each room has a number and a line in the
+  list beside the plan saying what it is and how sure we are. Pointing at a
+  room or its line lights it up in both places and shows its photos in a
+  small strip over the plan; a click keeps it lit and zooms the plan to it.
+  Beside each room, the cube button walks you into it in 3D and the camera
+  opens its photos. Red dash-dot lines with letters mark where the survey
+  cuts its sections.
+- **Side views** (third button of the floor plan): the survey's street front
+  and its four sections (A–A toward the back, B–B along the drive, C–C across
+  the wing, D–D along the front), with their levels. The 3D model takes its
+  heights from them.
+- **3D walk** (`#3d`): a three.js model you walk around in first person. Walls
+  are the survey's wall outlines raised to the sections' heights: sloping
+  ceilings under the old gable roof, the glazed room's shallow vault, the
+  apartment's roof falling to the back. Floors sit at the survey's levels
+  (+0.35 the front block, +0.20 the glazed room and the wing, +3.00 the
+  apartment), so there are steps. Doors start closed and open with a click
+  (or E), Space jumps, keys 1, 2 and 3 switch between walking, the overview
+  and an aerial view (those two fly like a ghost with WASD, Q and E). The sky
+  follows the visitor's clock: sun, moon and stars are where they would be
+  over La Cumbre at that hour, lamps and windows light up at night, and the
+  "Sky" button tries dawn, midday, dusk and night. Furniture follows the
+  listing photos; the neighbours' buildings come from the cadastre.
 - **Photos** (`#photos`): the agency's two walkthrough videos (no sound, with
-  chapter buttons), the 54 different listing photos, grouped by part of
-  the house with the same room's photos together, and a viewer with arrows,
-  keys and swipes. A photo of a known room has a tag that lights it on the
-  plan, and the viewer can walk you there in 3D. At the end, the 2015 survey's
-  drawings, cut without the title block that names the owner.
+  chapter buttons), the 54 different listing photos grouped by part of the
+  house, and a viewer with arrows, keys and swipes. At the end, the survey's
+  drawings as pictures, cut without the title block that names the owner.
 - **History** (`#history`): a timeline of the town and the house, who owned it,
   the guests' reviews and ratings, and what is around it.
-
-Below them, "What the listings and records say" keeps the cadastre data, the
-listings and what the photos show.
 
 The page is in Spanish and English only: `<html data-idiomas="es en">` tells
 `/js/i18n.js` to leave out the site's other languages. `/norita-ranch/`, its
@@ -39,39 +42,51 @@ old address, only forwards here.
 ## Files
 
 - `index.html` — structure only; every visible text is an i18n key.
-- `js/house.js` — **the one place with measurements**: lot outline, rooms, spaces,
-  the street front (doors, windows, gate), inside doors, furniture, glass walls,
-  railings, stair ramps, the neighbours' footprints and the scene's extras, in
-  meters. The axes follow the house: y runs north along the building line, x
-  grows toward the street, (0, 0) is the lot's south-east corner, and true
-  north is `NORTH` (10.24°) clockwise from +y. Every wall is parallel to an
-  axis, which the 3D walls need.
-- `js/plan.js` — draws the plan (SVG) and the room list from `house.js`; hover,
-  click and zoom. `PLAN.show(id)` lights a room from another view.
-- `js/gallery.js` — the photo list (group, room, caption key), the grid, the
-  viewer and the strip over the plan (`GALLERY.peek`, `count`, `open`).
-- `js/page.js` — switches between the four views and loads the 3D code the first
-  time it is opened, so the other views never download three.js.
-- `js/walk.js` — the 3D model and the walking physics. Walls come from the room
-  outlines: every edge is a wall unless a door opens it. Floors, railings and
-  stone are textures drawn on canvases, so nothing is downloaded but three.js.
-- `videos/` — the walkthroughs at 432 px wide, H.264, no audio, with posters.
-- `plans/` — the survey's ground floor, upper floor, facade and sections.
-- `resources/` — the raw material the user drops in (videos, PDFs). Ignored by
-  git and never published: it can hold private papers.
-- `photos/NN.jpg` (up to 1400 px) and `photos/small/NN.jpg` (480 px), numbered
-  in the order of `gallery.js`, without their EXIF data.
-- `css/ranch.css`
-- `i18n/es.json`, `i18n/en.json` — every text, the photo captions included.
+- `js/survey.js` — **generated, do not edit**: the survey's geometry. Wall
+  polygons per floor, each room's floor outline, every door and window (jamb
+  to jamb, wall thickness, hinge and swing), the survey's thin lines as SVG
+  path data, and its sections. Made by `tools/` from the survey PDF.
+- `js/house.js` — what those shapes are: room names and finishes, floor levels
+  and ceiling heights (`tops`, read off the sections), roofs, parapets, door
+  and window heights from the survey's table of openings, furniture, stairs,
+  railings, the garden and the neighbours.
+- `js/plan.js` — draws the plan and the side views (SVG) and the room list;
+  hover, click and zoom. `PLAN.show(id)` lights a room from another view.
+- `js/gallery.js` — the photo list, the grid, the viewer and the strip over
+  the plan (`GALLERY.peek`, `count`, `open`).
+- `js/page.js` — switches between the four views and loads the 3D code the
+  first time it is opened, so the other views never download three.js.
+- `js/walk.js` — the 3D model and the walking physics. Floors, railings and
+  stone are textures drawn on canvases.
+- `js/sky.js` — the sky by the clock: sun and moon positions, about 20,000
+  stars with the brightest real ones in their places and the Milky Way, and
+  the lights that follow.
+- `tools/` — the scripts that read the survey PDF (see below).
+- `videos/`, `plans/`, `photos/` — media. `resources/` holds the raw material
+  the user drops in; it is ignored by git and never published.
+- `css/ranch.css`, `i18n/es.json`, `i18n/en.json`.
+
+## The axes
+
+Meters. y runs north along the house's inner walls and x grows toward the
+street; (0, 0) is the lot's south corner on the building line. Every inner
+wall is parallel to an axis, but the building line is not: it leans 2.4°
+(`STREET`), so the street front is slightly skewed, as the survey draws it.
+True north is `NORTH` (7.82°) clockwise from +y. Heights are above the
+sidewalk.
 
 ## Changing the house
 
-Fix a room in `js/house.js` and every view follows. Rooms are numbered for
-corrections ("14 is L-shaped"), so keep a number once it is given and use the
-next free one for anything new. Inside doors and furniture only exist in the
-3D model; most doors are guesses. A piece of furniture's `at` is its middle,
-placed so its back touches the wall's face, half a wall (7.5 cm) in from the
-room's edge. To tie a photo to a room, set its room in `gallery.js`.
+Rooms are numbered for corrections ("14 is L-shaped"); keep a number once it
+is given. What a room is, its finish, height and furniture are in
+`js/house.js`. Its shape, walls, doors and windows come from the survey: to
+change them, change the list of openings or the room seeds in `tools/sem.py`
+and regenerate `js/survey.js`.
+
+Furniture's `at` is the middle of the piece; everything solid must leave the
+doors' approaches free. After a change, check that every room can still be
+reached (a flood fill over `blocked()` and `floorAt()` from the street, with
+the doors open).
 
 After touching texts, check that no key is missing in any language:
 
@@ -82,19 +97,53 @@ python .claude/skills/i18n/revisar.py
 The page needs HTTP, like the home page (`python -m http.server 8123`, then
 <http://localhost:8123/ranch/>).
 
+## Reading the survey again
+
+The survey is a vector PDF (an AutoCAD plot at exactly 1:100, with layers).
+From a scratch folder with an empty `vec/` in it, and `tools/` copied or
+linked beside it:
+
+```bash
+python -I tools/pdfvec.py "<the survey>.pdf" vec/vec.json
+```
+
+writes every line and text with its layer. Then, with `vec/frame.json`
+holding the origins (`{"O": [135.92, 1581.44], "K": 28.3465, "PA": [864.56,
+1581.44], "TE": [2257.76, 1581.44]}`: the lot's south corner on the ground,
+upper and roof plans, and points per meter):
+
+```bash
+python -I tools/walls1.py pb 90 480 740 1700
+python -I tools/walls2.py pb tools/extra_pb.json
+python -I tools/walls1.py pa 790 480 1500 1700 864.56 1581.44
+python -I tools/walls2.py pa
+python -I tools/sem.py
+python -I tools/mksurvey.py ../ranch/js/survey.js
+```
+
+`walls1` and `walls2` turn the wall layer into closed polygons; `sem.py`
+finds each opening's jambs from a point given by hand, the way each door
+swings from the leaf the survey draws, and flood-fills the rooms;
+`mksurvey.py` writes the file. `tile.py` and `vdraw.py` draw any part of the
+sheet with a meter grid, to check a wall or a door against the survey.
+
+Two things the survey gets wrong with itself: its upper plan and sections
+draw the wing's end 0.95 m deeper than its dimensioned ground plan (we follow
+the ground plan), and its level marks for the wing (+0.20) don't match the
+0.30 m its sections draw below the front block (we follow the marks).
+
 ## Where the data comes from
 
-Rooms, walls, doors and the lot outline come from the survey plan of August
-2015 ("plano de transcripción y relevamiento", 1:100), read on a meter grid.
-The cadastre (IDECOR WFS, layer `idecor:parcelas`, parcel
-23-01-29-11-04-059-053: 765 m² land, 414 m² built) gives the areas and the
-neighbours, the parcels around it, each shrunk to its built area and turned
-into the house's axes.
-Buildings were placed from the Google satellite view, Street View and the
-listing photos (Zonaprop, Links Propiedades, AlquilerArgentina: 85 files, 54
-different pictures), then corrected by us after the visit. The history comes
-from those listings, Tripadvisor, Google and HotelVIP reviews, the cadastre
-and Wikipedia. Nothing was measured on site.
+Walls, doors, windows, rooms, levels and heights come from the survey plan of
+August 2015 ("plano de transcripción y relevamiento", 1:100). The cadastre
+(IDECOR WFS, layer `idecor:parcelas`, parcel 23-01-29-11-04-059-053: 765 m²
+land, 414 m² built) gives the areas and the neighbours. Roof materials,
+finishes, furniture and what has changed since 2015 (the grill where the
+survey has a carport, the galería's roof and railing) come from the listing
+photos (Zonaprop, Links Propiedades, AlquilerArgentina: 54 different
+pictures) and the two walkthrough videos. The history comes from those
+listings, Tripadvisor, Google and HotelVIP reviews, the cadastre and
+Wikipedia. Nothing was measured on site.
 
-three.js 0.160.0 comes from jsDelivr, the only thing the page loads from outside
-apart from the visits beacon.
+three.js 0.160.0 comes from jsDelivr, the only thing the page loads from
+outside apart from the visits beacon.
