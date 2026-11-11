@@ -4,7 +4,7 @@
    the plan. The room list (js/plan.js) asks GALLERY.count() which rooms have
    photos and opens them here with GALLERY.open().
 
-   photos/NN.jpg is the large copy and photos/small/NN.jpg the thumbnail.
+   assets/photos/NN.jpg is the large copy and assets/photos/small/NN.jpg the thumbnail.
    Captions are i18n keys; `t()` keeps them literal for revisar.py. */
 (function () {
   "use strict";
@@ -53,7 +53,7 @@
   ];
   var PHOTOS = LIST.map(function (p, i) {
     var f = (i < 9 ? "0" : "") + (i + 1) + ".jpg";
-    return { i: i, group: p[0], room: p[1], cap: p[2], big: "photos/" + f, small: "photos/small/" + f };
+    return { i: i, group: p[0], room: p[1], cap: p[2], big: "assets/photos/" + f, small: "assets/photos/small/" + f };
   });
   /* A guest's photos from January 2013, before the apartment was built. They
      stay on Tripadvisor's server and are credited to the guest's review: the
@@ -68,20 +68,20 @@
     });
 
   /* The 2015 survey's drawings, cut without the title block that names the
-     owner (plans/NAME.png, plans/NAME-small.jpg). */
+     owner (assets/plans/NAME.png, assets/plans/NAME-small.jpg). */
   [["ground", t("plans.ground")], ["upper", t("plans.upper")], ["facade", t("plans.facade")], ["sections", t("plans.sections")]]
     .forEach(function (d) {
-      PHOTOS.push({ i: PHOTOS.length, group: "plans", room: "", cap: d[1], big: "plans/" + d[0] + ".png", small: "plans/" + d[0] + "-small.jpg", plan: true });
+      PHOTOS.push({ i: PHOTOS.length, group: "plans", room: "", cap: d[1], big: "assets/plans/" + d[0] + ".png", small: "assets/plans/" + d[0] + "-small.jpg", plan: true });
     });
 
   /* The agency's two walkthrough videos, without sound, with chapters:
      [seconds, chapter key]. */
   var VIDEOS = [
-    { src: "videos/house.mp4", poster: "videos/house.jpg", title: t("video.house"),
+    { src: "assets/videos/house.mp4", poster: "assets/videos/house.jpg", title: t("video.house"),
       chapters: [[0, t("chapter.street")], [18, t("chapter.drive")], [55, t("chapter.garden")], [75, t("chapter.wing")],
                  [140, t("chapter.glazed")], [168, t("chapter.corridor")], [205, t("chapter.rooms")],
                  [228, t("chapter.dining")], [298, t("chapter.hall")]] },
-    { src: "videos/apartment.mp4", poster: "videos/apartment.jpg", title: t("video.apartment"),
+    { src: "assets/videos/apartment.mp4", poster: "assets/videos/apartment.jpg", title: t("video.apartment"),
       chapters: [[0, t("chapter.stair")], [16, t("chapter.landing")], [28, t("chapter.living")], [40, t("chapter.balcony")],
                  [52, t("chapter.bath")], [64, t("chapter.bedroom")], [92, t("chapter.kitchen")]] }
   ];

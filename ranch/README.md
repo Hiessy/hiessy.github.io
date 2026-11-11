@@ -67,7 +67,7 @@ old address, only forwards here.
   `controls`, `loop`, `skybar` (the sky button) and `sky` (sun, moon and stars
   by the clock, about 20,000 of them).
 - `tools/` — the scripts that read the survey PDF (see below).
-- `videos/`, `plans/`, `photos/` — media. `resources/` holds the raw material
+- `assets/` (`photos/`, `videos/`, `plans/`) — every picture, video and survey drawing the page uses, free to reuse. `resources/` holds the raw material
   the user drops in; it is ignored by git and never published.
 - `css/ranch.css`, `i18n/es.json`, `i18n/en.json`.
 
