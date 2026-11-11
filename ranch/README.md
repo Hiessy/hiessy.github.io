@@ -42,14 +42,16 @@ old address, only forwards here.
 ## Files
 
 - `index.html` — structure only; every visible text is an i18n key.
-- `js/survey.js` — **generated, do not edit**: the survey's geometry. Wall
+- `assets/model/` — the 3D model's own data, free to reuse: `survey.js`, `house.js`
+  and `house/` (below). The code that draws it is in `js/`.
+- `assets/model/survey.js` — **generated, do not edit**: the survey's geometry. Wall
   polygons per floor, each room's floor outline, every door and window (jamb
   to jamb, wall thickness, hinge and swing), the survey's thin lines as SVG
   path data, and its sections. Made by `tools/` from the survey PDF.
-- `js/house.js` — what those shapes are: heights (`tops`, read off the
+- `assets/model/house.js` — what those shapes are: heights (`tops`, read off the
   sections), roofs, parapets, door and window sizes, stairs, railings, the
   garden, and the lookups (`at`, `topAt`, `polyOf`). It assembles `HOUSE` from
-  the data files in `js/house/`: `rooms.js` (names, finishes, ceilings),
+  the data files in `assets/model/house/`: `rooms.js` (names, finishes, ceilings),
   `furniture.js` (every piece, from the photos) and `neighbours.js` (the
   cadastre's parcels). They are classic scripts loaded before it.
 - `js/plan.js` — draws the plan and the side views (SVG) and the room list;
@@ -84,9 +86,9 @@ sidewalk.
 
 Rooms are numbered for corrections ("14 is L-shaped"); keep a number once it
 is given. What a room is, its finish, height and furniture are in
-`js/house.js`. Its shape, walls, doors and windows come from the survey: to
+`assets/model/house.js`. Its shape, walls, doors and windows come from the survey: to
 change them, change the list of openings or the room seeds in `tools/sem.py`
-and regenerate `js/survey.js`.
+and regenerate `assets/model/survey.js`.
 
 Furniture's `at` is the middle of the piece; everything solid must leave the
 doors' approaches free. After a change, check that every room can still be
@@ -123,7 +125,7 @@ python -I tools/walls2.py pb tools/extra_pb.json
 python -I tools/walls1.py pa 790 480 1500 1700 864.56 1581.44
 python -I tools/walls2.py pa
 python -I tools/sem.py
-python -I tools/mksurvey.py ../ranch/js/survey.js
+python -I tools/mksurvey.py ../ranch/assets/model/survey.js
 ```
 
 `walls1` and `walls2` turn the wall layer into closed polygons; `sem.py`

@@ -1,7 +1,7 @@
 /* Ranch: what each thing on the plan and in the 3D walk is, in meters.
 
    The geometry itself (walls, the rooms' outlines, every door and window,
-   the survey's own line work and its sections) is in js/survey.js, made from
+   the survey's own line work and its sections) is in assets/model/survey.js, made from
    the survey plan of August 2015 ("plano de transcripción y relevamiento",
    1:100). This file says what those shapes are: names, floor finishes,
    heights taken from the survey's sections, roofs, furniture from the
@@ -38,7 +38,7 @@
   var FLOOR = { 0: 0, 1: Z.apt, 2: Z.terrace };
 
   var F = Z.front, B = Z.back;
-  var P = window.HOUSE_PARTS;                         // rooms, furniture and neighbours: js/house/
+  var P = window.HOUSE_PARTS;                         // rooms, furniture and neighbours: assets/model/house/
   var built = P.rooms({ t: t, Z: Z, F: F, B: B });
   var rooms = built.rooms, spaces = built.spaces;
 

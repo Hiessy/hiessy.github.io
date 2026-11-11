@@ -37,7 +37,7 @@ export function buildScene() {
   [[2.38, 2.52], [10.48, 10.62]].forEach((c) => S.static.add(flat(band(c[0], c[1]), mat(0xe8e4da), 0.03)));
 
   // Neighbours: the cadastre's parcels around, each a block of render under a
-  // tile or sheet roof (js/house.js), solid to walk into.
+  // tile or sheet roof (assets/model/house.js), solid to walk into.
   const RENDER = [0xf1ece2, 0xe9dfcf, 0xdcd3c3, 0xf4f1ea];
   const ROOFS = [0xa65f45, 0x8d969c, 0x9a5a40, 0x6f8796];
   H.neighbours.forEach((b, i) => {

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Builds ranch/js/survey.js from the survey's vectors (vec/vec.json), the
+"""Builds ranch/assets/model/survey.js from the survey's vectors (vec/vec.json), the
 wall polygons (vec/polys_*.json) and the openings and rooms found by sem.py
 (vec/sem.json).
 

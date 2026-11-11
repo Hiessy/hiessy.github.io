@@ -1,7 +1,7 @@
 /* The 3D view: a model of the house to walk through.
 
-   The walls are the survey's own wall outlines (js/survey.js), raised to the
-   heights its sections give (js/house.js, `tops`): flat under the slabs,
+   The walls are the survey's own wall outlines (assets/model/survey.js), raised to the
+   heights its sections give (assets/model/house.js, `tops`): flat under the slabs,
    sloping under the old house's gable, arched under the glazed room's
    vault. Every door and window is a gap the survey draws, with a lintel
    above it, a sill under the windows and a leaf that opens the way the

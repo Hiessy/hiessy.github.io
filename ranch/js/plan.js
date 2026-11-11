@@ -1,4 +1,4 @@
-/* The floor plan view: draws the survey (js/survey.js) and what js/house.js
+/* The floor plan view: draws the survey (assets/model/survey.js) and what assets/model/house.js
    says each room is into the #plan SVG, for the chosen floor, and lists the
    rooms beside it. A third choice shows the survey's side views: its four
    sections and the street front. Pointing at a room, on the plan or in
@@ -168,7 +168,7 @@
   /* ---------- the survey's own drawing ----------
      The walls are the survey's wall outlines, filled. Windows, door leaves
      and their swings, fixtures and projections are its thin lines, redrawn.
-     They come in meters and centimeters (js/survey.js); one transform puts
+     They come in meters and centimeters (assets/model/survey.js); one transform puts
      them on the plan. */
   function surveyLayer(parent) {
     var SV = window.SURVEY, lv = floor === 0 ? 0 : 1, P = SV.plan[lv];
