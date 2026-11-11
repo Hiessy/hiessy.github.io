@@ -1,0 +1,13 @@
+# materials of air-conditioner
+newmtl m0_f2f2ee
+Kd 0.9490 0.9490 0.9333
+Ks 0.10 0.10 0.10
+Ns 120
+d 1.00
+
+newmtl m1_1d1d1d
+Kd 0.1137 0.1137 0.1137
+Ks 0.10 0.10 0.10
+Ns 100
+d 1.00
+

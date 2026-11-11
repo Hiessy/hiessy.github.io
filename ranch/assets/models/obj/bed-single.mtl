@@ -1,0 +1,19 @@
+# materials of bed-single
+newmtl m0_c4c7ca
+Kd 0.7686 0.7804 0.7922
+Ks 0.42 0.42 0.42
+Ns 150
+d 1.00
+
+newmtl m1_f6f3ec
+Kd 0.9647 0.9529 0.9255
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+
+newmtl m2_1f5c46
+Kd 0.1216 0.3608 0.2745
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+

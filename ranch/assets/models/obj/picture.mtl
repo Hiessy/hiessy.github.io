@@ -1,0 +1,13 @@
+# materials of picture
+newmtl m0_b18d3a
+Kd 0.6941 0.5529 0.2275
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+
+newmtl m1_6f8f6a
+Kd 0.4353 0.5608 0.4157
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+

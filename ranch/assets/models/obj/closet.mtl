@@ -1,0 +1,19 @@
+# materials of closet
+newmtl m0_e6d9b8
+Kd 0.9020 0.8510 0.7216
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+
+newmtl m1_cfc09a
+Kd 0.8118 0.7529 0.6039
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+
+newmtl m2_b9aa85
+Kd 0.7255 0.6667 0.5216
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+

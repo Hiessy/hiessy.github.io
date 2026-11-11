@@ -1,0 +1,13 @@
+# materials of table-lamp
+newmtl m0_1d1d1d
+Kd 0.1137 0.1137 0.1137
+Ks 0.10 0.10 0.10
+Ns 100
+d 1.00
+
+newmtl m1_f3ead6
+Kd 0.9529 0.9176 0.8392
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+

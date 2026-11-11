@@ -1,0 +1,31 @@
+# materials of vanity
+newmtl m0_f2f0ea
+Kd 0.9490 0.9412 0.9176
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+
+newmtl m1_e6dcc8
+Kd 0.9020 0.8627 0.7843
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+
+newmtl m2_f4f3ef
+Kd 0.9569 0.9529 0.9373
+Ks 0.10 0.10 0.10
+Ns 120
+d 1.00
+
+newmtl m3_c4c7ca
+Kd 0.7686 0.7804 0.7922
+Ks 0.42 0.42 0.42
+Ns 150
+d 1.00
+
+newmtl m4_cfdbe3
+Kd 0.8118 0.8588 0.8902
+Ks 0.46 0.46 0.46
+Ns 190
+d 1.00
+

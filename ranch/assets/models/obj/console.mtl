@@ -1,0 +1,13 @@
+# materials of console
+newmtl m0_3f2716
+Kd 0.2471 0.1529 0.0863
+Ks 0.10 0.10 0.10
+Ns 60
+d 1.00
+
+newmtl m1_cfdbe3
+Kd 0.8118 0.8588 0.8902
+Ks 0.46 0.46 0.46
+Ns 190
+d 1.00
+

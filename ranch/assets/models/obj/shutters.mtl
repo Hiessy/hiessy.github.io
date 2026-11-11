@@ -1,0 +1,13 @@
+# materials of shutters
+newmtl m0_e9dfc4
+Kd 0.9137 0.8745 0.7686
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+
+newmtl m1_c9bb97
+Kd 0.7882 0.7333 0.5922
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+

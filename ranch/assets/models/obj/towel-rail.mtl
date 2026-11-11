@@ -1,0 +1,13 @@
+# materials of towel-rail
+newmtl m0_c4c7ca
+Kd 0.7686 0.7804 0.7922
+Ks 0.42 0.42 0.42
+Ns 150
+d 1.00
+
+newmtl m1_3f78a8
+Kd 0.2471 0.4706 0.6588
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+

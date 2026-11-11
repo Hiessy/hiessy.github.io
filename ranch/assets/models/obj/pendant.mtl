@@ -1,0 +1,19 @@
+# materials of pendant
+newmtl m0_1d1d1d
+Kd 0.1137 0.1137 0.1137
+Ks 0.10 0.10 0.10
+Ns 100
+d 1.00
+
+newmtl m1_e9d6b0
+Kd 0.9137 0.8392 0.6902
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+
+newmtl m2_fff1c8
+Kd 1.0000 0.9451 0.7843
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+

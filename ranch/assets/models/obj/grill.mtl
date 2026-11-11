@@ -1,0 +1,13 @@
+# materials of grill
+newmtl m0_a0583a
+Kd 0.6275 0.3451 0.2275
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+
+newmtl m1_1d1d1d
+Kd 0.1137 0.1137 0.1137
+Ks 0.10 0.10 0.10
+Ns 100
+d 1.00
+

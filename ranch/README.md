@@ -44,6 +44,16 @@ old address, only forwards here.
 - `index.html` — structure only; every visible text is an i18n key.
 - `assets/model/` — the 3D model's own data, free to reuse: `survey.js`, `house.js`
   and `house/` (below). The code that draws it is in `js/`.
+- `assets/models/` — the 3D catalog: 79 pieces a house like this has (beds,
+  tables, chairs, sofas, wardrobes, fridge, stove, oven, sink units, toilet,
+  bidet, basin, bathtub, shower, washing machine, fans, heaters, lamps,
+  doors, windows, mirrors, rugs, curtains, a car, a grill...). `catalog.js`
+  builds them (meters, standing on y = 0, from boxes and cylinders),
+  `export-obj.js` writes Wavefront `.obj` + `.mtl` without any library, and
+  `index.html` is a viewer to browse and download them (a developer page, not
+  linked from the site). `obj/` holds the exported files, free to reuse. To
+  regenerate them: run `python tools/save_server.py`, open the viewer through
+  the local server and press "Save all".
 - `assets/model/survey.js` — **generated, do not edit**: the survey's geometry. Wall
   polygons per floor, each room's floor outline, every door and window (jamb
   to jamb, wall thickness, hinge and swing), the survey's thin lines as SVG

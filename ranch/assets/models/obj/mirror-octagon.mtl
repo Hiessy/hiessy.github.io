@@ -1,0 +1,13 @@
+# materials of mirror-octagon
+newmtl m0_8a6a3a
+Kd 0.5412 0.4157 0.2275
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+
+newmtl m1_cfdbe3
+Kd 0.8118 0.8588 0.8902
+Ks 0.46 0.46 0.46
+Ns 190
+d 1.00
+

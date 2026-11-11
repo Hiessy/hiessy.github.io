@@ -1,0 +1,13 @@
+# materials of lamp-post
+newmtl m0_55585b
+Kd 0.3333 0.3451 0.3569
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+
+newmtl m1_fff1c8
+Kd 1.0000 0.9451 0.7843
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+

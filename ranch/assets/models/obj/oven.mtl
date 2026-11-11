@@ -1,0 +1,19 @@
+# materials of oven
+newmtl m0_2b2b2b
+Kd 0.1686 0.1686 0.1686
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+
+newmtl m1_bcd6ea
+Kd 0.7373 0.8392 0.9176
+Ks 0.14 0.14 0.14
+Ns 180
+d 0.30
+
+newmtl m2_b8bcbf
+Kd 0.7216 0.7373 0.7490
+Ks 0.34 0.34 0.34
+Ns 130
+d 1.00
+

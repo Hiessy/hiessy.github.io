@@ -1,0 +1,19 @@
+# materials of bathtub
+newmtl m0_f4f3ef
+Kd 0.9569 0.9529 0.9373
+Ks 0.10 0.10 0.10
+Ns 120
+d 1.00
+
+newmtl m1_dde6ea
+Kd 0.8667 0.9020 0.9176
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+
+newmtl m2_c4c7ca
+Kd 0.7686 0.7804 0.7922
+Ks 0.42 0.42 0.42
+Ns 150
+d 1.00
+

@@ -1,0 +1,19 @@
+# materials of wall-cabinets
+newmtl m0_f2f0ea
+Kd 0.9490 0.9412 0.9176
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+
+newmtl m1_1d1d1d
+Kd 0.1137 0.1137 0.1137
+Ks 0.10 0.10 0.10
+Ns 100
+d 1.00
+
+newmtl m2_b8bcbf
+Kd 0.7216 0.7373 0.7490
+Ks 0.34 0.34 0.34
+Ns 130
+d 1.00
+

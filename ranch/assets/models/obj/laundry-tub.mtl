@@ -1,0 +1,13 @@
+# materials of laundry-tub
+newmtl m0_d9d6cf
+Kd 0.8510 0.8392 0.8118
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+
+newmtl m1_b8bcbf
+Kd 0.7216 0.7373 0.7490
+Ks 0.34 0.34 0.34
+Ns 130
+d 1.00
+
