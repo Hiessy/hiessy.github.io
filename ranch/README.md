@@ -46,21 +46,26 @@ old address, only forwards here.
   polygons per floor, each room's floor outline, every door and window (jamb
   to jamb, wall thickness, hinge and swing), the survey's thin lines as SVG
   path data, and its sections. Made by `tools/` from the survey PDF.
-- `js/house.js` — what those shapes are: room names and finishes, floor levels
-  and ceiling heights (`tops`, read off the sections), roofs, parapets, door
-  and window heights from the survey's table of openings, furniture, stairs,
-  railings, the garden and the neighbours.
+- `js/house.js` — what those shapes are: heights (`tops`, read off the
+  sections), roofs, parapets, door and window sizes, stairs, railings, the
+  garden, and the lookups (`at`, `topAt`, `polyOf`). It assembles `HOUSE` from
+  the data files in `js/house/`: `rooms.js` (names, finishes, ceilings),
+  `furniture.js` (every piece, from the photos) and `neighbours.js` (the
+  cadastre's parcels). They are classic scripts loaded before it.
 - `js/plan.js` — draws the plan and the side views (SVG) and the room list;
   hover, click and zoom. `PLAN.show(id)` lights a room from another view.
 - `js/gallery.js` — the photo list, the grid, the viewer and the strip over
   the plan (`GALLERY.peek`, `count`, `open`).
 - `js/page.js` — switches between the four views and loads the 3D code the
   first time it is opened, so the other views never download three.js.
-- `js/walk.js` — the 3D model and the walking physics. Floors, railings and
-  stone are textures drawn on canvases.
-- `js/sky.js` — the sky by the clock: sun and moon positions, about 20,000
-  stars with the brightest real ones in their places and the Milky Way, and
-  the lights that follow.
+- `js/walk.js` — entry of the 3D view (`start`, `goTo`, `pause`, `resume`);
+  the rest is in `js/walk/`, a module for each concern: `core` (constants and
+  the one state object `S`), `textures`, `materials`, `geometry` (helpers),
+  `walls`, `doors`, `openings`, `pieces` (the furniture models), `furniture`
+  (placing them, solid footprints, baths), `labels`, `scene` (builds it all),
+  `roofs`, `physics` (floors, stairs, collisions), `pointer`, `minimap`, `hud`,
+  `controls`, `loop`, `skybar` (the sky button) and `sky` (sun, moon and stars
+  by the clock, about 20,000 of them).
 - `tools/` — the scripts that read the survey PDF (see below).
 - `videos/`, `plans/`, `photos/` — media. `resources/` holds the raw material
   the user drops in; it is ignored by git and never published.
