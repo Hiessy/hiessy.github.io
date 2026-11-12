@@ -167,7 +167,7 @@
     pavers: [[-12.5, 14.6], [-12.5, 16.76], [-13.56, 16.76], [-13.56, 21.3], [-17.3, 21.63], [-17.3, 14.6]],
     // the brick patio along the glazed room's garden side, up to the galería
     patio: [[-16.66, 8.35], [-16.66, 13.2], [-18.2, 13.2], [-18.2, 8.35]],
-    gravel: [[-27.4, 7.2], [-33.5, 7.2], [-33.45, 12.4], [-30.2, 12.2], [-27.4, 9.4]],
+    gravel: [[-27.4, 7.1], [-33.5, 7.1], [-33.45, 12.4], [-30.2, 12.2], [-27.4, 9.4]],
     tracks: [
       [[-17.3, 20.0], [-22.0, 18.8], [-28.0, 14.4], [-33.45, 11.7]],
       [[-17.3, 18.5], [-22.0, 17.3], [-27.5, 12.9], [-33.45, 9.9]]
@@ -284,6 +284,10 @@
   openings.forEach(function (o) {
     if (o.id === "P7" && Math.abs(o.a[1] - 4.85) < 0.2) o.leaf = "yellow";
     if (o.id === "V13") o.round = true;
+    // bedroom 11's louvre doors fold back flat against the corridor's wall, as
+    // the photos show them; swinging into the room, one leaf stood in front
+    // of its bath's door
+    if (o.id === "P6" && Math.abs(o.a[1] - 5.804) < 0.05) { o.swing = 1; o.fold = 172; }
   });
   function wallsOf(level) {
     return (SV.walls[level === 0 ? 0 : 1] || []).map(toPoly).filter(function (p) {

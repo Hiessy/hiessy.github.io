@@ -52,16 +52,22 @@ export function sloped(poly, zf, material) {
 }
 
 /* A solid from `base` up to a top that may slope: poly is its plan outline,
-   zf(x, y) the height of its top at each corner. */
-export function prism(poly, base, zf, material) {
+   zf(x, y) the height of its top at each corner. keep(a, b), when given,
+   returns the stretches of a side to draw, as [from, to] fractions of it. */
+export function prism(poly, base, zf, material, keep) {
   const n = poly.length, pos = [], uv = [], ccw = areaOf(poly) > 0;
   const P = (q, h) => [q[0], h, -q[1]];
   let run = 0;
   for (let i = 0; i < n; i++) {
     const a = ccw ? poly[i] : poly[(i + 1) % n], b = ccw ? poly[(i + 1) % n] : poly[i];
     const len = Math.hypot(b[0] - a[0], b[1] - a[1]), za = zf(a[0], a[1]), zb = zf(b[0], b[1]);
-    pos.push(...P(a, base), ...P(b, base), ...P(b, zb), ...P(a, base), ...P(b, zb), ...P(a, za));
-    uv.push(run, base, run + len, base, run + len, zb, run, base, run + len, zb, run, za);
+    const parts = keep ? keep(a, b) : [[0, 1]];
+    parts.forEach((k) => {
+      const p = [a[0] + (b[0] - a[0]) * k[0], a[1] + (b[1] - a[1]) * k[0]], q = [a[0] + (b[0] - a[0]) * k[1], a[1] + (b[1] - a[1]) * k[1]];
+      const zp = zf(p[0], p[1]), zq = zf(q[0], q[1]), u0 = run + len * k[0], u1 = run + len * k[1];
+      pos.push(...P(p, base), ...P(q, base), ...P(q, zq), ...P(p, base), ...P(q, zq), ...P(p, zp));
+      uv.push(u0, base, u1, base, u1, zq, u0, base, u1, zq, u0, zp);
+    });
     run += len;
   }
   THREE.ShapeUtils.triangulateShape(poly.map((q) => new THREE.Vector2(q[0], q[1])), []).forEach((f) => {
@@ -99,13 +105,30 @@ export function buildWalls() {
       const bb = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
       S.wallPolys[lv].push({ poly, bb });
       let top = BASE[lv] + 0.5;
+      // Clipping a wall outline that runs round a room to one of the zones
+      // can leave a sliver along the zone's edge, across the room. Draw a
+      // side only where it is the wall's face: wall on one side of it, room
+      // on the other.
+      const face = (a, b) => {
+        const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+        if (len < 1e-6) return [];
+        const nx = -(b[1] - a[1]) / len * 0.02, ny = (b[0] - a[0]) / len * 0.02, n = Math.max(1, Math.ceil(len / 0.04));
+        const out = [];
+        for (let i = 0; i < n; i++) {
+          const u = (i + 0.5) / n, x = a[0] + (b[0] - a[0]) * u, y = a[1] + (b[1] - a[1]) * u;
+          if (inside(x + nx, y + ny, poly) === inside(x - nx, y - ny, poly)) continue;
+          const last = out[out.length - 1];
+          if (last && Math.abs(last[1] - i / n) < 1e-9) last[1] = (i + 1) / n; else out.push([i / n, (i + 1) / n]);
+        }
+        return out;
+      };
       zones.forEach((z) => {
         const r = z.rect;
         if (bb[2] < r[0] || bb[0] > r[2] || bb[3] < r[1] || bb[1] > r[3]) return;
         const piece = clipRect(poly, r);
         if (piece.length < 3 || Math.abs(areaOf(piece)) < 1e-4) return;
         const zf = (x) => z.z + (z.g || 0) * (x - r[0]);
-        S.static.add(prism(piece, BASE[lv], zf, M.wall));
+        S.static.add(prism(piece, BASE[lv], zf, M.wall, face));
         piece.forEach((p) => { top = Math.max(top, zf(p[0])); });
       });
       // its sides are what you bump into, each as high as the wall is there

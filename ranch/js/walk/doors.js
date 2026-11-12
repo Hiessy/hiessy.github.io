@@ -106,14 +106,18 @@ export function makeLeaf(kind, w, h) {
 }
 
 /* A door on a wall from A to B (plan points). It opens toward `side`. */
-export function addDoor(a, b, base, kind, side, tall, dbl) {
+/* fold: a door that opens flat against the wall's face, as the bedrooms'
+   louvre doors do in the photos: its hinges sit on the face toward `side`
+   (fold.off from the wall's middle) and it turns fold.deg degrees. */
+export function addDoor(a, b, base, kind, side, tall, dbl, fold) {
   const dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy);
   const ux = dx / len, uy = dy / len;
   const h = tall || DOOR_H;
-  const door = { kind, t: 0, target: 0, pivots: [], parts: [], name: kind === "gate" ? "gate" : "door" };
+  const door = { kind, t: 0, target: 0, pivots: [], parts: [], name: kind === "gate" ? "gate" : "door", deg: fold ? fold.deg : 88 };
+  const off = fold ? fold.off : 0;
   const hinge = (p, dirx, diry, w) => {
     const pivot = new THREE.Object3D();
-    pivot.position.set(p[0], base, -p[1]);
+    pivot.position.set(p[0] + side[0] * off, base, -(p[1] + side[1] * off));
     const base0 = Math.atan2(diry, dirx);
     const left = -diry * side[0] + dirx * side[1];   // leftNormal · side
     pivot.rotation.y = base0;
@@ -167,7 +171,7 @@ export function addDoor(a, b, base, kind, side, tall, dbl) {
 export function setDoorPose(d) {
   const e = d.t * d.t * (3 - 2 * d.t);
   if (d.slide) { d.slide.leaf.position.x = d.slide.x0 - 0.94 * d.slide.len * e; return; }
-  d.pivots.forEach((p) => { p.pivot.rotation.y = p.base0 + p.sign * e * 88 * DEG; });
+  d.pivots.forEach((p) => { p.pivot.rotation.y = p.base0 + p.sign * e * (d.deg || 88) * DEG; });
 }
 
 export function toggleDoor(d) { d.target = d.target > 0.5 ? 0 : 1; updatePrompt(); }

@@ -96,7 +96,8 @@ export function buildOpenings() {
     if (top) S.static.add(top);
     const s = o.swing || 1, dbl = o.kind === "double" || o.hinge === "ab";
     const hinge = o.hinge === "b" ? [b, a] : [a, b];
-    addDoor(hinge[0], hinge[1], zf, dbl && o.leaf === "glass" ? "double-glass" : o.leaf, [nx * s, ny * s], o.head, dbl);
+    addDoor(hinge[0], hinge[1], zf, dbl && o.leaf === "glass" ? "double-glass" : o.leaf, [nx * s, ny * s], o.head, dbl,
+            o.fold ? { deg: o.fold, off: o.t / 2 + 0.03 } : null);
   });
   // the vehicle gate on the building line opens inward
   const g = H.gate;

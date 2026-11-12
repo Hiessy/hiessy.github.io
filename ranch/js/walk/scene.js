@@ -94,7 +94,10 @@ export function buildScene() {
   H.rooms.concat(H.spaces).forEach((r) => {
     const poly = H.polyOf(r);
     if (poly.length < 3) return;
-    if (r.fin) S.static.add(slab(poly, texMat(r.fin), r.z + 0.004, r.level === 0 ? Math.max(0.03, r.z + 0.03) : 0.02));
+    // a floor at ground level sits a centimeter over the lawn (drawn at 4 mm),
+    // or the two flicker where they overlap
+    const lift = r.level === 0 && r.z < 0.05 ? 0.012 : 0.004;
+    if (r.fin) S.static.add(slab(poly, texMat(r.fin), r.z + lift, r.level === 0 ? Math.max(0.03, r.z + 0.03) : 0.02));
     if (r.kind !== "stair") S.surfaces.push({ poly, h: r.z, level: r.level });
     if (!r.n) return;
     if (typeof r.h === "number") { S.static.add(flat(poly, ceil, r.z + r.h)); return; }
