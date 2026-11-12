@@ -22,7 +22,8 @@ the former Hostería Norita Ranch, in four views:
   apartment's roof falling to the back. Floors sit at the survey's levels
   (+0.35 the front block, +0.20 the glazed room and the wing, +3.00 the
   apartment), so there are steps. Doors start closed and open with a click
-  (or E), Space jumps, keys 1, 2 and 3 switch between walking, the overview
+  (or E), Space jumps (high enough to clear a railing: every roof can be
+  walked on), keys 1, 2 and 3 switch between walking, the overview
   and an aerial view (those two fly like a ghost with WASD, Q and E). The sky
   follows the visitor's clock: sun, moon and stars are where they would be
   over La Cumbre at that hour, lamps and windows light up at night, and the
