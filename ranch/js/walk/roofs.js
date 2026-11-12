@@ -79,4 +79,22 @@ export function buildRoofs() {
 
   S.roofs = merge(roofs);
   S.scene.add(S.roofs);
+
+  // Every roof can be walked on: jump over a railing or a parapet and go
+  // round the top of the house. hf gives a sloping roof's height.
+  const rect = (r) => [[r[0], r[1]], [r[2], r[1]], [r[2], r[3]], [r[0], r[3]]];
+  const top = (poly, h, hf) => S.surfaces.push({ poly, h, hf, level: 2, roof: true });
+  top(rect(main), 0, (x) => zr(x));
+  top(rect(g), 0, (x) => H.arch(Math.max(-16.64, Math.min(-11.86, x))) + 0.012);
+  top(A, 0, (x) => za2(x));
+  top(X.landingRoof, H.Z.apt + 2.75);
+  top(X.tower.roof, H.Z.terrace + 2.3);
+  H.roofs.forEach((r) => {
+    if (r.kind === "slab" && !r.terrace) top(r.poly, r.z + r.t);
+    if (r.kind === "sheet") top(r.poly, r.z + 0.05);
+    if (r.kind === "leanto") {
+      const y0 = r.poly[0][1], y1 = r.poly[1][1];
+      top(r.poly, 0, (x, y) => r.z - r.drop * Math.max(0, Math.min(1, (y - y0) / (y1 - y0))));
+    }
+  });
 }

@@ -94,7 +94,7 @@
     { id: "kitchen", name: t("roof.kitchen"), kind: "slab", poly: [[-10.2, 0.95], [-10.2, 4.8], [-11.9, 4.8], [-11.9, 4.95], [-13.85, 4.95], [-13.85, 1.29]], z: F + 2.9, t: 0.2 },
     { id: "laundry", name: t("roof.laundry"), kind: "slab", poly: [[-13.85, 1.29], [-13.85, 4.95], [-16.25, 5.05], [-16.25, 1.51]], z: F + 2.3, t: 0.2 },
     { id: "glazed", name: t("roof.glazed"), kind: "vault", rect: [-16.7, 4.95, -11.86, 13.3], lab: [-14.3, 9.1] },
-    { id: "wing", name: t("roof.wing"), kind: "slab", poly: [[-16.25, 1.51], [-16.25, 5.05], [-18.0, 5.3], [-18.0, 7.2], [-28.1, 7.2], [-28.1, 4.65], [-28.1, 2.61]], z: B + 2.55, t: 0.15, terrace: true },
+    { id: "wing", name: t("roof.wing"), kind: "slab", poly: [[-16.25, 1.51], [-16.25, 5.05], [-18.0, 5.3], [-18.0, 7.2], [-26.5, 7.2], [-26.5, 4.65], [-28.1, 4.65], [-28.1, 2.61]], z: B + 2.55, t: 0.15, terrace: true },
     { id: "galeria", name: t("roof.galeria"), kind: "leanto", poly: [[-16.66, 7.2], [-16.66, 8.45], [-26.55, 8.45], [-26.55, 7.2]], z: 2.72, drop: 0.38, lab: [-21.6, 7.82] },
     { id: "grill", name: t("roof.grill"), kind: "sheet", poly: [[-28.1, 2.7], [-28.1, 7.2], [-33.85, 7.2], [-33.85, 3.25]], z: 2.45, lab: [-30.9, 5.0] },
     { id: "carport", name: t("roof.carport"), kind: "sheet", poly: [[-33.7, 3.7], [-33.3, 12.55], [-37.3, 12.8], [-37.75, 3.85]], z: 2.4, lab: [-35.5, 8.2] }
@@ -104,7 +104,7 @@
   var parapets = [
     { a: [0, 0], b: [streetX(4.95), 4.95], t: 0.3, z0: F + 2.9, z1: F + 3.1, inset: 0.15 },          // bedroom 2's front
     { a: [streetX(4.95), 4.95], b: [streetX(12.6), 12.6], t: 0.3, z0: F + 2.7, z1: F + 3.59, inset: 0.15 },  // the hall's front
-    { a: [-0.15, 0.15], b: [-16.25, 1.66], t: 0.3, z0: F + 2.9, z1: F + 3.1 },                        // the party wall, by the old house
+    { a: [-0.15, 0.15], b: [-16.25, 1.66], t: 0.3, z0: F + 2.9, z1: F + 3.13 },                       // the party wall, by the old house
     { a: [-16.25, 1.66], b: [-28.1, 2.76], t: 0.3, z0: B + 2.7, z1: B + 3.7 },                        // and by the wing: the terrace's parapet
     { a: [-28.1, 2.76], b: [-28.1, 4.65], t: 0.2, z0: B + 2.7, z1: B + 3.6 },                         // the walkway's end
     { a: [-16.3, 1.82], b: [-16.3, 5.0], t: 0.15, z0: B + 2.7, z1: B + 3.6 }                          // the terrace's street end

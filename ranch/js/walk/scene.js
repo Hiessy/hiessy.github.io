@@ -94,13 +94,14 @@ export function buildScene() {
   H.rooms.concat(H.spaces).forEach((r) => {
     const poly = H.polyOf(r);
     if (poly.length < 3) return;
-    // a floor at ground level sits a centimeter over the lawn (drawn at 4 mm),
-    // or the two flicker where they overlap
-    const lift = r.level === 0 && r.z < 0.05 ? 0.012 : 0.004;
+    // every floor sits a centimeter over what is under it (the lawn, the
+    // apartment's slab, the wing's roof), or the two flicker where they meet
+    const lift = 0.012;
     if (r.fin) S.static.add(slab(poly, texMat(r.fin), r.z + lift, r.level === 0 ? Math.max(0.03, r.z + 0.03) : 0.02));
     if (r.kind !== "stair") S.surfaces.push({ poly, h: r.z, level: r.level });
     if (!r.n) return;
-    if (typeof r.h === "number") { S.static.add(flat(poly, ceil, r.z + r.h)); return; }
+    // a flat ceiling sits just under the slab over it, or the two flicker
+    if (typeof r.h === "number") { S.static.add(flat(poly, ceil, r.z + r.h - 0.012)); return; }
     if (r.h === "vault") return;                         // the vault itself is its ceiling
     H.tops.forEach((z) => {
       if (z.level !== r.level) return;

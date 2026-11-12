@@ -9,7 +9,12 @@ export const WALL_T = 0.15;
 
 export const DOOR_H = 2.05;
 
-export const EYE = 1.55, BODY = 1.7, RADIUS = 0.2, STEP = 0.45, GRAVITY = 9.8;
+/* The visitor is drawn a fifth smaller than a person, so the rooms feel a
+   fifth bigger and are easier to move about in; the house keeps the
+   survey's measures. */
+export const SCALE = 1.2;
+
+export const EYE = 1.55 / SCALE, BODY = 1.7 / SCALE, RADIUS = 0.2 / SCALE, STEP = 0.45, GRAVITY = 9.8;
 
 export const REACH = 3.2;
 

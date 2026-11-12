@@ -469,7 +469,7 @@ export const BUILD = {
     }
     if (p.stove !== undefined) {
       const body = p.stoveColor ? mat(p.stoveColor, { roughness: 0.4 }) : M.black;
-      bx(g, 0.56, 0.9, 0.62, p.stove, 0.45, -0.01, body);
+      bx(g, 0.56, 0.88, 0.62, p.stove, 0.44, -0.01, body);
       bx(g, 0.57, 0.03, 0.63, p.stove, 0.915, -0.01, M.black);
       LEGS.forEach((q) => cy(g, 0.07, 0.07, 0.02, p.stove + q[0] * 0.13, 0.94, q[1] * 0.12, M.steel, 12));
       bx(g, 0.44, 0.36, 0.01, p.stove, 0.42, -0.325, mat(0x15181d, { roughness: 0.2 }));

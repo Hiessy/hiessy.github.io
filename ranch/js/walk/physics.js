@@ -17,9 +17,18 @@ export function rampHeights(r, x, y) {
   return out;
 }
 
+/* A surface's height at (x, y): floors are flat, some roofs slope. Roofs
+   are only there to stand on while they are shown. */
+export function heightOf(s, x, y) { return s.hf ? s.hf(x, y) : s.h; }
+function live(s) { return !s.roof || !S.roofs || S.roofs.visible; }
+
 export function floorAt(x, y, feet) {
   let best = 0;
-  S.surfaces.forEach((s) => { if (s.h <= feet + STEP && s.h > best && inside(x, y, s.poly)) best = s.h; });
+  S.surfaces.forEach((s) => {
+    if (!live(s) || !inside(x, y, s.poly)) return;
+    const h = heightOf(s, x, y);
+    if (h <= feet + STEP && h > best) best = h;
+  });
   H.ramps.forEach((r) => rampHeights(r, x, y).forEach((h) => { if (h <= feet + STEP && h > best) best = h; }));
   return best;
 }
@@ -45,12 +54,12 @@ export function collide(p, feet) {
 
 export function levelOf(p) {
   if (p.feet < 1.4) return 0;
-  return S.surfaces.some((s) => s.level === 2 && inside(p.x, p.y, s.poly)) ? 2 : 1;
+  return S.surfaces.some((s) => s.level === 2 && live(s) && inside(p.x, p.y, s.poly) && p.feet > heightOf(s, p.x, p.y) - 0.5) ? 2 : 1;
 }
 
-/* Space (or the touch button) jumps: about half a meter, only from the
-   ground or a stair, never in mid-air. */
-export const JUMP = 3.3;
+/* Space (or the touch button) jumps: about 85 cm, enough to clear a railing
+   and get onto the roofs; only from the ground or a stair, never in mid-air. */
+export const JUMP = 4.1;
 
 export function jump() {
   const p = S.player;
@@ -107,7 +116,7 @@ export function step(dt) {
 export function standAt(x, y, lv) {
   const c = [];
   H.ramps.forEach((r) => rampHeights(r, x, y).forEach((h) => c.push(h)));
-  S.surfaces.forEach((s) => { if (s.level === lv && inside(x, y, s.poly)) c.push(s.h); });
+  S.surfaces.forEach((s) => { if (s.level === lv && !s.roof && inside(x, y, s.poly)) c.push(s.h); });
   if (!c.length) return 0;
   return c.reduce((a, b) => (Math.abs(b - F[lv]) < Math.abs(a - F[lv]) ? b : a));
 }
