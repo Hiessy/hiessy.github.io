@@ -49,9 +49,9 @@ old address, only forwards here.
   bidet, basin, bathtub, shower, washing machine, fans, heaters, lamps,
   doors, windows, mirrors, rugs, curtains, a car, a grill...). `catalog.js`
   builds them (meters, standing on y = 0, from boxes and cylinders),
-  `export-obj.js` writes Wavefront `.obj` + `.mtl` without any library, and
+  `export-obj.js` writes Wavefront `.obj` + `.mtl` without any library (the viewer also exports `.glb` with three.js' own exporter), and
   `index.html` is a viewer to browse and download them (a developer page, not
-  linked from the site). `obj/` holds the exported files, free to reuse. To
+  linked from the site). `obj/` holds the exported files (`.obj` + `.mtl` and a binary `.glb` each), free to reuse. To
   regenerate them: run `python tools/save_server.py`, open the viewer through
   the local server and press "Save all".
 - `assets/model/survey.js` — **generated, do not edit**: the survey's geometry. Wall

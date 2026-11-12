@@ -1,5 +1,5 @@
 """A tiny local server that lets assets/models/index.html write the exported
-.obj/.mtl files to disk: POST /<name> saves ranch/assets/models/obj/<name>.
+.obj/.mtl files to disk: POST /<name> saves ranch/assets/models/obj/<name> (.obj, .mtl or .glb).
 Run it, press "Save all" on the page, then stop it. Binds to localhost only.
 Usage: python tools/save_server.py [port]"""
 import os, re, sys
@@ -20,7 +20,7 @@ class H(BaseHTTPRequestHandler):
 
     def do_POST(self):
         name = self.path.strip("/")
-        if not re.fullmatch(r"[a-z0-9-]+\.(obj|mtl)", name):
+        if not re.fullmatch(r"[a-z0-9-]+\.(obj|mtl|glb)", name):
             self.send_response(400); self._cors(); self.end_headers(); return
         data = self.rfile.read(int(self.headers.get("Content-Length", 0)))
         with open(os.path.join(OUT, name), "wb") as f:

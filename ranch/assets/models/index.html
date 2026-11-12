@@ -25,7 +25,7 @@
 <body>
 <nav id="list"></nav>
 <main><canvas id="c"></canvas>
-  <div class="bar"><b id="title">Choose a piece</b><button id="dl">Download .obj + .mtl</button><button id="save" title="Needs tools/save_server.py running">Save all to assets/models/obj</button></div>
+  <div class="bar"><b id="title">Choose a piece</b><button id="dl">Download .obj + .mtl</button><button id="dlg">Download .glb</button><button id="save" title="Needs tools/save_server.py running">Save all to assets/models/obj</button></div>
   <div id="status"></div></main>
 <script src="../model/survey.js"></script>
 <script src="../model/house/rooms.js"></script>
@@ -38,6 +38,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { palette } from "../../js/walk/materials.js";
 import { CATALOG } from "./catalog.js";
 import { toObj } from "./export-obj.js";
+import { GLTFExporter } from "three/addons/exporters/GLTFExporter.js";
 
 palette();
 const $ = (id) => document.getElementById(id);
@@ -69,6 +70,8 @@ CATALOG.forEach((it) => {
 });
 function file(name, text) { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: "text/plain" })); a.download = name; a.click(); }
 $("dl").onclick = () => { if (!current) return; const g = current.make(), r = toObj(g, current.id); file(current.id + ".obj", r.obj); setTimeout(() => file(current.id + ".mtl", r.mtl), 200); };
+const glb = (g) => new Promise((ok, no) => new GLTFExporter().parse(g, ok, no, { binary: true }));
+$("dlg").onclick = async () => { if (!current) return; const b = await glb(current.make()); const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([b], { type: "model/gltf-binary" })); a.download = current.id + ".glb"; a.click(); };
 $("save").onclick = async () => {
   let ok = 0;
   for (const it of CATALOG) {
@@ -76,6 +79,7 @@ $("save").onclick = async () => {
     try {
       await fetch("http://127.0.0.1:8125/" + it.id + ".obj", { method: "POST", body: r.obj });
       await fetch("http://127.0.0.1:8125/" + it.id + ".mtl", { method: "POST", body: r.mtl });
+      await fetch("http://127.0.0.1:8125/" + it.id + ".glb", { method: "POST", body: await glb(it.make()) });
       ok++; $("status").textContent = "Saved " + ok + " / " + CATALOG.length;
     } catch (e) { $("status").textContent = "Could not reach the save server on :8125"; return; }
   }
