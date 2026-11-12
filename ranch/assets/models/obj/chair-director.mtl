@@ -1,0 +1,13 @@
+# materials of chair-director
+newmtl m0_a77b4f
+Kd 0.6549 0.4824 0.3098
+Ks 0.10 0.10 0.10
+Ns 50
+d 1.00
+
+newmtl m1_7a7f86
+Kd 0.4784 0.4980 0.5255
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+

@@ -1,0 +1,19 @@
+# materials of bidet-green
+newmtl m0_7fb89a
+Kd 0.4980 0.7216 0.6039
+Ks 0.10 0.10 0.10
+Ns 140
+d 1.00
+
+newmtl m1_3f5f4c
+Kd 0.2471 0.3726 0.2980
+Ks 0.10 0.10 0.10
+Ns 150
+d 1.00
+
+newmtl m2_c4c7ca
+Kd 0.7686 0.7804 0.7922
+Ks 0.42 0.42 0.42
+Ns 150
+d 1.00
+

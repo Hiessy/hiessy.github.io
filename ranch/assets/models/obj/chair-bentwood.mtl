@@ -1,0 +1,13 @@
+# materials of chair-bentwood
+newmtl m0_9a8a2a
+Kd 0.6039 0.5412 0.1647
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+
+newmtl m1_2a1d14
+Kd 0.1647 0.1137 0.0784
+Ks 0.10 0.10 0.10
+Ns 100
+d 1.00
+

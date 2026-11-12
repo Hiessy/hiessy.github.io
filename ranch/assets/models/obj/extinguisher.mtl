@@ -1,0 +1,13 @@
+# materials of extinguisher
+newmtl m0_c0231c
+Kd 0.7529 0.1373 0.1098
+Ks 0.10 0.10 0.10
+Ns 120
+d 1.00
+
+newmtl m1_1d1d1d
+Kd 0.1137 0.1137 0.1137
+Ks 0.10 0.10 0.10
+Ns 100
+d 1.00
+

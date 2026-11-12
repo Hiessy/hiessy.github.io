@@ -44,7 +44,7 @@ old address, only forwards here.
 - `index.html` — structure only; every visible text is an i18n key.
 - `assets/model/` — the 3D model's own data, free to reuse: `survey.js`, `house.js`
   and `house/` (below). The code that draws it is in `js/`.
-- `assets/models/` — the 3D catalog: 79 pieces a house like this has (beds,
+- `assets/models/` — the 3D catalog: 103 pieces a house like this has (beds,
   tables, chairs, sofas, wardrobes, fridge, stove, oven, sink units, toilet,
   bidet, basin, bathtub, shower, washing machine, fans, heaters, lamps,
   doors, windows, mirrors, rugs, curtains, a car, a grill...). `catalog.js`
@@ -73,8 +73,11 @@ old address, only forwards here.
 - `js/walk.js` — entry of the 3D view (`start`, `goTo`, `pause`, `resume`);
   the rest is in `js/walk/`, a module for each concern: `core` (constants and
   the one state object `S`), `textures`, `materials`, `geometry` (helpers),
-  `walls`, `doors`, `openings`, `pieces` (the furniture models), `furniture`
-  (placing them, solid footprints, baths), `labels`, `scene` (builds it all),
+  `walls`, `doors`, `openings`, `pieces` (the furniture models), `decor`
+  (pictures, mirrors, wall lamps, heaters, curtains), `bathroom` (toilet,
+  bidet, basin, shower and how a bath is laid out), `plants` (irises, flower
+  beds, shrubs, urns, stepping stones), `furniture` (placing them all, solid
+  footprints, sliding wall pieces onto the wall's face), `labels`, `scene` (builds it all),
   `roofs`, `physics` (floors, stairs, collisions), `pointer`, `minimap`, `hud`,
   `controls`, `loop`, `skybar` (the sky button) and `sky` (sun, moon and stars
   by the clock, about 20,000 of them).
@@ -99,6 +102,12 @@ is given. What a room is, its finish, height and furniture are in
 `assets/model/house.js`. Its shape, walls, doors and windows come from the survey: to
 change them, change the list of openings or the room seeds in `tools/sem.py`
 and regenerate `assets/model/survey.js`.
+
+Each room's floor is its `fin` in `rooms.js`, one of the finishes drawn in
+`js/walk/textures.js` after the photos (diagonal checkerboard, terrazzo,
+the bedrooms' patterned tiles, each bath's own floor). A bath's fixtures,
+bidet included, are laid out from one line in `furniture.js`: the wall they
+stand against, the end the shower is at, the curtain's pattern.
 
 Furniture's `at` is the middle of the piece; everything solid must leave the
 doors' approaches free. After a change, check that every room can still be

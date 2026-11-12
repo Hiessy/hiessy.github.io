@@ -163,7 +163,10 @@
   };
 
   var garden = {
-    pavers: [[-11.86, 13.26], [-11.86, 16.76], [-13.56, 16.76], [-13.56, 21.3], [-17.3, 21.63], [-17.3, 13.26]],
+    // the drive's pavers stop short of the glazed room: irises and lavender grow in the strip between
+    pavers: [[-12.5, 14.6], [-12.5, 16.76], [-13.56, 16.76], [-13.56, 21.3], [-17.3, 21.63], [-17.3, 14.6]],
+    // the brick patio along the glazed room's garden side, up to the galería
+    patio: [[-16.66, 8.35], [-16.66, 13.2], [-18.2, 13.2], [-18.2, 8.35]],
     gravel: [[-27.4, 7.2], [-33.5, 7.2], [-33.45, 12.4], [-30.2, 12.2], [-27.4, 9.4]],
     tracks: [
       [[-17.3, 20.0], [-22.0, 18.8], [-28.0, 14.4], [-33.45, 11.7]],

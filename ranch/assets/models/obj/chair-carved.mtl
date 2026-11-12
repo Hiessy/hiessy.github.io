@@ -1,0 +1,13 @@
+# materials of chair-carved
+newmtl m0_3f2716
+Kd 0.2471 0.1529 0.0863
+Ks 0.10 0.10 0.10
+Ns 60
+d 1.00
+
+newmtl m1_5a3220
+Kd 0.3529 0.1961 0.1255
+Ks 0.10 0.10 0.10
+Ns 90
+d 1.00
+

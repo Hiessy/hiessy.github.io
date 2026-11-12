@@ -1,7 +1,7 @@
 /* Builds the whole scene: ground, garden, floors, ceilings, walls, railings, stairs, sign, grill. */
 import * as THREE from "three";
 import { CENTER, F, H, S, X, t } from "./core.js";
-import { bath, buildFurniture, solid } from "./furniture.js";
+import { buildFurniture, solid } from "./furniture.js";
 import { ball, bar, beam3, bx, byId, center, cy, flat, merge, place, rectPoly, slab, zAt } from "./geometry.js";
 import { buildLabels } from "./labels.js";
 import { M, TOP_SHADOW, mat, texMat } from "./materials.js";
@@ -54,6 +54,7 @@ export function buildScene() {
   const G = H.garden;
   S.static.add(flat(G.gravel, texMat("gravel"), 0.02));
   S.static.add(flat(G.pavers, texMat("pavers"), 0.02));
+  if (G.patio) S.static.add(flat(G.patio, texMat("brickpave"), 0.025));
   G.tracks.forEach((c) => {
     const curve = new THREE.CubicBezierCurve(...c.map((p) => new THREE.Vector2(p[0], p[1])));
     const pts = curve.getPoints(28);
@@ -140,6 +141,11 @@ export function buildScene() {
   }
   for (let y = 5.7; y < 15.2; y += 1.3) {
     beam3([-11.62, y, H.topAt(-11.62, y, 0) - 0.1], [-9.24, y, H.topAt(-9.24, y, 0) - 0.1], 0.07, 0.16, M.trim);
+  }
+  // the apartment's dark beams under its wooden ceiling, across the slope
+  for (let x = -13.0; x < -1.3; x += 0.9) {
+    const top = H.topAt(x, 18.5, 1) - 0.08;
+    beam3([x, 17.0, top], [x, 20.2 - x * 0.09, top], 0.08, 0.15, mat(0x4a2c18, { roughness: 0.7 }));
   }
   // stone at the foot of the street front, by the apartment's door
   X.stone.forEach((r) => {

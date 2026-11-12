@@ -1,6 +1,5 @@
 /* The little map with your position. */
 import { H, S } from "./core.js";
-import { bath } from "./furniture.js";
 import { levelOf } from "./physics.js";
 
 export const MAP = H.extras.map;

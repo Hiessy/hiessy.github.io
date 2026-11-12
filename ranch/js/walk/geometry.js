@@ -179,3 +179,29 @@ export function triangle(p, material) {
   m.castShadow = true;
   return m;
 }
+
+/* A ring or an arc of tube, standing in the piece's x-y plane. */
+export function hoop(g, R, r, arc, x, y, z, material) {
+  const m = new THREE.Mesh(new THREE.TorusGeometry(R, r, 6, 18, arc), material);
+  m.position.set(x, y, z);
+  m.castShadow = true;
+  g.add(m);
+  return m;
+}
+
+/* A shape turned on a lathe: profile is [[radius, height], ...]. */
+export function lathe(g, profile, x, y, z, material, seg) {
+  const m = new THREE.Mesh(new THREE.LatheGeometry(profile.map((p) => new THREE.Vector2(p[0], p[1])), seg || 14), material);
+  m.position.set(x, y, z);
+  m.castShadow = true;
+  m.receiveShadow = true;
+  g.add(m);
+  return m;
+}
+
+/* Random numbers that come out the same on every visit, so a flower bed
+   doesn't move between two looks. */
+export function rng(seed) {
+  let a = (seed >>> 0) || 1;
+  return () => { a = (Math.imul(a, 1664525) + 1013904223) >>> 0; return a / 4294967296; };
+}

@@ -14,6 +14,9 @@ import * as THREE from "three";
 import { bx, cy, ball } from "../../js/walk/geometry.js";
 import { M, mat } from "../../js/walk/materials.js";
 import { BUILD, chair } from "../../js/walk/pieces.js";
+import { basin, bidet, toilet, vanity } from "../../js/walk/bathroom.js";
+import { DECOR } from "../../js/walk/decor.js";
+import { PLANTS } from "../../js/walk/plants.js";
 
 const std = (color, o) => mat(color, o || {});
 const WOOD = 0x6b4423, PINE = 0xc58f52, DARKW = 0x3f2716;
@@ -372,12 +375,14 @@ const NEW = {
 /* ---------- the list ---------- */
 const E = (id, name, cat, make) => ({ id, name, cat, make: () => tag(make(), id) });
 const B = (type, p) => () => BUILD[type](p || {});
+const D = (type, p) => () => DECOR[type](p || {});
+const P = (type, p) => () => PLANTS[type](p || {});
 
 export const CATALOG = [
   // bedroom
   E("bed-single", "Single bed (iron frame, green plaid)", "bedroom", B("bed", { w: 0.9, color: 0x1f5c46, frame: 0xb8b8b8 })),
   E("bed-double", "Double bed (dark wood)", "bedroom", B("bed", { w: 1.4, color: 0x1d6b5a, frame: 0x3f2716 })),
-  E("bed-zebra", "Double bed (black, zebra spread)", "bedroom", B("bed", { w: 1.3, color: "zebra", frame: 0x1c1c1c })),
+  E("bed-zebra", "Double bed (black, zebra spread)", "bedroom", B("bed", { w: 1.4, color: "zebra", frame: 0x1c1c1c })),
   E("daybed", "Daybed", "bedroom", B("daybed", { color: 0x4b7a3a })),
   E("nightstand", "Nightstand", "bedroom", B("nightstand", {})),
   E("wardrobe", "Wardrobe", "bedroom", B("wardrobe", { w: 1.2 })),
@@ -387,9 +392,9 @@ export const CATALOG = [
   E("curtain", "Curtain", "bedroom", NEW.curtain),
   // living and dining
   E("sofa", "Sofa", "living", B("sofa", { w: 1.9 })),
-  E("sofa-rattan", "Rattan sofa", "living", B("sofa", { w: 1.7, frame: 0x8a5a2b, color: 0xc98a5a })),
+  E("sofa-rattan", "Rattan sofa", "living", B("sofa", { w: 1.7, frame: 0x8a5a2b, style: "rattan", fabric: "floral" })),
   E("armchair", "Armchair", "living", B("armchair", {})),
-  E("armchair-pink", "Armchair (pink cushions)", "living", B("armchair", { frame: 0x3f2716, color: 0xd6336c })),
+  E("armchair-pink", "Armchair (pink cushions)", "living", B("armchair", { frame: 0x3f2716, color: 0xd6336c, style: "cushion" })),
   E("coffee-table", "Coffee table", "living", B("coffee", { w: 1.0, d: 0.55 })),
   E("side-table", "Side table with lamp", "living", B("side", {})),
   E("console", "Console with mirror", "living", B("console", {})),
@@ -407,6 +412,12 @@ export const CATALOG = [
   E("stool", "Stool", "dining", NEW.stool),
   E("desk", "Desk (reception)", "dining", B("desk", { w: 1.6 })),
   E("shelf", "Shelf", "dining", B("shelf", { w: 1.4, d: 0.35 })),
+  E("chair-bentwood", "Bentwood chair", "dining", B("seat", { style: "bentwood", seat: 0x9a8a2a })),
+  E("chair-carved", "Carved dining chair", "dining", B("seat", { style: "carved" })),
+  E("chair-director", "Director chair", "dining", B("seat", { style: "director" })),
+  E("chair-striped", "Striped upholstered chair", "dining", B("seat", { style: "striped" })),
+  E("chair-plastic", "Plastic chair", "dining", B("seat", { style: "plastic" })),
+  E("hutch", "Hutch", "dining", B("hutch", {})),
   // kitchen
   E("counter", "Kitchen counter", "kitchen", B("counter", { w: 1.8, cabinet: 0x6b3f22, sink: 0.45, stove: -0.5 })),
   E("sink-unit", "Sink unit", "kitchen", NEW.kitchenSink),
@@ -419,13 +430,15 @@ export const CATALOG = [
   E("water-heater", "Water heater (termotanque)", "kitchen", NEW.waterHeater),
   E("bin", "Trash bin", "kitchen", NEW.trashBin),
   // bathroom and laundry
-  E("toilet", "Toilet", "bathroom", NEW.toilet),
-  E("bidet", "Bidet", "bathroom", NEW.bidet),
-  E("basin", "Pedestal basin", "bathroom", NEW.basin),
-  E("vanity", "Vanity with mirror", "bathroom", NEW.vanity),
+  E("toilet", "Toilet", "bathroom", () => toilet()),
+  E("bidet", "Bidet", "bathroom", () => bidet()),
+  E("basin", "Pedestal basin", "bathroom", () => basin()),
+  E("vanity", "Vanity with mirror", "bathroom", () => vanity(0, "oval")),
   E("bathtub", "Bathtub", "bathroom", NEW.bathtub),
   E("shower", "Shower with glass", "bathroom", NEW.shower),
   E("towel-rail", "Towel rail with towel", "bathroom", NEW.towelRail),
+  E("toilet-green", "Toilet (green, the turquoise bath's)", "bathroom", () => toilet(0x7fb89a)),
+  E("bidet-green", "Bidet (green)", "bathroom", () => bidet(0x7fb89a)),
   E("washing-machine", "Washing machine", "laundry", NEW.washingMachine),
   E("laundry-tub", "Laundry tub", "laundry", B("tub", {})),
   // climate
@@ -455,7 +468,23 @@ export const CATALOG = [
   E("vase", "Vase with flowers", "decor", NEW.vase),
   E("plant-pot", "Potted plant", "decor", NEW.pot),
   E("coat-rack", "Coat rack", "decor", NEW.coatRack),
+  E("painting", "Painting (landscape)", "decor", D("picture", { w: 1.0, h: 0.55, art: "landscape" })),
+  E("vase-roses", "Vase of roses", "decor", D("flowers", { kind: "roses" })),
+  E("vase-sunflowers", "Vase of sunflowers", "decor", D("flowers", { kind: "sunflower" })),
+  E("sconce", "Wall lamp", "lighting", D("sconce", {})),
+  E("extinguisher", "Fire extinguisher", "decor", D("extinguisher", {})),
+  E("water-tank-steel", "Steel water heater", "kitchen", D("boiler", {})),
   // outdoors
+  E("chair-garden", "Slatted garden armchair", "outdoor", B("seat", { style: "garden" })),
+  E("iris", "Iris clump", "outdoor", P("iris", {})),
+  E("daylily", "Yellow flower clump", "outdoor", P("daylily", {})),
+  E("shrub-red", "Red shrub", "outdoor", P("shrub", { color: 0x9a3a32 })),
+  E("boxwood", "Clipped box ball", "outdoor", P("boxwood", {})),
+  E("urn", "Terracotta urn with flowers", "outdoor", P("urn", { flowers: [0xe8861c, 0xd8323a] })),
+  E("flower-pot", "Pot of flowers", "outdoor", P("pot", {})),
+  E("ivy-post", "Ivy-covered lamp post", "outdoor", P("ivypost", {})),
+  E("bamboo", "Bamboo clump", "outdoor", P("bamboo", {})),
+  E("frog", "Terracotta frog", "outdoor", P("frog", {})),
   E("bench", "Garden bench", "outdoor", NEW.gardenBench),
   E("grill", "Brick grill", "outdoor", NEW.grill),
   E("lamp-post", "Street lamp post", "outdoor", NEW.lampPost),

@@ -1,0 +1,13 @@
+# materials of painting
+newmtl m0_b18d3a
+Kd 0.6941 0.5529 0.2275
+Ks 0.10 0.10 0.10
+Ns 100
+d 1.00
+
+newmtl m1_ffffff
+Kd 1.0000 1.0000 1.0000
+Ks 0.10 0.10 0.10
+Ns 30
+d 1.00
+

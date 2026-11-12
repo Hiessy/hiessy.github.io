@@ -1,0 +1,25 @@
+# materials of vase-sunflowers
+newmtl m0_3f5f8a
+Kd 0.2471 0.3726 0.5412
+Ks 0.10 0.10 0.10
+Ns 130
+d 1.00
+
+newmtl m1_4f7a3a
+Kd 0.3098 0.4784 0.2275
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+
+newmtl m2_e8b820
+Kd 0.9098 0.7216 0.1255
+Ks 0.10 0.10 0.10
+Ns 40
+d 1.00
+
+newmtl m3_4a2f18
+Kd 0.2902 0.1843 0.0941
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+

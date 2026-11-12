@@ -1,0 +1,13 @@
+# materials of shrub-red
+newmtl m0_9a3a32
+Kd 0.6039 0.2275 0.1961
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+
+newmtl m1_4f7a3a
+Kd 0.3098 0.4784 0.2275
+Ks 0.10 0.10 0.10
+Ns 20
+d 1.00
+
