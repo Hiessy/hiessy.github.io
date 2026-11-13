@@ -9,7 +9,10 @@
    - lights: rooms whose lights don't all go off and on again together.
    - cristo: the Cristo Redentor off its true bearing or hidden from the
      street balcony.
-   - neighbours: the houses around missing, or standing on our lot. */
+   - neighbours: the houses around missing, or standing on our lot.
+   - geo: the compass overlay not switching, off the cadastre, or in the way.
+   - stairs: a wall rising through a flight's treads or headroom.
+   - reach: a room or space that can't be walked to from the street. */
 import { H, K, KZ, S } from "../js/walk/core.js";
 import { inWall, spanOf } from "../js/walk/walls.js";
 import { inside } from "../js/walk/geometry.js";
@@ -125,7 +128,56 @@ export async function geo() {
   return bad;
 }
 
+/* Nothing of the house stands in a stair's way: along each flight, no wall
+   rises through the treads into the 1.9 m above them. */
+export function stairs() {
+  const bad = [];
+  H.ramps.forEach((r) => {
+    for (let s = 0; s <= r.len + 1e-6; s += 0.05) {
+      const g = r.segs.filter((q) => s <= q.s0 + q.len + 1e-6)[0] || r.segs[r.segs.length - 1], u = (s - g.s0) / g.len;
+      const cx = g.a[0] + (g.b[0] - g.a[0]) * u, cy = g.a[1] + (g.b[1] - g.a[1]) * u, h = r.h1 + (r.h2 - r.h1) * s / r.len;
+      const nx = -(g.b[1] - g.a[1]) / g.len, ny = (g.b[0] - g.a[0]) / g.len;
+      [-0.3, 0, 0.3].forEach((o) => {
+        const x = cx + nx * o, y = cy + ny * o;
+        [0, 1, 2].forEach((lv) => {
+          if (!inWall(x, y, lv)) return;
+          // a wall spans from its level's base (the ground, or just under the
+          // upper floor) to its top; it must keep out of the tread's headroom
+          const top = H.topAt(x, y, lv), bottom = lv === 0 ? 0 : H.FLOOR[lv] - 0.2;
+          if (top > h + 0.02 && bottom < h + 1.9) bad.push(r.id + " at " + x.toFixed(2) + "," + y.toFixed(2) + ": a wall up to " + top.toFixed(2) + " over a tread at " + h.toFixed(2));
+        });
+      });
+    }
+  });
+  return [...new Set(bad)].slice(0, 8);
+}
+
+/* Every room and space can be walked to from the street, doors open: a
+   flood fill over the real floors and colliders (a few seconds). */
+export async function reach() {
+  const ph = await import("../js/walk/physics.js");
+  const shut = S.doors.map((d) => [d.t, d.target]);
+  S.doors.forEach((d) => { d.t = 1; d.target = 1; });
+  const seen = new Set(), q = [[H.start.x, H.start.y, 0]], rooms = {}, key = (x, y, f) => Math.round(x * 5) + "," + Math.round(y * 5) + "," + Math.round(f * 4);
+  let n = 0;
+  while (q.length && n < 400000) {
+    const [x, y, f] = q.pop(); n++;
+    const lv = f < 1.4 ? 0 : S.surfaces.some((s) => s.level === 2 && !s.roof && inside(x, y, s.poly)) ? 2 : 1, r = H.at(x, y, lv);
+    if (r && Math.abs(r.z - f) < 0.3) rooms[H.idOf(r)] = 1;
+    [[0.2, 0], [-0.2, 0], [0, 0.2], [0, -0.2]].forEach((d) => {
+      const nx = x + d[0], ny = y + d[1];
+      if (nx < -45 || nx > 15 || ny < -8 || ny > 30) return;
+      const g = ph.floorAt(nx, ny, f);
+      if (f - g > 3.5 || ph.blocked(nx, ny, g)) return;
+      const k = key(nx, ny, g);
+      if (!seen.has(k)) { seen.add(k); q.push([nx, ny, g]); }
+    });
+  }
+  S.doors.forEach((d, i) => { d.t = shut[i][0]; d.target = shut[i][1]; });
+  return H.rooms.concat(H.spaces).map(H.idOf).filter((id) => !rooms[id]).map((id) => id + " can't be reached");
+}
+
 export async function run() {
-  return { narrowDoors: narrowDoors(), looseWallPieces: looseWallPieces(), lights: lights(), cristo: await cristo(), neighbours: neighbours(), geo: await geo() };
+  return { narrowDoors: narrowDoors(), looseWallPieces: looseWallPieces(), lights: lights(), cristo: await cristo(), neighbours: neighbours(), geo: await geo(), stairs: stairs(), reach: await reach() };
 }
 

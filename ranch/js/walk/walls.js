@@ -115,6 +115,8 @@ export function spanOf(o) { return (S.doorSpan && S.doorSpan.get(o)) || [o.a, o.
 export function widenDoors() {
   S.doorSpan = new Map();
   S.holes = { 0: [], 1: [], 2: [] };
+  // stairwells open from the ground up: no upper wall overhangs them
+  H.ramps.forEach((r) => { if (r.well) S.holes[1].push(r.well); });
   const polys = { 0: H.wallsOf(0), 1: H.wallsOf(1), 2: H.wallsOf(2) };
   const solid = (x, y, lv) => polys[lv].some((p) => inside(x, y, p));
   H.openings.forEach((o) => {
@@ -200,14 +202,20 @@ export function buildWalls() {
       };
       const pieces = holes.length ? carve(poly, holes) : [poly];
       pieces.forEach((piece0) => {
-        zones.forEach((z) => {
+        zones.forEach((z, zi) => {
           const r = z.rect;
           if (bb[2] < r[0] || bb[0] > r[2] || bb[3] < r[1] || bb[1] > r[3]) return;
-          const piece = clipRect(piece0, r);
-          if (piece.length < 3 || Math.abs(areaOf(piece)) < 1e-4) return;
+          const clipped = clipRect(piece0, r);
+          if (clipped.length < 3 || Math.abs(areaOf(clipped)) < 1e-4) return;
+          // where a later zone covers part of this one, the later one is drawn
+          // there (topAt reads them the same way)
+          const later = zones.slice(zi + 1).map((q) => q.rect).filter((q) => !(q[2] <= r[0] || q[0] >= r[2] || q[3] <= r[1] || q[1] >= r[3]));
           const zf = (x) => z.z + (z.g || 0) * (x - r[0]);
-          S.static.add(prism(piece, BASE[lv], zf, M.wall, face));
-          piece.forEach((p) => { top = Math.max(top, zf(p[0])); });
+          (later.length ? carve(clipped, later) : [clipped]).forEach((piece) => {
+            if (piece.length < 3 || Math.abs(areaOf(piece)) < 1e-4) return;
+            S.static.add(prism(piece, BASE[lv], zf, M.wall, face));
+            piece.forEach((p) => { top = Math.max(top, zf(p[0])); });
+          });
         });
       });
       // its faces are what you bump into, each as high as the wall is there
@@ -218,7 +226,10 @@ export function buildWalls() {
             const p = [a[0] + (b[0] - a[0]) * k[0], a[1] + (b[1] - a[1]) * k[0]], q = [a[0] + (b[0] - a[0]) * k[1], a[1] + (b[1] - a[1]) * k[1]];
             const len = Math.hypot(q[0] - p[0], q[1] - p[1]) || 1;
             const mx = (p[0] + q[0]) / 2, my = (p[1] + q[1]) / 2, nx = -(q[1] - p[1]) / len * 0.06, ny = (q[0] - p[0]) / len * 0.06;
-            const h = Math.min(top, Math.max(H.topAt(mx, my, lv), H.topAt(mx + nx, my + ny, lv), H.topAt(mx - nx, my - ny, lv)));
+            // as high as the wall is on its own side of the face, not as the
+            // space in front of it (a stairwell beside a low wall)
+            const inner = wall(mx + nx, my + ny) ? [mx + nx, my + ny] : [mx - nx, my - ny];
+            const h = Math.min(top, Math.max(H.topAt(mx, my, lv), H.topAt(inner[0], inner[1], lv)));
             collider(p[0], p[1], q[0], q[1], BASE[lv], h, 0.005);
           });
         }

@@ -68,6 +68,9 @@
     { id: "kitchenN", level: 0, rect: [-13.85, -0.6, -11.9, 4.95], z: F + 2.9 },
     { id: "laundry", level: 0, rect: [-16.25, -0.6, -13.85, 4.95], z: F + 2.3 },
     { id: "stairbox", level: 0, rect: [-2.41, 12.68, 1.0, 17.0], z: Z.apt - 0.15 },
+    // the stairwell: its walls go up unbroken to its ceiling, over the upper
+    // plan's thinner walls, so no ledge is left half way up
+    { id: "well", level: 0, rect: [-2.7, 12.756, -0.5, 14.5], z: Z.apt + 2.6 },   // stops short of the wall under the landing (14.55)
     { id: "pilasters", level: 0, rect: [-14.5, 17.0, 1.0, 22.5], z: Z.apt - 0.2 },
     { id: "wing", level: 0, rect: [-28.3, -0.6, -16.7, 7.4], z: B + 2.55 },
     { id: "wing0", level: 0, rect: [-16.7, -0.6, -16.25, 4.95], z: B + 2.55 },
@@ -231,7 +234,12 @@
      the end and back along the street wall to the landing. The steel one
      climbs steeply beside the wing's last bath to the roof. */
   var ramps = [
-    { id: "aptstair", path: [[-2.05, 14.35], [-2.05, 13.12], [-1.25, 13.12], [-1.25, 14.82]], w: 0.78, h1: 0, h2: Z.apt, steps: 16, wood: true,
+    // the flight ends where the wall under the landing begins (y 14.5): the
+    // last stretch is a flat nosing on that wall (`top`), and the stairwell
+    // (`well`) is open from the ground to the roof, so the upper plan's walls
+    // that overhang it are cut back
+    { id: "aptstair", path: [[-2.05, 14.35], [-2.05, 13.12], [-1.25, 13.12], [-1.25, 14.5]], w: 0.78, h1: 0, h2: Z.apt, steps: 16, wood: true,
+      top: [-1.64, 14.5, -0.86, 14.86], well: [-2.412, 12.756, -0.86, 14.547],
       rails: [[-1.65, 13.45, -1.65, 13.75, 1.75, 4.2], [-1.65, 13.75, -1.65, 14.82, 2.2, 4.2]] },
     { id: "steelstair", path: [[-26.92, 6.45], [-26.92, 4.65]], w: 0.7, h1: 0, h2: Z.terrace, steps: 15, steel: true, rails: [[-27.3, 4.65, -27.3, 6.45, 0.5, 4.2]] }
   ];

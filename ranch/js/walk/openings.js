@@ -53,6 +53,24 @@ export function windowIn(o, zf, r1, r2) {
   }
 }
 
+/* The wall over an opening, from its head to the wall's top. Where an upper
+   floor's window sits in that stretch (the stairwell's glass blocks over
+   the apartment's street door) the wall leaves its gap. */
+function aboveOpening(o, a, b, head, ta, tb) {
+  const dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy) || 1, ux = dx / len, uy = dy / len;
+  const along = (p) => (p[0] - a[0]) * ux + (p[1] - a[1]) * uy, off = (p) => Math.abs(-(p[0] - a[0]) * uy + (p[1] - a[1]) * ux);
+  const top = (u) => ta + (tb - ta) * u / len, at = (u) => [a[0] + ux * u, a[1] + uy * u];
+  const win = H.openings.filter((w) => w !== o && w.level > o.level && /window|block/.test(w.kind) &&
+    off(w.a) < o.t && off(w.b) < o.t && Math.max(along(w.a), along(w.b)) > 0 && Math.min(along(w.a), along(w.b)) < len)[0];
+  if (!win || Math.max(ta, tb) <= F[win.level] + win.sill) { wallBox(a, b, o.t, head, ta, tb); return; }
+  const u1 = Math.max(0, Math.min(along(win.a), along(win.b))), u2 = Math.min(len, Math.max(along(win.a), along(win.b)));
+  const s1 = F[win.level] + win.sill, s2 = F[win.level] + win.head;
+  if (u1 > 0.01) wallBox(a, at(u1), o.t, head, ta, top(u1));
+  wallBox(at(u1), at(u2), o.t, head, s1, s1);
+  if (top(u2) > s2) wallBox(at(u1), at(u2), o.t, s2, top(u1), top(u2));
+  if (u2 < len - 0.01) wallBox(at(u2), b, o.t, head, top(u2), tb);
+}
+
 /* Every opening of the survey: the wall above it, the wall under a window,
    the block under a door up to the floor, and what closes it. */
 export function buildOpenings() {
@@ -76,7 +94,7 @@ export function buildOpenings() {
       return;
     }
     const head = zf + (o.round ? o.sill : o.head);
-    wallBox(a, b, o.t, head, Math.max(ta, head), Math.max(tb, head));
+    aboveOpening(o, a, b, head, Math.max(ta, head), Math.max(tb, head));
     if (/window|block/.test(o.kind)) {
       if (o.sill > 0.02) wallBox(a, b, o.t, BASE[lv], zf + o.sill, zf + o.sill);
       windowIn(o, zf, r1, r2);

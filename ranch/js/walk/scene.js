@@ -227,6 +227,11 @@ export function buildScene() {
       });
     });
     (r.rails || []).forEach((c) => collider(c[0], c[1], c[2], c[3], c[4], c[5], 0.03));
+    // a flat nosing at the top of the flight, resting on the wall under it
+    if (r.top) {
+      S.static.add(slab(rectPoly(r.top), tread, r.h2, 0.06));
+      S.surfaces.push({ poly: rectPoly(r.top), h: r.h2, level: 1 });
+    }
   });
 
   // Low steps outside the doors that lead down to the garden and the drive.
