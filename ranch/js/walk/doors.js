@@ -113,7 +113,8 @@ export function addDoor(a, b, base, kind, side, tall, dbl, fold) {
   const dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy);
   const ux = dx / len, uy = dy / len;
   const h = tall || DOOR_H;
-  const door = { kind, t: 0, target: 0, pivots: [], parts: [], name: kind === "gate" ? "gate" : "door", deg: fold ? fold.deg : 88 };
+  const door = { kind, t: 0, target: 0, pivots: [], parts: [], name: kind === "gate" ? "gate" : "door", deg: fold ? fold.deg : 88,
+                 width: len, at: [+a[0].toFixed(2), +a[1].toFixed(2)], dbl: !!(dbl || kind === "double-glass" || kind === "slide-glass") };
   const off = fold ? fold.off : 0;
   const hinge = (p, dirx, diry, w) => {
     const pivot = new THREE.Object3D();
@@ -177,7 +178,7 @@ export function setDoorPose(d) {
 export function toggleDoor(d) { d.target = d.target > 0.5 ? 0 : 1; updatePrompt(); }
 
 export function highlight(d, on) {
-  if (!d) return;
+  if (!d || d.isLight) return;
   d.parts.forEach((p) => p.traverse((o) => {
     if (o.isMesh && o.material !== M.glass && o.material.emissive) {
       o.material.emissive.setHex(on ? 0x8a5a1a : 0x000000);

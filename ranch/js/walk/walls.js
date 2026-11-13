@@ -90,25 +90,101 @@ export function wallBox(a, b, t, z0, z1a, z1b, material) {
   return m;
 }
 
+/* Where the narrow doors are widened, cut out of the walls: per level, a list
+   of rectangles [x1, y1, x2, y2]. See widenDoors. */
+function inHole(x, y, level) {
+  return ((S.holes && S.holes[level]) || []).some((r) => x >= r[0] && x <= r[2] && y >= r[1] && y <= r[3]);
+}
+
 export function inWall(x, y, level) {
+  if (inHole(x, y, level)) return false;
   return S.wallPolys[level].some((w) => x >= w.bb[0] && x <= w.bb[2] && y >= w.bb[1] && y <= w.bb[3] && inside(x, y, w.poly));
+}
+
+/* The survey's narrow doors (under 85 cm) are drawn 40% wider in the walk,
+   to suit a model drawn bigger than the survey (K in core.js). The extra
+   width is taken from the wall on either side, half and half, as far as the
+   wall goes on: each side keeps 12 cm of wall as a jamb and never runs into
+   a corner or another opening. Only doors on walls along the axes are
+   widened. The plan view keeps the survey's widths: this only changes
+   S.doorSpan, the span each door is built across. */
+export const WIDEN = 1.4, NARROW = 0.85;
+
+export function spanOf(o) { return (S.doorSpan && S.doorSpan.get(o)) || [o.a, o.b]; }
+
+export function widenDoors() {
+  S.doorSpan = new Map();
+  S.holes = { 0: [], 1: [], 2: [] };
+  const polys = { 0: H.wallsOf(0), 1: H.wallsOf(1), 2: H.wallsOf(2) };
+  const solid = (x, y, lv) => polys[lv].some((p) => inside(x, y, p));
+  H.openings.forEach((o) => {
+    if (o.kind !== "door") return;
+    const dx = o.b[0] - o.a[0], dy = o.b[1] - o.a[1], len = Math.hypot(dx, dy);
+    if (len >= NARROW || (Math.abs(dx) > 0.02 && Math.abs(dy) > 0.02)) return;
+    const ux = dx / len, uy = dy / len, nx = -uy * o.t * 0.42, ny = ux * o.t * 0.42, lv = o.level;
+    // a high window over the door's head is no neighbour to keep clear of
+    const others = H.openings.filter((q) => q !== o && q.level === lv && q.kind !== "high");
+    const nearOther = (x, y) => others.some((q) => {
+      const ex = q.b[0] - q.a[0], ey = q.b[1] - q.a[1], l2 = ex * ex + ey * ey || 1e-9;
+      const u = Math.max(0, Math.min(1, ((x - q.a[0]) * ex + (y - q.a[1]) * ey) / l2));
+      return Math.hypot(x - q.a[0] - u * ex, y - q.a[1] - u * ey) < (q.t || 0.2) / 2 + 0.12;
+    });
+    // how much wall there is past a jamb, toward d (1 or -1 along the door)
+    const room = (p, d, want) => {
+      let k = 0;
+      for (; k < want + 0.12; k += 0.01) {
+        const x = p[0] + ux * d * (k + 0.01), y = p[1] + uy * d * (k + 0.01);
+        if (!solid(x + nx, y + ny, lv) || !solid(x - nx, y - ny, lv) || nearOther(x, y)) break;
+      }
+      return Math.max(0, k - 0.12);
+    };
+    const want = len * (WIDEN - 1);
+    const fa = room(o.a, -1, want), fb = room(o.b, 1, want);
+    let ea = Math.min(fa, want / 2), eb = Math.min(fb, want - ea);
+    ea = Math.min(fa, want - eb);
+    if (ea + eb < 0.02) return;
+    const a = [o.a[0] - ux * ea, o.a[1] - uy * ea], b = [o.b[0] + ux * eb, o.b[1] + uy * eb];
+    S.doorSpan.set(o, [a, b]);
+    const h = o.t / 2 + 0.01;
+    S.holes[lv].push([Math.min(a[0], b[0]) - (Math.abs(dx) < 0.02 ? h : 0), Math.min(a[1], b[1]) - (Math.abs(dy) < 0.02 ? h : 0),
+                      Math.max(a[0], b[0]) + (Math.abs(dx) < 0.02 ? h : 0), Math.max(a[1], b[1]) + (Math.abs(dy) < 0.02 ? h : 0)]);
+  });
+}
+
+/* A wall outline less the rectangles cut out of it, as convex-ish pieces. */
+function carve(poly, holes) {
+  let pieces = [poly];
+  holes.forEach((r) => {
+    const BIG = 1e4, out = [];
+    pieces.forEach((p) => {
+      [[-BIG, -BIG, r[0], BIG], [r[2], -BIG, BIG, BIG], [r[0], -BIG, r[2], r[1]], [r[0], r[3], r[2], BIG]].forEach((q) => {
+        const c = clipRect(p, q);
+        if (c.length >= 3 && Math.abs(areaOf(c)) > 1e-5) out.push(c);
+      });
+    });
+    pieces = out;
+  });
+  return pieces;
 }
 
 /* Every wall outline of the survey, cut where the height changes (`tops`)
    and raised to it; its sides are what you bump into. */
 export function buildWalls() {
   S.wallPolys = { 0: [], 1: [], 2: [] };
+  widenDoors();
   [0, 1, 2].forEach((lv) => {
     const zones = H.tops.filter((z) => z.level === lv);
     H.wallsOf(lv).forEach((poly) => {
       const xs = poly.map((p) => p[0]), ys = poly.map((p) => p[1]);
       const bb = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
       S.wallPolys[lv].push({ poly, bb });
+      const holes = S.holes[lv].filter((r) => !(r[2] < bb[0] || r[0] > bb[2] || r[3] < bb[1] || r[1] > bb[3]));
+      const wall = (x, y) => inside(x, y, poly) && !holes.some((r) => x >= r[0] && x <= r[2] && y >= r[1] && y <= r[3]);
       let top = BASE[lv] + 0.5;
-      // Clipping a wall outline that runs round a room to one of the zones
-      // can leave a sliver along the zone's edge, across the room. Draw a
-      // side only where it is the wall's face: wall on one side of it, room
-      // on the other.
+      // Clipping a wall outline to a zone, or cutting a door's extra width
+      // out of it, can leave slivers and cut lines inside the wall or across
+      // a room. Draw a side only where it is the wall's face: wall on one
+      // side of it, room on the other.
       const face = (a, b) => {
         const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
         if (len < 1e-6) return [];
@@ -116,45 +192,64 @@ export function buildWalls() {
         const out = [];
         for (let i = 0; i < n; i++) {
           const u = (i + 0.5) / n, x = a[0] + (b[0] - a[0]) * u, y = a[1] + (b[1] - a[1]) * u;
-          if (inside(x + nx, y + ny, poly) === inside(x - nx, y - ny, poly)) continue;
+          if (wall(x + nx, y + ny) === wall(x - nx, y - ny)) continue;
           const last = out[out.length - 1];
           if (last && Math.abs(last[1] - i / n) < 1e-9) last[1] = (i + 1) / n; else out.push([i / n, (i + 1) / n]);
         }
         return out;
       };
-      zones.forEach((z) => {
-        const r = z.rect;
-        if (bb[2] < r[0] || bb[0] > r[2] || bb[3] < r[1] || bb[1] > r[3]) return;
-        const piece = clipRect(poly, r);
-        if (piece.length < 3 || Math.abs(areaOf(piece)) < 1e-4) return;
-        const zf = (x) => z.z + (z.g || 0) * (x - r[0]);
-        S.static.add(prism(piece, BASE[lv], zf, M.wall, face));
-        piece.forEach((p) => { top = Math.max(top, zf(p[0])); });
+      const pieces = holes.length ? carve(poly, holes) : [poly];
+      pieces.forEach((piece0) => {
+        zones.forEach((z) => {
+          const r = z.rect;
+          if (bb[2] < r[0] || bb[0] > r[2] || bb[3] < r[1] || bb[1] > r[3]) return;
+          const piece = clipRect(piece0, r);
+          if (piece.length < 3 || Math.abs(areaOf(piece)) < 1e-4) return;
+          const zf = (x) => z.z + (z.g || 0) * (x - r[0]);
+          S.static.add(prism(piece, BASE[lv], zf, M.wall, face));
+          piece.forEach((p) => { top = Math.max(top, zf(p[0])); });
+        });
       });
-      // its sides are what you bump into, each as high as the wall is there
-      for (let i = 0; i < poly.length; i++) {
-        const a = poly[i], b = poly[(i + 1) % poly.length], len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
-        const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, nx = -(b[1] - a[1]) / len * 0.06, ny = (b[0] - a[0]) / len * 0.06;
-        const h = Math.min(top, Math.max(H.topAt(mx, my, lv), H.topAt(mx + nx, my + ny, lv), H.topAt(mx - nx, my - ny, lv)));
-        collider(a[0], a[1], b[0], b[1], BASE[lv], h, 0.005);
-      }
+      // its faces are what you bump into, each as high as the wall is there
+      pieces.forEach((piece) => {
+        for (let i = 0; i < piece.length; i++) {
+          const a = piece[i], b = piece[(i + 1) % piece.length];
+          face(a, b).forEach((k) => {
+            const p = [a[0] + (b[0] - a[0]) * k[0], a[1] + (b[1] - a[1]) * k[0]], q = [a[0] + (b[0] - a[0]) * k[1], a[1] + (b[1] - a[1]) * k[1]];
+            const len = Math.hypot(q[0] - p[0], q[1] - p[1]) || 1;
+            const mx = (p[0] + q[0]) / 2, my = (p[1] + q[1]) / 2, nx = -(q[1] - p[1]) / len * 0.06, ny = (q[0] - p[0]) / len * 0.06;
+            const h = Math.min(top, Math.max(H.topAt(mx, my, lv), H.topAt(mx + nx, my + ny, lv), H.topAt(mx - nx, my - ny, lv)));
+            collider(p[0], p[1], q[0], q[1], BASE[lv], h, 0.005);
+          });
+        }
+      });
     });
   });
 }
 
-/* Tiles or boards on a room's walls up to `h`: on every side of its outline
-   that has a wall behind it (doors and windows don't). */
+/* Tiles or boards on a room's walls up to `h`: on every stretch of its
+   outline that has a wall behind it (doors and windows don't). */
 export function wainscot(r, h, material) {
   const poly = H.polyOf(r), ccw = areaOf(poly) > 0;
   for (let i = 0; i < poly.length; i++) {
     const a = poly[i], b = poly[(i + 1) % poly.length], len = Math.hypot(b[0] - a[0], b[1] - a[1]);
     if (len < 0.12) continue;
     const ux = (b[0] - a[0]) / len, uy = (b[1] - a[1]) / len, nx = ccw ? uy : -uy, ny = ccw ? -ux : ux;   // out of the room
-    if (!inWall((a[0] + b[0]) / 2 + nx * 0.05, (a[1] + b[1]) / 2 + ny * 0.05, r.level)) continue;
-    const p = [a[0] - nx * 0.012, a[1] - ny * 0.012], q = [b[0] - nx * 0.012, b[1] - ny * 0.012];
-    const m = quad([[p[0], p[1], r.z], [q[0], q[1], r.z], [q[0], q[1], r.z + h], [p[0], p[1], r.z + h]], material);
-    m.castShadow = false;
-    S.static.add(m);
+    const n = Math.max(1, Math.ceil(len / 0.04)), runs = [];
+    for (let k = 0; k < n; k++) {
+      const u = (k + 0.5) / n;
+      if (!inWall(a[0] + (b[0] - a[0]) * u + nx * 0.05, a[1] + (b[1] - a[1]) * u + ny * 0.05, r.level)) continue;
+      const last = runs[runs.length - 1];
+      if (last && Math.abs(last[1] - k / n) < 1e-9) last[1] = (k + 1) / n; else runs.push([k / n, (k + 1) / n]);
+    }
+    runs.forEach((run) => {
+      if ((run[1] - run[0]) * len < 0.06) return;
+      const s = [a[0] + (b[0] - a[0]) * run[0], a[1] + (b[1] - a[1]) * run[0]], e = [a[0] + (b[0] - a[0]) * run[1], a[1] + (b[1] - a[1]) * run[1]];
+      const p = [s[0] - nx * 0.012, s[1] - ny * 0.012], q = [e[0] - nx * 0.012, e[1] - ny * 0.012];
+      const m = quad([[p[0], p[1], r.z], [q[0], q[1], r.z], [q[0], q[1], r.z + h], [p[0], p[1], r.z + h]], material);
+      m.castShadow = false;
+      S.static.add(m);
+    });
   }
 }
 

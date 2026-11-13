@@ -97,7 +97,19 @@ higher than the survey (`K` and `KZ` in `js/walk/core.js`), so rooms and
 doors are easy to move through. All the data and the walking physics stay
 in the survey's meters; only the drawing is stretched (the `S.world`
 group), and furniture, plants and the visitor keep their true size inside
-it. The plan view is unchanged.
+it. The plan view is unchanged. The survey's narrow doors (under 85 cm)
+are built 40% wider in the walk, cut out of the wall beside them
+(`widenDoors` in `js/walk/walls.js`).
+
+Each room's lamps are one circuit: click any lamp (or press E looking at
+it) to turn that room's lights off or on (`js/walk/lights.js`). Pictures,
+mirrors, extinguishers and other wall pieces are set on the face of a real
+wall, sliding off windows, doorways and furniture (`onWall` in
+`js/walk/furniture.js`).
+
+`tools/walk_checks.js` checks these three things in the browser: on the 3D
+tab, `await (await import("/ranch/tools/walk_checks.js")).run()` returns
+what fails each one.
 
 ## The axes
 

@@ -1,13 +1,12 @@
 /* Keyboard, mouse, touch and joystick. */
 import { $, S, touch } from "./core.js";
-import { toggleDoor } from "./doors.js";
 import { bar } from "./geometry.js";
 import { hud, setMode, setToggle } from "./hud.js";
 import { buildLabels } from "./labels.js";
 import { fly, resize } from "./loop.js";
 import { MAP, mapFrame } from "./minimap.js";
 import { jump, jumpTo } from "./physics.js";
-import { doorAt, setHover, tapAt, updatePrompt } from "./pointer.js";
+import { doorAt, setHover, tapAt, updatePrompt, use } from "./pointer.js";
 import { skyLabel } from "./skybar.js";
 
 export function bindControls() {
@@ -32,7 +31,7 @@ export function bindControls() {
       return;
     }
     if (!live()) return;
-    if (e.code === "KeyE" && S.hover) { toggleDoor(S.hover); return; }
+    if (e.code === "KeyE" && S.hover) { use(S.hover); return; }
     if (e.code === "Space") { e.preventDefault(); jump(); return; }
     if (!map[e.code]) return;
     keys[map[e.code]] = true;
@@ -85,7 +84,7 @@ export function bindControls() {
   });
   // With the mouse captured, a click opens the door in the crosshair.
   document.addEventListener("mousedown", (e) => {
-    if (e.button === 0 && document.pointerLockElement === canvas && S.hover) toggleDoor(S.hover);
+    if (e.button === 0 && document.pointerLockElement === canvas && S.hover) use(S.hover);
   });
   let drag = null, down = null;
   canvas.addEventListener("pointerdown", (e) => {

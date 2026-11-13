@@ -93,11 +93,11 @@ export function ball(g, r, x, y, z, material, detail) {
 /* Puts a piece at plan point (x, y) on `level`, turned rot degrees. The
    model is stretched when drawn; a piece is shrunk by as much here, so it
    keeps its true size. */
-export function place(piece, x, y, level, rot) {
+export function place(piece, x, y, level, rot, into) {
   piece.position.set(x, zAt(x, y, level || 0), -y);
   piece.rotation.y = (rot || 0) * DEG;
   piece.scale.set(1 / K, 1 / KZ, 1 / K);
-  S.static.add(piece);
+  (into || S.static).add(piece);
   return piece;
 }
 

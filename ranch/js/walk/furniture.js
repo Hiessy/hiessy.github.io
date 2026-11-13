@@ -2,7 +2,8 @@
 import { DEG, H, K, KZ, S } from "./core.js";
 import { bath } from "./bathroom.js";
 import { DECOR, curtain } from "./decor.js";
-import { byId, place, zAt } from "./geometry.js";
+import { byId, inside, place, zAt } from "./geometry.js";
+import { finishLights, lampGroup } from "./lights.js";
 import { BUILD } from "./pieces.js";
 import { PLANTS, ROWS } from "./plants.js";
 import { collider, inWall } from "./walls.js";
@@ -68,18 +69,44 @@ export function solid(x, y, w, d, rot, level) {
    sunk in the plaster or left floating in front of it. */
 export const ON_WALL = { picture: 1, mirror: 1, sconce: 1, extinguisher: 1, aircon: 1, wallheater: 1, boiler: 1, geyser: 1, wallcabinet: 1, lantern: 1 };
 
+/* Wall pieces that come down to where furniture stands, so they must not
+   hang over a bed or a sofa. */
+const LOW = { extinguisher: 1, wallheater: 1 };
+
+/* Their width (true size), so the whole piece has wall behind it. */
+const WIDTH = { picture: (p) => p.w || 0.5, mirror: (p) => p.w || 0.5, aircon: () => 0.85, wallheater: () => 0.6, wallcabinet: (p) => p.w || 1.2, boiler: () => 0.4 };
+
+/* Where a wall piece goes. The data gives a point near a wall and the way
+   the piece looks (rot); the piece is set on the face of the wall behind
+   that point. Where there is no wall there (a window, a doorway, a corner)
+   or the spot is over a piece of furniture, it slides along the wall to the
+   nearest place that has wall behind its whole width. Pieces placed this way
+   are recorded in S.wallPieces. */
 export function onWall(p) {
-  const a = (p.rot || 0) * DEG, fx = -Math.sin(a), fy = Math.cos(a);
-  let x = p.at[0], y = p.at[1];
-  if (inWall(x, y, p.level)) {
-    for (let i = 0; i < 60 && inWall(x, y, p.level); i++) { x += fx * 0.01; y += fy * 0.01; }
-  } else {
-    for (let i = 0; i < 60 && !inWall(x - fx * 0.01, y - fy * 0.01, p.level); i++) { x -= fx * 0.01; y -= fy * 0.01; }
+  const a = (p.rot || 0) * DEG, fx = -Math.sin(a), fy = Math.cos(a), tx = fy, ty = -fx, lv = p.level;
+  const half = ((WIDTH[p.type] ? WIDTH[p.type](p) : 0.3) / 2) / K;
+  const face = (x, y) => {
+    if (inWall(x, y, lv)) {
+      for (let i = 0; i < 40 && inWall(x, y, lv); i++) { x += fx * 0.01; y += fy * 0.01; }
+      return inWall(x, y, lv) ? null : [x, y];
+    }
+    for (let s = 0.01; s <= 0.45; s += 0.01) if (inWall(x - fx * s, y - fy * s, lv)) return [x - fx * (s - 0.01), y - fy * (s - 0.01)];
+    return null;
+  };
+  const fits = (q) => [-half, 0, half].every((d) => inWall(q[0] + tx * d - fx * 0.03, q[1] + ty * d - fy * 0.03, lv)) &&
+    !(LOW[p.type] && S.blocks.some((b) => Math.abs(b.base - zAt(q[0], q[1], lv)) < 0.5 &&
+      [-half, 0, half].some((d) => inside(q[0] + tx * d + fx * 0.12, q[1] + ty * d + fy * 0.12, b.poly))));
+  for (let k = 0; k <= 30; k++) {
+    const off = (k % 2 ? 1 : -1) * Math.ceil(k / 2) * 0.08;
+    const q = face(p.at[0] + tx * off, p.at[1] + ty * off);
+    if (q && fits(q)) return q;
   }
-  return [x, y];
+  return face(p.at[0], p.at[1]) || p.at;
 }
 
 export function buildFurniture() {
+  S.wallPieces = [];
+  const later = [];
   H.furniture.forEach((p) => {
     if (p.type === "bath") {
       const item = byId(p.room);
@@ -93,11 +120,18 @@ export function buildFurniture() {
     if (ROWS[p.type]) { ROWS[p.type](p, p.level); return; }
     const make = PIECES[p.type];
     if (!make) return;
-    if (ON_WALL[p.type]) { const q = onWall(p); place(make(p), q[0], q[1], p.level, p.rot); return; }
+    // wall pieces go up once the furniture they must keep clear of stands
+    if (ON_WALL[p.type]) { later.push(p); return; }
     // a lamp hangs from a ceiling that is drawn KZ times higher
     const q = p.h && (p.type === "pendant" || p.type === "chandelier") ? Object.assign({}, p, { h: p.h * KZ }) : p;
     const at = BLOCK[p.type] ? backToWall(p.at[0], p.at[1], p.rot, BLOCK[p.type](p)[1], p.level) : p.at;
-    place(make(q), at[0], at[1], p.level, p.rot);
+    place(make(q), at[0], at[1], p.level, p.rot, lampGroup(p, at));
     if (!p.soft) blockPiece(p.type, p, at[0], at[1], p.level, p.rot);
   });
+  later.forEach((p) => {
+    const q = onWall(p);
+    place(PIECES[p.type](p), q[0], q[1], p.level, p.rot, lampGroup(p, q));
+    S.wallPieces.push({ type: p.type, x: q[0], y: q[1], rot: p.rot, level: p.level, low: !!LOW[p.type] });
+  });
+  finishLights();
 }

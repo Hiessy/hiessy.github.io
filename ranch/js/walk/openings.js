@@ -5,7 +5,7 @@ import { addDoor } from "./doors.js";
 import { bar } from "./geometry.js";
 import { M, mat, texMat } from "./materials.js";
 import { texFor } from "./textures.js";
-import { collider, wallBox } from "./walls.js";
+import { collider, spanOf, wallBox } from "./walls.js";
 
 /* A window in the gap from a to b: glass, a white frame with mullions, and
    bars outside where the photos show them. */
@@ -57,7 +57,8 @@ export function windowIn(o, zf, r1, r2) {
    the block under a door up to the floor, and what closes it. */
 export function buildOpenings() {
   H.openings.forEach((o) => {
-    const lv = o.level, a = o.a, b = o.b;
+    // a narrow door is built across its widened span (walls.js, widenDoors)
+    const lv = o.level, sp = spanOf(o), a = sp[0], b = sp[1];
     const dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy), nx = -dy / len, ny = dx / len;
     const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], off = o.t / 2 + 0.22;
     const r1 = H.at(mid[0] + nx * off, mid[1] + ny * off, lv), r2 = H.at(mid[0] - nx * off, mid[1] - ny * off, lv);
@@ -83,6 +84,11 @@ export function buildOpenings() {
       return;
     }
     if (lv === 0 && zf > 0.02) wallBox(a, b, o.t + 0.02, 0, zf, zf, M.sill);
+    // the floor through the doorway, so the step across it is level
+    {
+      const hx = nx * (o.t / 2 + 0.02), hy = ny * (o.t / 2 + 0.02);
+      S.surfaces.push({ poly: [[a[0] - hx, a[1] - hy], [b[0] - hx, b[1] - hy], [b[0] + hx, b[1] + hy], [a[0] + hx, a[1] + hy]], h: zf, level: lv });
+    }
     if (o.kind === "open") return;
     // a casing round the door: dark wood, or white on the glazed ones
     const glazed = /glass/.test(o.leaf || ""), trim = glazed ? M.trim : M.casing, ang = Math.atan2(dy, dx);

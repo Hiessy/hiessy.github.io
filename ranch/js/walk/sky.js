@@ -351,7 +351,7 @@ export function createSky(scene, o) {
     const l = new THREE.PointLight(0xffc98a, 0, p[3] || 9, 1.6);
     l.position.set(p[0], p[1], p[2]);
     scene.add(l);
-    return { light: l, power: p[4] || 14 };
+    return { light: l, power: p[4] || 14, room: p[5], off: false };
   });
 
   const A = new THREE.Color(), B = new THREE.Color();
@@ -416,7 +416,7 @@ export function createSky(scene, o) {
     lerpHex(hemi.groundColor, 0x15161c, 0xa59e8c, day);
     ambient.intensity = 0.2 + 0.7 * day;
     lerpHex(ambient.color, 0x8e9fd0, 0xffffff, day);
-    lamps.forEach((l) => { l.light.intensity = l.power * st.night; });
+    lamps.forEach((l) => { l.light.intensity = l.off ? 0 : l.power * st.night; });
     if (o.glass) { o.glass.emissive.setHex(0xffc27a); o.glass.emissiveIntensity = 0.55 * st.night; }
     if (o.glow) o.glow.emissiveIntensity = 1.2 + 2.2 * st.night;
 
@@ -519,6 +519,10 @@ export function createSky(scene, o) {
   return {
     /* An hour of the day (0 to 24), or null to follow the clock again. */
     setHour(h) { chosen = h; last = -1; },
+    /* The lamps' lights, each with the room it is in (see lights.js), and a
+       way to light them again at once after one is switched. */
+    lamps,
+    relight() { last = -1; },
     hour: clock,
     hourAt,
     /* Sends a shooting star (or a comet) across the night sky now. */

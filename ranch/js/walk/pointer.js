@@ -9,7 +9,7 @@ export function doorAt(ndcX, ndcY, far) {
   ray.setFromCamera({ x: ndcX, y: ndcY }, S.camera);
   ray.far = far;
   const hits = ray.intersectObjects(S.clickable, true);
-  return hits.length ? hits[0].object.userData.door : null;
+  return hits.length ? hits[0].object.userData.door || hits[0].object.userData.light || null : null;
 }
 
 export function setHover(d) {
@@ -30,12 +30,13 @@ export function updatePrompt() {
   if (cross) cross.classList.toggle("on", !!d);
   el.hidden = !d;
   if (!d) return;
-  const open = d.target > 0.5;
-  if (d.kind === "gate") {
-    if (touch) el.textContent = open ? t("walk.gate.close.touch") : t("walk.gate.open.touch");
-    else el.textContent = open ? t("walk.gate.close") : t("walk.gate.open");
-  } else if (touch) el.textContent = open ? t("walk.door.close.touch") : t("walk.door.open.touch");
-  else el.textContent = open ? t("walk.door.close") : t("walk.door.open");
+  if (d.isLight) {
+    el.textContent = touch ? (d.on ? t("walk.light.off.touch") : t("walk.light.on.touch")) : (d.on ? t("walk.light.off") : t("walk.light.on"));
+  } else if (d.kind === "gate") {
+    if (touch) el.textContent = d.target > 0.5 ? t("walk.gate.close.touch") : t("walk.gate.open.touch");
+    else el.textContent = d.target > 0.5 ? t("walk.gate.close") : t("walk.gate.open");
+  } else if (touch) el.textContent = d.target > 0.5 ? t("walk.door.close.touch") : t("walk.door.open.touch");
+  else el.textContent = d.target > 0.5 ? t("walk.door.close") : t("walk.door.open");
   if (S.mode === "orbit" && S.pointer) {
     el.style.left = S.pointer[0] + "px";
     el.style.top = S.pointer[1] + 22 + "px";
@@ -48,5 +49,11 @@ export function updatePrompt() {
 export function tapAt(clientX, clientY) {
   const r = S.canvas.getBoundingClientRect();
   const d = doorAt(((clientX - r.left) / r.width) * 2 - 1, -((clientY - r.top) / r.height) * 2 + 1, S.mode === "walk" ? REACH : 400);
-  if (d) toggleDoor(d);
+  if (d) use(d);
+}
+
+/* What a click does to what is under it: a door opens or shuts, a lamp
+   switches its room's lights. */
+export function use(d) {
+  if (d.isLight) { d.set(!d.on); updatePrompt(); } else toggleDoor(d);
 }

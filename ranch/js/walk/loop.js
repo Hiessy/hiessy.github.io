@@ -5,6 +5,7 @@ import { hud } from "./hud.js";
 import { drawMinimap } from "./minimap.js";
 import { levelOf, step } from "./physics.js";
 import { doorAt, setHover } from "./pointer.js";
+import { updateLights } from "./lights.js";
 
 export function resize() {
   const stage = $("stage");
@@ -33,6 +34,7 @@ export function loop(now) {
   } else if (S.orbit) { fly(dt); S.orbit.update(); }
   if (S.mode === "walk" && levelOf(S.player) !== S.lastLevel) hud();
   S.sky.update(now);
+  if (S.frame % 10 === 0) updateLights(S.sky.state().night);
   S.renderer.render(S.scene, S.camera);
   S.frame = (S.frame || 0) + 1;
   if (S.frame % 3 === 0) drawMinimap();

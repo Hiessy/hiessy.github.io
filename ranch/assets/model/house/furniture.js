@@ -51,7 +51,7 @@
     { level: 0, type: "picture", at: [-9.03, 9.18], rot: 270, w: 0.4, h: 0.52, up: 1.75, art: "portrait" },
     { level: 0, type: "picture", at: [-9.03, 12.02], rot: 270, w: 0.6, h: 0.5, up: 1.75, art: "landscape", frame: 0x5a6a4a },
     { level: 0, type: "sconce", at: [-7.6, 8.93], rot: 0, up: 1.9 },
-    { level: 0, type: "aircon", at: [-5.29, 10.75], rot: 90, up: 2.6 },
+    { level: 0, type: "aircon", at: [-8.5, 8.93], rot: 0, up: 2.6 },
     { level: 0, type: "fan", at: [-8.8, 12.3], rot: 315 },
     // 14 corridor: the rattan set with flowered cushions, dark chairs along
     // the wall, the console with its mirror, pink armchairs, pictures and wall lamps
@@ -71,7 +71,7 @@
     { level: 0, type: "sconce", at: [-9.09, 11.85], rot: 90 },
     { level: 0, type: "picture", at: [-10.9, 4.88], rot: 0, w: 0.42, h: 0.52, up: 1.7, art: "portrait" },
     { level: 0, type: "picture", at: [-11.73, 9.4], rot: 270, w: 0.4, h: 0.4, up: 1.8, art: "landscape" },
-    { level: 0, type: "extinguisher", at: [-9.65, 4.88], rot: 0 },
+    { level: 0, type: "extinguisher", at: [-9.12, 3.2], rot: 90 },
     { level: 0, type: "curtain", a: [-11.66, 6.5], b: [-11.66, 8.7], h: 2.25, sheer: true },
     { level: 0, type: "curtain", a: [-11.66, 13.15], b: [-11.66, 15.2], h: 2.25, sheer: true },
     // 2 bedroom: three beds with carved boards, the built-in wardrobe
