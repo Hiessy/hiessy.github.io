@@ -4,10 +4,10 @@
    (30.98° S, 64.49° W) at the hour your own clock shows, read as Argentine
    time. By day the dome is a blue gradient with the sun's disc; around
    sunrise and sunset it warms toward the sun; at night it goes nearly black
-   and fills with stars: the brightest real ones in their places (the
-   Southern Cross and its pointers among them), a few thousand fainter ones
-   and the band of the Milky Way, all turning round the south pole as the
-   night goes on. The lights follow: sunlight fades and warms, the moon
+   and fills with stars: every star the eye can see, each in its real place
+   (the Yale Bright Star Catalog, assets/sky/stars.json), over the glow and
+   haze of the Milky Way, all turning round the south pole as the night
+   goes on. The lights follow: sunlight fades and warms, the moon
    takes over, lamps and windows glow. The moon is placed and phased from a
    short lunar theory (good to a fraction of a degree), its lit side turned
    toward the sun. Now and then a shooting star crosses the night, and more
@@ -84,43 +84,57 @@ const BRIGHT = [
 ];
 const TINT = [[0.82, 0.88, 1.0], [1.0, 0.96, 0.82], [1.0, 0.78, 0.62]];
 
-function starField(touch) {
+/* A star's colour from its temperature (hundreds of kelvin): red-orange
+   below 4,000 K, yellow-white round the sun's 5,800, blue-white above 10,000. */
+function starTint(k) {
+  const u = clamp((k - 35) / 70, 0, 1), A = [1, 0.72, 0.5], W = [1, 0.96, 0.86], Bl = [0.8, 0.87, 1];
+  const mix = (p, q, f) => p.map((v, n) => v + (q[n] - v) * f);
+  return u < 0.4 ? mix(A, W, u / 0.4) : mix(W, Bl, (u - 0.4) / 0.6);
+}
+
+/* The stars' points. With the catalog (assets/sky/stars.json: the Yale
+   Bright Star Catalog, every star the eye can see, 9,096 of them, each
+   [right ascension h, declination deg, magnitude, temperature /100 K]), each
+   one is where it is in the real sky; before it has loaded, the brightest
+   (BRIGHT) stand in. Under them all, the faint haze of the Milky Way along
+   the galactic plane. */
+function starGeometry(touch, catalog) {
   const pos = [], col = [], size = [], phase = [];
   let seed = 20151;
   const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
   const gauss = () => { let s = 0; for (let i = 0; i < 6; i++) s += rnd(); return (s - 3) / 0.7071; };
-  const add = (v, mag, tint) => {
+  const add = (v, mag, t, dim) => {
     pos.push(v[0] * 400, v[1] * 400, v[2] * 400);
     // magnitude to a point size in pixels and a brightness
-    const b = clamp(1.45 - mag * 0.15, 0.5, 1.7), t = TINT[tint];
-    col.push(t[0] * Math.min(1, b), t[1] * Math.min(1, b), t[2] * Math.min(1, b));
-    size.push(clamp(5.6 - mag * 0.75, 1.7, 7.4));
+    const b = Math.min(1, dim || clamp(1.45 - mag * 0.15, 0.42, 1.7));
+    col.push(t[0] * b, t[1] * b, t[2] * b);
+    size.push(clamp(5.6 - mag * 0.75, 1.6, 7.4));
     phase.push(rnd() * 6.283);
   };
-  BRIGHT.forEach((s) => add(unit(s[0] * 15 * DEG, s[1] * DEG), s[2], s[3]));
-  // the field: more faint stars than bright ones, as in the real sky
-  const n = touch ? 9000 : 22000;
-  for (let i = 0; i < n; i++) {
-    const z = rnd() * 2 - 1, a = rnd() * 6.283, r = Math.sqrt(1 - z * z);
-    const mag = 2.2 + 3.9 * Math.pow(rnd(), 0.42), k = rnd();
-    add([r * Math.cos(a), r * Math.sin(a), z], mag, k < 0.62 ? 0 : k < 0.9 ? 1 : 2);
-  }
-  // the Milky Way: a band along the galactic plane, densest toward Sagittarius
+  if (catalog) {
+    for (let i = 0; i < catalog.length; i += 4) add(unit(catalog[i] * 15 * DEG, catalog[i + 1] * DEG), catalog[i + 2], starTint(catalog[i + 3]));
+  } else BRIGHT.forEach((s) => add(unit(s[0] * 15 * DEG, s[1] * DEG), s[2], TINT[s[3]]));
+  // the Milky Way's haze: too faint to see one by one, densest toward Sagittarius
   const ag = 192.859 * DEG, dg = 27.128 * DEG, lcp = 122.932 * DEG;
-  const m = touch ? 12000 : 34000;
+  const m = touch ? 12000 : 30000;
   for (let i = 0; i < m; i++) {
     const toward = rnd() < 0.6;
     const l = toward ? gauss() * 55 * DEG : rnd() * 6.283;
     const b = gauss() * (toward ? 7.5 : 5.5) * DEG;
     const dec = Math.asin(Math.sin(dg) * Math.sin(b) + Math.cos(dg) * Math.cos(b) * Math.cos(lcp - l));
     const ra = ag + Math.atan2(Math.cos(b) * Math.sin(lcp - l), Math.cos(dg) * Math.sin(b) - Math.sin(dg) * Math.cos(b) * Math.cos(lcp - l));
-    add(unit(ra, dec), 4.4 + 2.2 * rnd(), rnd() < 0.75 ? 0 : 1);
+    add(unit(ra, dec), 7, TINT[rnd() < 0.75 ? 0 : 1], 0.22 + 0.2 * rnd());
   }
   const geo = new THREE.BufferGeometry();
   geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
   geo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
   geo.setAttribute("size", new THREE.Float32BufferAttribute(size, 1));
   geo.setAttribute("phase", new THREE.Float32BufferAttribute(phase, 1));
+  return geo;
+}
+
+function starField(touch) {
+  const geo = starGeometry(touch, null);
   const mat = new THREE.ShaderMaterial({
     uniforms: { time: { value: 0 }, fade: { value: 0 }, px: { value: 1 } },
     vertexShader: `
@@ -304,6 +318,12 @@ export function createSky(scene, o) {
   scene.add(dome);
 
   const stars = starField(o.touch);
+  // the real stars, as soon as the catalog has loaded
+  fetch(o.catalog || "assets/sky/stars.json").then((r) => r.json()).then((d) => {
+    const old = stars.geometry;
+    stars.geometry = starGeometry(o.touch, d.stars);
+    old.dispose();
+  }).catch(() => {});
   scene.add(stars);
 
   const moon = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthWrite: false, fog: false }));

@@ -28,7 +28,10 @@ the former Hostería Norita Ranch, in four views:
   follows the visitor's clock: sun, moon and stars are where they would be
   over La Cumbre at that hour, lamps and windows light up at night, and the
   "Sky" button tries dawn, midday, dusk and night. The night is dark and
-  full of stars, with the Milky Way's glow; the moon is placed and phased
+  full of stars: every star the eye can see, in its real place for La
+  Cumbre at that hour (the Yale Bright Star Catalog, 9,096 stars, in
+  `assets/sky/stars.json`; MIT notice of the JSON version beside it), with
+  the Milky Way's glow; the moon is placed and phased
   from a short lunar theory, lit on the side facing the sun; now and then a
   shooting star or, rarely, a comet crosses it. Furniture follows the
   listing photos; the neighbours' buildings come from the cadastre.
