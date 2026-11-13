@@ -325,6 +325,8 @@ export function createSky(scene, o) {
   const hr = () => { hs = (hs * 16807) % 2147483647; return hs / 2147483647; };
   for (let i = 0; i < 44; i++) {
     const a = (i / 44) * Math.PI * 2 + hr() * 0.1, across = Math.abs(Math.cos(a));
+    // a stretch of horizon kept clear for a landmark drawn there (o.clear)
+    if ((o.clear || []).some((c) => Math.abs(Math.atan2(Math.sin(a - c.a), Math.cos(a - c.a))) < c.w)) continue;
     const d = 165 + hr() * 55 + (Math.cos(a) < 0 ? 45 : 0), r = 42 + hr() * 30, h = 8 + across * 30 + hr() * 12;
     const m = new THREE.Mesh(bump, new THREE.MeshStandardMaterial({ color: hill[i % hill.length], roughness: 1, flatShading: true }));
     m.scale.set(r, h, r * (0.7 + hr() * 0.5));
@@ -453,9 +455,10 @@ export function createSky(scene, o) {
     moon.material.rotation = Math.atan2(tang.dot(upv), tang.dot(right));
   }
 
-  /* Shooting stars every few seconds of a dark night, a comet now and then.
+  /* On a dark night something crosses the sky every 10 to 60 seconds, at
+     random: mostly a shooting star, one time in four a comet zipping by.
      Each is a run of points: a bright head and a fading tail. */
-  let nextMeteor = 0, nextComet = 0, meteor = null, comet = null;
+  let nextMeteor = 0, meteor = null, comet = null;
   const rand = Math.random;
   const skyPoint = (az, el) => toScene(Math.sin(az) * Math.cos(el), Math.cos(az) * Math.cos(el), Math.sin(el)).normalize();
   function launch(t, slow) {
@@ -466,16 +469,18 @@ export function createSky(scene, o) {
     const turn = (rand() - 0.5) * 2.4;
     const dir = side.multiplyScalar(Math.cos(turn)).addScaledVector(down, -Math.abs(Math.sin(turn)) * (rand() < 0.75 ? 1 : -1)).normalize();
     return slow
-      ? { t0: t, life: 16000 + rand() * 8000, from: a, dir, sweep: (5 + rand() * 6) * DEG, tail: (9 + rand() * 7) * DEG }
+      ? { t0: t, life: 5000 + rand() * 4000, from: a, dir, sweep: (14 + rand() * 12) * DEG, tail: (9 + rand() * 7) * DEG }
       : { t0: t, life: 450 + rand() * 900, from: a, dir, sweep: (8 + rand() * 18) * DEG, tail: (3 + rand() * 4) * DEG, bright: rand() < 0.15 };
   }
   const tmp = new THREE.Vector3(), awayFromSun = new THREE.Vector3();
   function drawStreaks(t) {
     const night = stars.material.uniforms.fade.value;
     if (night < 0.4) { fx.geometry.setDrawRange(0, 0); meteor = comet = null; return; }
-    if (!nextMeteor) { nextMeteor = t + 3000 + rand() * 9000; nextComet = t + 40000 + rand() * 80000; }
-    if (!meteor && t > nextMeteor) { meteor = launch(t, false); nextMeteor = t + meteor.life + 2500 + rand() * 11000; }
-    if (!comet && t > nextComet) { comet = launch(t, true); nextComet = t + comet.life + 90000 + rand() * 150000; }
+    if (!nextMeteor) nextMeteor = t + 10000 + rand() * 50000;
+    if (t > nextMeteor && !meteor && !comet) {
+      if (rand() < 0.25) comet = launch(t, true); else meteor = launch(t, false);
+      nextMeteor = t + 10000 + rand() * 50000;
+    }
     const pos = fx.geometry.attributes.position.array, size = fx.geometry.attributes.size.array;
     const alpha = fx.geometry.attributes.alpha.array, col = fx.geometry.attributes.color.array;
     let n = 0;

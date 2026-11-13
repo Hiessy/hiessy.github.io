@@ -31,6 +31,7 @@ import { jumpTo } from "./walk/physics.js";
 import { buildScene } from "./walk/scene.js";
 import { setSky } from "./walk/skybar.js";
 import { circuitAt, wireLamps } from "./walk/lights.js";
+import { buildLandmarks, cristoClearing } from "./walk/landmarks.js";
 
 export function start() {
   if (S.scene) { resume(); return; }
@@ -69,9 +70,10 @@ export function start() {
   // each lamp's light, in the stretched model, with the room it lights (its switch)
   S.lamps = S.lamps.map((l) => [l[0] * K, l[1] * KZ, l[2] * K, (l[3] || 9) * 1.2, l[4], circuitAt(l[0], -l[2], l[1] > 2.9 ? 1 : 0)]);
   // The sun, the moon, the stars and every light, by the clock (walk/sky.js).
-  S.sky = createSky(scene, { center: { x: CENTER.x * K, y: CENTER.y * K }, span: 36 * K, camera, north: H.NORTH, touch, lamps: S.lamps, glass: M.glass, glow: M.glow,
+  S.sky = createSky(scene, { center: { x: CENTER.x * K, y: CENTER.y * K }, span: 36 * K, camera, clear: [cristoClearing()], north: H.NORTH, touch, lamps: S.lamps, glass: M.glass, glow: M.glow,
                              pixelRatio: () => renderer.getPixelRatio() });
   wireLamps(S.sky.lamps);
+  buildLandmarks(scene);
   bindControls();
   const sb = $("sky-btn");
   if (sb) sb.addEventListener("click", () => setSky((S.skyMode + 1) % 5));

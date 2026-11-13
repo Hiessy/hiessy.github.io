@@ -162,6 +162,17 @@
             [-17.6, 5.55, -18.0, 6.45, 0.1]]
   };
 
+  /* What is seen far off. The Cristo Redentor on its hill (Sierra de la
+     Viarapa) east of the town: OpenStreetMap places it at 30.97666 S,
+     64.48090 W, which the cadastre's lot puts at plan (1148, 316), 1.19 km
+     away at 67 degrees from true north. SRTM gives its ground 99 m above the
+     sidewalk here, and the ridge behind it 150 m. The statue's own size is
+     not published: about 8 m on a 4 m base is our estimate. It is white
+     and lit at night. */
+  var landmarks = {
+    cristo: { at: [1148.1, 315.9], ground: 99, statue: 8, base: 4, ridge: 150, ridgeAt: 1450 }
+  };
+
   var garden = {
     // the drive's pavers stop short of the glazed room: irises and lavender grow in the strip between
     pavers: [[-12.5, 14.6], [-12.5, 16.76], [-13.56, 16.76], [-13.56, 21.3], [-17.3, 21.63], [-17.3, 14.6]],
@@ -205,7 +216,8 @@
     return [+(p[0] * c - p[1] * s).toFixed(2), +(p[0] * s + p[1] * c).toFixed(2)];
   }
   var neighbours = P.neighbours;
-  neighbours.forEach(function (n) { n.poly = n.poly.map(fromStreet); });
+  // the traced ones (rect) are in the plan's axes already
+  neighbours.forEach(function (n) { if (n.poly) n.poly = n.poly.map(fromStreet); });
 
   /* Stairs as ramps along a path: the height climbs from h1 to h2 with the
      distance walked along `path`, `w` wide. The apartment's is the survey's
@@ -313,6 +325,7 @@
     extras: extras,
     garden: garden,
     neighbours: neighbours,
+    landmarks: landmarks,
     gate: gate,
     openings: openings,
     wallsOf: wallsOf,

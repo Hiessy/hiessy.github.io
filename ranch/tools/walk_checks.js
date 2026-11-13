@@ -6,8 +6,11 @@
      40% wider (only where the wall beside them leaves no room).
    - looseWallPieces: pictures, extinguishers, lamps... not resting on a wall
      face, or standing over a piece of furniture.
-   - lights: rooms whose lights don't all go off and on again together. */
-import { S, H } from "../js/walk/core.js";
+   - lights: rooms whose lights don't all go off and on again together.
+   - cristo: the Cristo Redentor off its true bearing or hidden from the
+     street balcony.
+   - neighbours: the houses around missing, or standing on our lot. */
+import { H, K, KZ, S } from "../js/walk/core.js";
 import { inWall, spanOf } from "../js/walk/walls.js";
 import { inside } from "../js/walk/geometry.js";
 
@@ -47,8 +50,47 @@ export function lights() {
   return bad;
 }
 
-export async function run() {
-  return { narrowDoors: narrowDoors(), looseWallPieces: looseWallPieces(), lights: lights() };
+/* The Cristo Redentor stands where it is: 67.1 degrees from true north, seen
+   from the house (OpenStreetMap and the cadastre), and nothing hides it
+   from the street balcony. */
+export async function cristo() {
+  const bad = [];
+  if (!S.cristo) return ["no Cristo"];
+  const THREE = await import("three");
+  // the middle of the statue, not its foot on the hill
+  const c = new THREE.Box3().setFromObject(S.cristo).getCenter(new THREE.Vector3());
+  const from = new THREE.Vector3(-0.6 * K, (H.Z.apt + 1.55 / KZ) * KZ, -18.5 * K);
+  const d = c.clone().sub(from);
+  // the plan's +y is H.NORTH degrees west of true north (house.js)
+  const planAngle = Math.atan2(d.x, -d.z) * 180 / Math.PI;             // clockwise from +y
+  const bearing = (planAngle - H.NORTH + 360) % 360;
+  if (Math.abs(bearing - 67.1) > 1.5) bad.push("bearing " + bearing.toFixed(1));
+  const elev = Math.atan2(d.y, Math.hypot(d.x, d.z)) * 180 / Math.PI;
+  if (elev < 3.5 || elev > 6.5) bad.push("elevation " + elev.toFixed(1));
+  const ray = new THREE.Raycaster(from, d.clone().normalize());
+  ray.camera = S.camera;
+  const hit = ray.intersectObjects(S.scene.children, true).filter((h) => h.object.visible && !h.object.isPoints && !h.object.isSprite && h.object.material && !h.object.material.transparent)[0];
+  let o = hit && hit.object, own = false;
+  while (o) { if (o === S.cristo) own = true; o = o.parent; }
+  if (!own) bad.push("hidden from the balcony by " + (hit ? (hit.object.name || hit.object.type) + " at " + hit.distance.toFixed(0) + " m" : "nothing hit"));
+  return bad;
 }
 
-export { H };
+/* The houses around are the traced ones (aerial and Street View), and none
+   stands on our lot. */
+export function neighbours() {
+  const traced = (H.neighbours || []).filter((n) => n.rect);
+  const bad = [];
+  if (traced.length < 15) bad.push("only " + traced.length + " traced buildings");
+  traced.forEach((n) => {
+    const r = n.rect, pts = [[r[0], r[1]], [r[2], r[1]], [r[2], r[3]], [r[0], r[3]], [(r[0] + r[2]) / 2, (r[1] + r[3]) / 2]];
+    if (pts.some((q) => inside(q[0], q[1], H.lot))) bad.push(n.id + " is on our lot");
+  });
+  if (!S.town || !S.town.length) bad.push("no neighbours built");
+  return bad;
+}
+
+export async function run() {
+  return { narrowDoors: narrowDoors(), looseWallPieces: looseWallPieces(), lights: lights(), cristo: await cristo(), neighbours: neighbours() };
+}
+

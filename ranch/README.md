@@ -107,9 +107,17 @@ mirrors, extinguishers and other wall pieces are set on the face of a real
 wall, sliding off windows, doorways and furniture (`onWall` in
 `js/walk/furniture.js`).
 
-`tools/walk_checks.js` checks these three things in the browser: on the 3D
+The houses around come from aerial imagery laid over the cadastre and from
+Street View (`assets/model/house/neighbours.js`, drawn by `js/walk/town.js`).
+The Cristo Redentor stands on its hill 1.19 km east-northeast, at its true
+bearing and height above the horizon, drawn nearer and smaller so it looks
+the same; it is lit at night (`js/walk/landmarks.js`). Its statue's size is
+an estimate. On a dark night a shooting star or a comet crosses every 10 to
+60 seconds.
+
+`tools/walk_checks.js` checks these things in the browser: on the 3D
 tab, `await (await import("/ranch/tools/walk_checks.js")).run()` returns
-what fails each one.
+what fails each one (doors, wall pieces, lights, the Cristo, the neighbours).
 
 ## The axes
 

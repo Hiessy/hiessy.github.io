@@ -7,6 +7,7 @@ import { buildLabels } from "./labels.js";
 import { M, TOP_SHADOW, mat, texMat } from "./materials.js";
 import { buildOpenings } from "./openings.js";
 import { buildRoofs } from "./roofs.js";
+import { buildTown } from "./town.js";
 import { tex, texFor } from "./textures.js";
 import { areaOf, buildWalls, clipRect, collider, sloped, wainscot, wallBox } from "./walls.js";
 
@@ -36,19 +37,8 @@ export function buildScene() {
   S.static.add(flat(band(10.5, 13), texMat("sidewalk"), 0.012));
   [[2.38, 2.52], [10.48, 10.62]].forEach((c) => S.static.add(flat(band(c[0], c[1]), mat(0xe8e4da), 0.03)));
 
-  // Neighbours: the cadastre's parcels around, each a block of render under a
-  // tile or sheet roof (assets/model/house.js), solid to walk into.
-  const RENDER = [0xf1ece2, 0xe9dfcf, 0xdcd3c3, 0xf4f1ea];
-  const ROOFS = [0xa65f45, 0x8d969c, 0x9a5a40, 0x6f8796];
-  H.neighbours.forEach((b, i) => {
-    const h = b.floors === 2 ? 5.8 : 3.0;
-    S.static.add(slab(b.poly, mat(RENDER[i % RENDER.length], { roughness: 0.9 }), h, h));
-    S.static.add(slab(b.poly, mat(ROOFS[(i * 7) % ROOFS.length], { roughness: 0.75 }), h + 0.3, 0.3));
-    b.poly.forEach((p, k) => {
-      const q = b.poly[(k + 1) % b.poly.length];
-      collider(p[0], p[1], q[0], q[1], 0, h + 0.3, 0.05);
-    });
-  });
+  // The houses around: traced from aerial imagery and Street View (town.js).
+  buildTown();
 
   // Garden: gravel, pavers, wheel tracks, the hedge, the big tree and the statue.
   const G = H.garden;
