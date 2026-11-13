@@ -90,7 +90,42 @@ export function neighbours() {
   return bad;
 }
 
+/* The compass and location overlay: it turns on and off with its button and
+   the C key, its coordinates agree with the cadastre, its heading with the
+   Cristo's bearing, and it keeps out of the middle of the picture. */
+export async function geo() {
+  const bad = [];
+  if (!S.geo) return ["no overlay"];
+  const box = document.getElementById("geo"), strip = document.getElementById("compass"), btn = document.getElementById("toggle-geo");
+  if (!box || !strip || !btn) return ["overlay or its button missing"];
+  const was = S.geo.on;
+  document.dispatchEvent(new KeyboardEvent("keydown", { code: "KeyC", key: "c", bubbles: true }));
+  if (S.geo.on === was || box.hidden !== was) bad.push("the C key doesn't switch it");
+  btn.click();
+  if (S.geo.on !== was) bad.push("the button doesn't switch it back");
+  if (!S.geo.on) S.geo.toggle(true);
+  // the lot's south corner, as the cadastre gives it
+  const ll = S.geo.latLon(0, 0), dN = (ll[0] + 30.98084661) * 110574, dE = (ll[1] + 64.49239071) * 95420;
+  if (Math.hypot(dN, dE) > 1) bad.push("lot corner " + Math.hypot(dN, dE).toFixed(1) + " m off");
+  // facing the Cristo from the balcony reads its bearing
+  const p = S.player, c = H.landmarks.cristo.at;
+  Object.assign(p, { x: -0.6, y: 18.4, feet: H.Z.apt, vz: 0, eye: undefined });
+  p.yaw = Math.atan2(-(c[0] + 0.6), c[1] - 18.4);
+  const { step } = await import("../js/walk/physics.js");
+  step(0);
+  S.geo.update();
+  if (Math.abs(S.geo.heading() - 67.1) > 1.5) bad.push("heading " + S.geo.heading().toFixed(1) + " facing the Cristo");
+  // nothing of it in the middle half of the picture
+  const st = document.getElementById("stage").getBoundingClientRect();
+  const mid = { l: st.left + st.width / 4, r: st.right - st.width / 4, t: st.top + st.height / 4, b: st.bottom - st.height / 4 };
+  [box, strip].forEach((el) => {
+    const r = el.getBoundingClientRect();
+    if (r.width && r.left < mid.r && r.right > mid.l && r.top < mid.b && r.bottom > mid.t) bad.push(el.id + " covers the middle of the picture");
+  });
+  return bad;
+}
+
 export async function run() {
-  return { narrowDoors: narrowDoors(), looseWallPieces: looseWallPieces(), lights: lights(), cristo: await cristo(), neighbours: neighbours() };
+  return { narrowDoors: narrowDoors(), looseWallPieces: looseWallPieces(), lights: lights(), cristo: await cristo(), neighbours: neighbours(), geo: await geo() };
 }
 

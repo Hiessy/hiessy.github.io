@@ -21,6 +21,8 @@ export function bindControls() {
     if (!S.running || e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
     if (VIEW_KEYS[e.code] && canvas.offsetParent !== null) { setMode(VIEW_KEYS[e.code]); return; }
+    // C shows or hides the compass and location overlay (walk/geo.js)
+    if (e.code === "KeyC" && canvas.offsetParent !== null && S.geo) { S.geo.toggle(); return; }
     // the overview and the aerial view fly like a ghost: WASD or arrows
     // across, E up, Q down, through walls
     if (S.mode === "orbit" && ghostKeysLive()) {

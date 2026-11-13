@@ -118,9 +118,17 @@ the same; it is lit at night (`js/walk/landmarks.js`). Its statue's size is
 an estimate. On a dark night a shooting star or a comet crosses every 10 to
 60 seconds.
 
+The Compass button, or the C key, shows or hides an overlay on the 3D
+view: a strip along the top with the cardinal points as you turn (and the
+sun, the moon and the Cristo where they lie), and a card over the little
+map with the latitude and longitude where you stand, the height above the
+sea, your heading, the time, the sun, the moon's phase and the Cristo's
+distance (`js/walk/geo.js`; the lot's place on the earth is `geo` in
+`assets/model/house.js`).
+
 `tools/walk_checks.js` checks these things in the browser: on the 3D
 tab, `await (await import("/ranch/tools/walk_checks.js")).run()` returns
-what fails each one (doors, wall pieces, lights, the Cristo, the neighbours).
+what fails each one (doors, wall pieces, lights, the Cristo, the neighbours, the compass).
 
 ## The axes
 

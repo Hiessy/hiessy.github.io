@@ -6,6 +6,7 @@ import { drawMinimap } from "./minimap.js";
 import { levelOf, step } from "./physics.js";
 import { doorAt, setHover } from "./pointer.js";
 import { updateLights } from "./lights.js";
+import { updateGeo } from "./geo.js";
 
 export function resize() {
   const stage = $("stage");
@@ -37,7 +38,7 @@ export function loop(now) {
   if (S.frame % 10 === 0) { const night = S.sky.state().night; updateLights(night); if (S.landmarks) S.landmarks.update(night); }
   S.renderer.render(S.scene, S.camera);
   S.frame = (S.frame || 0) + 1;
-  if (S.frame % 3 === 0) drawMinimap();
+  if (S.frame % 3 === 0) { drawMinimap(); updateGeo(); }
 }
 
 /* Ghost flight for the overview and the aerial view: the camera and the

@@ -32,6 +32,7 @@ import { buildScene } from "./walk/scene.js";
 import { setSky } from "./walk/skybar.js";
 import { circuitAt, wireLamps } from "./walk/lights.js";
 import { buildLandmarks, cristoClearing } from "./walk/landmarks.js";
+import { buildGeo } from "./walk/geo.js";
 
 export function start() {
   if (S.scene) { resume(); return; }
@@ -75,6 +76,7 @@ export function start() {
   wireLamps(S.sky.lamps);
   buildLandmarks(scene);
   bindControls();
+  buildGeo();
   const sb = $("sky-btn");
   if (sb) sb.addEventListener("click", () => setSky((S.skyMode + 1) % 5));
   setSky(0);

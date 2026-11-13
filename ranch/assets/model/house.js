@@ -169,6 +169,12 @@
      sidewalk here, and the ridge behind it 150 m. The statue's own size is
      not published: about 8 m on a 4 m base is our estimate. It is white
      and lit at night. */
+  /* Where the plan sits on the earth: the lot's south corner, plan (0, 0),
+     from the cadastre (IDECOR; its four corners fit the survey to half a
+     meter), the sidewalk's height above the sea (SRTM) and the time zone.
+     The plan turns NORTH degrees from true north. */
+  var geo = { lat: -30.98084738, lon: -64.49239543, ground: 1142, utc: -3 };
+
   var landmarks = {
     cristo: { at: [1148.1, 315.9], ground: 99, statue: 8, base: 4, ridge: 150, ridgeAt: 1450 }
   };
@@ -326,6 +332,7 @@
     garden: garden,
     neighbours: neighbours,
     landmarks: landmarks,
+    geo: geo,
     gate: gate,
     openings: openings,
     wallsOf: wallsOf,

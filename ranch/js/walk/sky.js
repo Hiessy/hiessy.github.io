@@ -405,7 +405,8 @@ export function createSky(scene, o) {
   let moonAge = -1;
   function refresh() {
     const hours = clock(), q = solve(hours), el = q.el;
-    st = { el, az: (Math.atan2(q.sun[0], q.sun[1]) / DEG + 360) % 360, hour: hours, night: 1 - smooth(-7, 2, el), lit: q.lit };
+    st = { el, az: (Math.atan2(q.sun[0], q.sun[1]) / DEG + 360) % 360, hour: hours, night: 1 - smooth(-7, 2, el), lit: q.lit, age: q.age,
+           moonEl: Math.asin(clamp(q.moon[2], -1, 1)) / DEG, moonAz: (Math.atan2(q.moon[0], q.moon[1]) / DEG + 360) % 360 };
     // colours between the two nearest keys
     let i = 0;
     while (i < KEYS.length - 2 && el > KEYS[i + 1][0]) i++;

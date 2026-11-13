@@ -229,6 +229,34 @@ a:hover { color: #163A69; }
    the little map stay above it, so they work before you start walking. */
 .start { z-index: 1; }
 .hud-bar, .minimap, .level { z-index: 2; }
+/* The compass and location overlay (js/walk/geo.js): a thin strip under the
+   buttons and a small card over the little map, both see-through and out of
+   the middle of the picture. C or its button turns them off. */
+.compass {
+  position: absolute; left: 50%; top: 58px; width: min(440px, 56%); height: 34px; transform: translateX(-50%);
+  pointer-events: none; z-index: 2;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+}
+.geo {
+  position: absolute; right: 10px; bottom: 146px; width: 220px; box-sizing: border-box; margin: 0; padding: 7px 10px;
+  font-size: 12px; line-height: 1.45; color: #F4F4F0; background: rgba(20, 22, 26, 0.55); border-radius: 8px;
+  pointer-events: none; z-index: 2; font-variant-numeric: tabular-nums;
+}
+.geo b { font-weight: 600; color: #FFFFFF; }
+.geo .place { font-weight: 700; font-size: 12.5px; margin-bottom: 2px; }
+.geo .row { display: flex; justify-content: space-between; gap: 8px; }
+.geo .row span:first-child { color: rgba(244, 244, 240, 0.72); }
+/* narrower screens: the card keeps to where you are and the way you face */
+@media (max-width: 1000px) {
+  .geo { width: 176px; font-size: 11px; }
+  .geo .wide { display: none; }
+}
+@media (pointer: coarse), (max-width: 640px) {
+  .geo { width: 150px; bottom: 100px; font-size: 10.5px; padding: 5px 7px; }
+  .geo .wide { display: none; }
+  .compass { width: 62%; }
+}
 .primary {
   font: inherit; font-size: 16px; font-weight: 700; min-height: 50px; padding: 14px 22px;
   border: 0; border-radius: 10px; background: var(--dark); color: #FFFFFF; cursor: pointer;
