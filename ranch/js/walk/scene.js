@@ -1,6 +1,6 @@
 /* Builds the whole scene: ground, garden, floors, ceilings, walls, railings, stairs, sign, grill. */
 import * as THREE from "three";
-import { CENTER, F, H, S, X, t } from "./core.js";
+import { CENTER, F, H, K, KZ, S, X, t } from "./core.js";
 import { buildFurniture, solid } from "./furniture.js";
 import { ball, bar, beam3, bx, byId, center, cy, flat, merge, place, rectPoly, slab, zAt } from "./geometry.js";
 import { buildLabels } from "./labels.js";
@@ -18,7 +18,7 @@ export function tree(x, y, size) {
 }
 
 export function buildScene() {
-  const scene = S.scene;
+  const scene = S.world;
   S.lamps = [];
 
   // Ground around the lot, the lot itself, the sidewalks and the street.
@@ -267,7 +267,8 @@ export function buildScene() {
     g.add(board);
     [0.2, 0.9].forEach((dx) => bx(g, 0.012, 0.1, 0.012, dx, 2.44, 0, M.black));
     g.position.set(X.sign[0], 0, -X.sign[1]);
-    S.scene.add(g);
+    g.scale.set(1 / K, 1 / KZ, 1 / K);
+    S.world.add(g);
     collider(X.sign[0] - 0.08, X.sign[1], X.sign[0] + 0.08, X.sign[1], 0, 2.6, 0.06);
   }
 

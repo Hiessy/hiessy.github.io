@@ -27,7 +27,10 @@ the former Hostería Norita Ranch, in four views:
   and an aerial view (those two fly like a ghost with WASD, Q and E). The sky
   follows the visitor's clock: sun, moon and stars are where they would be
   over La Cumbre at that hour, lamps and windows light up at night, and the
-  "Sky" button tries dawn, midday, dusk and night. Furniture follows the
+  "Sky" button tries dawn, midday, dusk and night. The night is dark and
+  full of stars, with the Milky Way's glow; the moon is placed and phased
+  from a short lunar theory, lit on the side facing the sun; now and then a
+  shooting star or, rarely, a comet crosses it. Furniture follows the
   listing photos; the neighbours' buildings come from the cadastre.
 - **Photos** (`#photos`): the agency's two walkthrough videos (no sound, with
   chapter buttons), the 54 different listing photos grouped by part of the
@@ -86,6 +89,15 @@ old address, only forwards here.
 - `assets/` (`photos/`, `videos/`, `plans/`) — every picture, video and survey drawing the page uses, free to reuse. `resources/` holds the raw material
   the user drops in; it is ignored by git and never published.
 - `css/ranch.css`, `i18n/es.json`, `i18n/en.json`.
+
+## Drawn bigger than the survey
+
+The 3D walk draws the house 1.4 times wider and deeper and 1.25 times
+higher than the survey (`K` and `KZ` in `js/walk/core.js`), so rooms and
+doors are easy to move through. All the data and the walking physics stay
+in the survey's meters; only the drawing is stretched (the `S.world`
+group), and furniture, plants and the visitor keep their true size inside
+it. The plan view is unchanged.
 
 ## The axes
 

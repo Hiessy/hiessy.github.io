@@ -78,7 +78,7 @@ export function buildRoofs() {
   X.tanks.forEach((p, i) => (i < 2 ? tank(p[0], p[1], Fz + 2.9, roofs) : tank(p[0], p[1], H.Z.terrace, S.static)));
 
   S.roofs = merge(roofs);
-  S.scene.add(S.roofs);
+  S.world.add(S.roofs);
 
   // Every roof can be walked on: jump over a railing or a parapet and go
   // round the top of the house. hf gives a sloping roof's height.

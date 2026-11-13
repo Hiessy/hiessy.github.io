@@ -9,12 +9,16 @@ export const WALL_T = 0.15;
 
 export const DOOR_H = 2.05;
 
-/* The visitor is drawn a fifth smaller than a person, so the rooms feel a
-   fifth bigger and are easier to move about in; the house keeps the
-   survey's measures. */
-export const SCALE = 1.2;
+/* The walk shows the house bigger than the survey draws it: K times wider
+   and deeper, KZ times higher, so rooms and doors are easy to move through.
+   Everything is still worked out in the survey's meters (walls, furniture
+   positions, collisions, the minimap); the whole model is stretched when it
+   is drawn (S.world), and furniture, plants and the visitor keep their true
+   size inside it. So the visitor's measures below are divided by the
+   stretch: a 1.55 m eye height is 1.55 / KZ survey meters. */
+export const K = 1.4, KZ = 1.25;
 
-export const EYE = 1.55 / SCALE, BODY = 1.7 / SCALE, RADIUS = 0.2 / SCALE, STEP = 0.45, GRAVITY = 9.8;
+export const EYE = 1.55 / KZ, BODY = 1.7 / KZ, RADIUS = 0.2 / K, STEP = 0.45, GRAVITY = 9.8 / KZ;
 
 export const REACH = 3.2;
 

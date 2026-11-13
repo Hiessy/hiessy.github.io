@@ -1,7 +1,7 @@
 /* The baths: toilet, bidet, basin and shower, laid out along one wall the way the photos show them.
    Fixtures are built with their back toward +z (the wall) and their front toward -z. */
 import * as THREE from "three";
-import { S } from "./core.js";
+import { K, KZ, S } from "./core.js";
 import { bar, bx, cy, place } from "./geometry.js";
 import { M, mat, texBox } from "./materials.js";
 
@@ -74,12 +74,14 @@ function wallSet(g, mirror) {
          fix   - the fixtures along the wall, from the shower on (default bidet, toilet, basin)
          basin - a basin elsewhere: [x, y, rot]
          color - the fixtures' colour (white if none); curtain - its pattern, or none for an open shower
-         sh    - the shower's size along the wall */
+         sh    - the shower's size along the wall
+   The rect is in the survey's meters and drawn K times bigger; the fixtures
+   keep their true size, so their measures are divided by K here. */
 export function bath(item, spec) {
   const r = item.rect, x1 = r[0], y1 = r[1], x2 = r[2], y2 = r[3], lv = item.level, base = item.z;
   const alongX = spec.wall === "s" || spec.wall === "n";
   const L = alongX ? x2 - x1 : y2 - y1, W = alongX ? y2 - y1 : x2 - x1;
-  const SH = spec.sh || 0.8;
+  const SH = (spec.sh || 0.9) / K;
   // u runs along the wall from the shower's end, v out from the wall
   const lowEnd = spec.shower === "w" || spec.shower === "s";
   const wallLow = spec.wall === "s" || spec.wall === "w";
@@ -89,21 +91,21 @@ export function bath(item, spec) {
   };
   const rot = { s: 0, n: 180, w: 270, e: 90 }[spec.wall];
   const fix = spec.fix || ["bidet", "toilet", "basin"];
-  const gap = Math.min(0.56, (L - SH - 0.04) / fix.length);
-  const depth = Math.min(0.45, W - 0.72);
+  const gap = Math.min(0.62 / K, (L - SH - 0.04) / fix.length);
+  const depth = Math.min(0.45 / K, W - 0.72 / K);
   const make = { toilet: () => toilet(spec.color), bidet: () => bidet(spec.color),
                  basin: () => (spec.vanity ? vanity : basin)(spec.color, spec.mirror) };
   fix.forEach((name, i) => {
-    const u = SH + 0.04 + gap * (i + 0.5), v = name === "basin" ? 0.27 : 0.3;
+    const u = SH + 0.04 + gap * (i + 0.5), v = (name === "basin" ? 0.27 : 0.3) / K;
     const q = pt(u, v);
     place(make[name](), q[0], q[1], lv, rot);
     // a pedestal basin is small enough to stand at; the others are solid
-    if (name !== "basin") { const c = pt(u, depth / 2); spec.solid(c[0], c[1], 0.36, depth, rot, lv); }
+    if (name !== "basin") { const c = pt(u, depth / 2); spec.solid(c[0], c[1], 0.36 / K, depth, rot, lv); }
   });
-  if (spec.basin) place(make.basin(), spec.basin[0], spec.basin[1], lv, spec.basin[2]);
+  if (spec.basin) { const q = spec.backToWall(spec.basin[0], spec.basin[1], spec.basin[2], 0.54, lv); place(make.basin(), q[0], q[1], lv, spec.basin[2]); }
 
   // the shower: across the whole end of a narrow bath, in the corner of a wide one
-  const full = W - SH < 0.4, sw = full ? W : SH;
+  const full = W - SH < 0.4 / K, sw = full ? W : SH;
   const tray = new THREE.Mesh(new THREE.BoxGeometry(alongX ? SH : sw, 0.04, alongX ? sw : SH), ceramic(spec.color && 0xd9e6dc));
   const tc = pt(SH / 2, sw / 2);
   tray.position.set(tc[0], base + 0.02, -tc[1]);
@@ -115,22 +117,22 @@ export function bath(item, spec) {
   const side = (a, b) => {
     if (spec.curtain) {
       const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
-      add(bar(a[0], a[1], b[0], b[1], base + 0.12, base + 1.95, 0.012, texBox("curtain-" + spec.curtain, len, 1.83, { side: THREE.DoubleSide })));
-      add(bar(a[0], a[1], b[0], b[1], base + 1.96, base + 1.985, 0.025, M.black));
+      add(bar(a[0], a[1], b[0], b[1], base + 0.12 / KZ, base + 1.95 / KZ, 0.012, texBox("curtain-" + spec.curtain, len * K, 1.83, { side: THREE.DoubleSide })));
+      add(bar(a[0], a[1], b[0], b[1], base + 1.96 / KZ, base + 1.985 / KZ, 0.025, M.black));
     } else add(bar(a[0], a[1], b[0], b[1], base, base + 0.07, 0.06, ceramic(0)));
   };
   side(pt(SH, 0.01), pt(SH, sw - 0.01));
   if (!full) side(pt(0.01, SH), pt(SH, SH));
   // the arm and the head on the fixtures' wall, two taps under them
-  const hp = pt(SH / 2, 0.02), ho = pt(SH / 2, 0.22);
-  add(bar(hp[0], hp[1], ho[0], ho[1], base + 2.0, base + 2.025, 0.02, M.chrome));
+  const hp = pt(SH / 2, 0.02), ho = pt(SH / 2, 0.22 / K);
+  add(bar(hp[0], hp[1], ho[0], ho[1], base + 2.0 / KZ, base + 2.025 / KZ, 0.02, M.chrome));
   const head = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.03, 0.05, 12), M.chrome);
-  head.position.set(ho[0], base + 1.98, -ho[1]);
+  head.position.set(ho[0], base + 1.98 / KZ, -ho[1]);
   S.static.add(head);
   [-0.09, 0.09].forEach((d) => {
-    const q = pt(SH / 2 + d, 0.03);
+    const q = pt(SH / 2 + d / K, 0.03);
     const tap = new THREE.Mesh(new THREE.SphereGeometry(0.03, 8, 6), M.chrome);
-    tap.position.set(q[0], base + 1.1, -q[1]);
+    tap.position.set(q[0], base + 1.1 / KZ, -q[1]);
     S.static.add(tap);
   });
 }

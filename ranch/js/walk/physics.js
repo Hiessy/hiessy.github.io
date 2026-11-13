@@ -1,5 +1,5 @@
 /* Walking: stairs and floors under your feet, collisions, jumping, and where you can stand. */
-import { BODY, EYE, F, GRAVITY, H, RADIUS, S, STEP } from "./core.js";
+import { BODY, EYE, F, GRAVITY, H, K, KZ, RADIUS, S, STEP } from "./core.js";
 import { inside } from "./geometry.js";
 import { hud, setMode } from "./hud.js";
 
@@ -57,9 +57,9 @@ export function levelOf(p) {
   return S.surfaces.some((s) => s.level === 2 && live(s) && inside(p.x, p.y, s.poly) && p.feet > heightOf(s, p.x, p.y) - 0.5) ? 2 : 1;
 }
 
-/* Space (or the touch button) jumps: about 85 cm, enough to clear a railing
+/* Space (or the touch button) jumps: a good meter, enough to clear a railing
    and get onto the roofs; only from the ground or a stair, never in mid-air. */
-export const JUMP = 4.1;
+export const JUMP = 4.7 / KZ;
 
 export function jump() {
   const p = S.player;
@@ -70,7 +70,7 @@ export function jump() {
 /* A walk at a person's pace: speed builds up and eases off instead of
    starting and stopping at once, the head bobs a little with each step, and
    the eyes follow the feet smoothly up and down stairs. */
-export const WALK = 1.35, RUN = 3.0, ACCEL = 9;
+export const WALK = 1.5 / K, RUN = 3.4 / K, ACCEL = 9;
 
 export function step(dt) {
   const p = S.player, k = S.keys;
@@ -100,14 +100,15 @@ export function step(dt) {
   }
   // head bob: about two steps a second at a walk, a few centimeters
   const v = Math.hypot(p.vx, p.vy);
-  p.bob = (p.bob || 0) + (onGround ? v * dt * 4.4 : 0);
+  p.bob = (p.bob || 0) + (onGround ? v * K * dt * 4.4 : 0);
   const amt = onGround ? Math.min(1, v / WALK) : 0;
   p.bobAmt = (p.bobAmt || 0) + (amt - (p.bobAmt || 0)) * (1 - Math.exp(-6 * dt));
   const up = Math.abs(Math.sin(p.bob)) * 0.028 * p.bobAmt, side = Math.sin(p.bob) * 0.012 * p.bobAmt;
   // the eyes trail the feet a little, so stairs read as steps and not jolts
   const eye = p.feet + EYE;
   p.eye = dt > 0 && p.eye !== undefined && Math.abs(p.eye - eye) < 1.2 ? p.eye + (eye - p.eye) * (1 - Math.exp(-14 * dt)) : eye;
-  S.camera.position.set(p.x + rx * side, p.eye + up - 0.014 * p.bobAmt, -(p.y + ry * side));
+  // the visitor is worked out in survey meters, the camera sits in the stretched model
+  S.camera.position.set(p.x * K + rx * side, p.eye * KZ + up - 0.014 * p.bobAmt, -(p.y * K + ry * side));
   S.camera.rotation.set(p.pitch, p.yaw, side * 0.6, "YXZ");
 }
 

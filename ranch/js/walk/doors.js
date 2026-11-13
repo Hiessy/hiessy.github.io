@@ -123,7 +123,7 @@ export function addDoor(a, b, base, kind, side, tall, dbl, fold) {
     pivot.rotation.y = base0;
     const leaf = makeLeaf(kind, w, h);
     pivot.add(leaf);
-    S.scene.add(pivot);
+    S.world.add(pivot);
     door.pivots.push({ pivot, base0, sign: left >= 0 ? 1 : -1, leaf });
     door.parts.push(leaf);
   };
@@ -141,7 +141,7 @@ export function addDoor(a, b, base, kind, side, tall, dbl, fold) {
     fixed.position.z = -0.025 * inner;
     moving.position.set(half - 0.03, 0, 0.025 * inner);
     pivot.add(fixed, moving);
-    S.scene.add(pivot);
+    S.world.add(pivot);
     door.slide = { leaf: moving, x0: half - 0.03, len: half };
     door.parts.push(moving, fixed);
     collider(a[0], a[1], mid[0], mid[1], base, base + h, 0.04);

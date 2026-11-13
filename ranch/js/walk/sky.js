@@ -8,7 +8,10 @@
    Southern Cross and its pointers among them), a few thousand fainter ones
    and the band of the Milky Way, all turning round the south pole as the
    night goes on. The lights follow: sunlight fades and warms, the moon
-   takes over, lamps and windows glow.
+   takes over, lamps and windows glow. The moon is placed and phased from a
+   short lunar theory (good to a fraction of a degree), its lit side turned
+   toward the sun. Now and then a shooting star crosses the night, and more
+   rarely a comet drifts by with its tail away from the sun.
 
    createSky(scene, options) returns { setHour(h or null), hour(), update(t),
    state() }. Nothing here knows about the house except where north is. */
@@ -33,14 +36,26 @@ function sidereal(D) {
   const gmst = 18.697374558 + 24.06570982441908 * D;
   return ((((gmst + LON / 15) % 24) + 24) % 24) * 15 * DEG;
 }
-/* The sun's and the moon's right ascension and declination (radians), and
-   how much of the moon is lit (0 new, 1 full) and its age as a fraction. */
+/* The sun's and the moon's right ascension and declination (radians), how
+   much of the moon is lit (0 new, 1 full) and its age as a fraction of the
+   month (0 new, 0.5 full). The moon's place takes the six largest terms of
+   its longitude and its tilt to the ecliptic. */
 function bodies(D) {
   const g = (357.529 + 0.98560028 * D) * DEG, q = 280.459 + 0.98564736 * D;
   const L = (q + 1.915 * Math.sin(g) + 0.02 * Math.sin(2 * g)) * DEG, e = 23.439 * DEG;
-  const eq = (l) => ({ ra: Math.atan2(Math.cos(e) * Math.sin(l), Math.cos(l)), dec: Math.asin(Math.sin(e) * Math.sin(l)) });
-  const age = ((((D + 2451545.0 - 2451550.1) % 29.530588853) + 29.530588853) % 29.530588853) / 29.530588853;
-  return { sun: eq(L), moon: eq(L + age * 2 * Math.PI), age, lit: (1 - Math.cos(age * 2 * Math.PI)) / 2 };
+  const eq = (l, b) => {
+    const x = Math.cos(b) * Math.cos(l), y = Math.cos(e) * Math.cos(b) * Math.sin(l) - Math.sin(e) * Math.sin(b);
+    const z = Math.sin(e) * Math.cos(b) * Math.sin(l) + Math.cos(e) * Math.sin(b);
+    return { ra: Math.atan2(y, x), dec: Math.asin(z) };
+  };
+  const Lm = 218.316 + 13.176396 * D, Mm = (134.963 + 13.064993 * D) * DEG, F = (93.272 + 13.22935 * D) * DEG;
+  const Dm = (297.85 + 12.190749 * D) * DEG;
+  const lon = (Lm + 6.289 * Math.sin(Mm) + 1.274 * Math.sin(2 * Dm - Mm) + 0.658 * Math.sin(2 * Dm) + 0.214 * Math.sin(2 * Mm)
+    - 0.186 * Math.sin(g) - 0.114 * Math.sin(2 * F)) * DEG;
+  const lat = 5.128 * Math.sin(F) * DEG;
+  const elong = Math.acos(clamp(Math.cos(lat) * Math.cos(lon - L), -1, 1));
+  const ahead = (((lon - L) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI) < Math.PI;
+  return { sun: eq(L, 0), moon: eq(lon, lat), age: ahead ? elong / (2 * Math.PI) : 1 - elong / (2 * Math.PI), lit: (1 - Math.cos(elong)) / 2 };
 }
 /* Equatorial unit vector to (east, north, up) at this latitude and time. */
 function horizonMatrix(lst) {
@@ -77,14 +92,14 @@ function starField(touch) {
   const add = (v, mag, tint) => {
     pos.push(v[0] * 400, v[1] * 400, v[2] * 400);
     // magnitude to a point size in pixels and a brightness
-    const b = clamp(1.3 - mag * 0.16, 0.36, 1.6), t = TINT[tint];
+    const b = clamp(1.45 - mag * 0.15, 0.5, 1.7), t = TINT[tint];
     col.push(t[0] * Math.min(1, b), t[1] * Math.min(1, b), t[2] * Math.min(1, b));
-    size.push(clamp(5.0 - mag * 0.72, 1.5, 6.6));
+    size.push(clamp(5.6 - mag * 0.75, 1.7, 7.4));
     phase.push(rnd() * 6.283);
   };
   BRIGHT.forEach((s) => add(unit(s[0] * 15 * DEG, s[1] * DEG), s[2], s[3]));
   // the field: more faint stars than bright ones, as in the real sky
-  const n = touch ? 4200 : 9000;
+  const n = touch ? 9000 : 22000;
   for (let i = 0; i < n; i++) {
     const z = rnd() * 2 - 1, a = rnd() * 6.283, r = Math.sqrt(1 - z * z);
     const mag = 2.2 + 3.9 * Math.pow(rnd(), 0.42), k = rnd();
@@ -92,7 +107,7 @@ function starField(touch) {
   }
   // the Milky Way: a band along the galactic plane, densest toward Sagittarius
   const ag = 192.859 * DEG, dg = 27.128 * DEG, lcp = 122.932 * DEG;
-  const m = touch ? 5000 : 12000;
+  const m = touch ? 12000 : 34000;
   for (let i = 0; i < m; i++) {
     const toward = rnd() < 0.6;
     const l = toward ? gauss() * 55 * DEG : rnd() * 6.283;
@@ -134,35 +149,118 @@ function starField(touch) {
   points.frustumCulled = false;
   points.matrixAutoUpdate = false;
   points.renderOrder = -5;
+  points.add(milkyWay(mat.uniforms.fade));
   return points;
 }
 
-/* The moon's face with its lit part, for the southern sky. */
+/* The glow of the Milky Way: a band along the galactic plane, brightest and
+   widest toward Sagittarius and Scorpius (overhead in a winter night here),
+   split by its dark lane, clumpy. Drawn on a sphere in the stars' own
+   frame, so it turns with them. */
+function milkyWay(fade) {
+  const ngp = unit(192.859 * DEG, 27.128 * DEG), gc = unit(266.405 * DEG, -28.936 * DEG);
+  const m = new THREE.Mesh(new THREE.SphereGeometry(404, 64, 32), new THREE.ShaderMaterial({
+    uniforms: { fade, ngp: { value: new THREE.Vector3(...ngp) }, gc: { value: new THREE.Vector3(...gc) } },
+    side: THREE.BackSide, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
+    vertexShader: "varying vec3 vDir; void main() { vDir = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
+    fragmentShader: `
+      uniform float fade; uniform vec3 ngp; uniform vec3 gc; varying vec3 vDir;
+      float hash(vec3 p) { return fract(sin(dot(p, vec3(12.9898, 78.233, 37.719))) * 43758.5453); }
+      float noise(vec3 p) {
+        vec3 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+        return mix(mix(mix(hash(i), hash(i + vec3(1,0,0)), f.x), mix(hash(i + vec3(0,1,0)), hash(i + vec3(1,1,0)), f.x), f.y),
+                   mix(mix(hash(i + vec3(0,0,1)), hash(i + vec3(1,0,1)), f.x), mix(hash(i + vec3(0,1,1)), hash(i + vec3(1,1,1)), f.x), f.y), f.z);
+      }
+      void main() {
+        vec3 d = normalize(vDir);
+        float b = asin(clamp(dot(d, ngp), -1.0, 1.0));
+        float c = dot(normalize(d - ngp * dot(d, ngp)), gc);          // 1 toward the centre, -1 away
+        float width = mix(0.09, 0.2, smoothstep(-0.3, 1.0, c));
+        float band = exp(-pow(b / width, 2.0)) * (0.35 + 0.65 * smoothstep(-0.4, 1.0, c));
+        float bulge = exp(-pow(b / 0.16, 2.0)) * smoothstep(0.75, 1.0, c);
+        float lane = 1.0 - 0.6 * exp(-pow((b - 0.01) / 0.022, 2.0)) * smoothstep(0.1, 0.9, c);
+        float clump = 0.55 + 0.6 * noise(d * 9.0) + 0.35 * noise(d * 23.0);
+        float v = (band * clump * lane + bulge * 0.8) * 0.2;
+        gl_FragColor = vec4(vec3(0.78, 0.8, 0.92) * v * fade, 1.0);
+      }`
+  }));
+  m.frustumCulled = false;
+  m.renderOrder = -6;
+  return m;
+}
+
+/* Shooting stars and comets: one set of points that draws whatever is
+   crossing the sky at the moment. */
+function streaks() {
+  const N = 140;
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(N * 3), 3));
+  geo.setAttribute("size", new THREE.BufferAttribute(new Float32Array(N), 1));
+  geo.setAttribute("alpha", new THREE.BufferAttribute(new Float32Array(N), 1));
+  geo.setAttribute("color", new THREE.BufferAttribute(new Float32Array(N * 3), 3));
+  const mat = new THREE.ShaderMaterial({
+    uniforms: { px: { value: 1 } },
+    vertexShader: `
+      attribute float size; attribute float alpha; attribute vec3 color; uniform float px;
+      varying float vA; varying vec3 vC;
+      void main() { vA = alpha; vC = color; gl_PointSize = size * px; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: `
+      varying float vA; varying vec3 vC;
+      void main() { float d = length(gl_PointCoord - 0.5) * 2.0; float a = smoothstep(1.0, 0.0, d); gl_FragColor = vec4(vC, a * a * vA); }`,
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false
+  });
+  const pts = new THREE.Points(geo, mat);
+  pts.frustumCulled = false;
+  pts.renderOrder = -3;
+  geo.setDrawRange(0, 0);
+  return pts;
+}
+
+/* The moon's face for a given age, lit from the right (+x): the sprite is
+   turned on screen so that side faces the sun. Each pixel is a point on a
+   sphere, lit by a sun `elongation` degrees round from behind it, with its
+   seas darker and a faint earthshine on the dark side. */
+const MARIA = [[0.32, -0.38, 0.26], [0.05, -0.22, 0.22], [-0.3, -0.05, 0.2], [0.28, 0.12, 0.16], [-0.12, 0.3, 0.18], [0.45, -0.05, 0.12], [-0.42, -0.4, 0.14]];
 function moonTexture(age) {
+  const S = 160, c = document.createElement("canvas");
+  c.width = c.height = S;
+  const g = c.getContext("2d"), img = g.createImageData(S, S), r = S * 0.42;
+  const psi = age * 2 * Math.PI, sx = Math.sin(psi < Math.PI ? psi : 2 * Math.PI - psi), sz = -Math.cos(psi);
+  for (let j = 0; j < S; j++) {
+    for (let i = 0; i < S; i++) {
+      const x = (i - S / 2 + 0.5) / r, y = (j - S / 2 + 0.5) / r, rr = x * x + y * y, k = (j * S + i) * 4;
+      if (rr > 1) continue;
+      const z = Math.sqrt(1 - rr);
+      let sea = 0;
+      MARIA.forEach((m) => { const d = Math.hypot(x - m[0], y - m[1]); if (d < m[2]) sea = Math.max(sea, 1 - d / m[2]); });
+      const albedo = 0.95 - 0.32 * Math.min(1, sea * 1.4);
+      const light = x * sx + z * sz;                                  // the sun's direction against the surface
+      const day = smooth(-0.04, 0.06, light) * (0.55 + 0.45 * Math.pow(Math.max(light, 0), 0.4));
+      const v = albedo * Math.max(day, 0.045) * (0.85 + 0.15 * z);
+      img.data[k] = 255 * Math.min(1, v * 1.02); img.data[k + 1] = 255 * Math.min(1, v); img.data[k + 2] = 255 * Math.min(1, v * 0.92);
+      img.data[k + 3] = 255 * Math.min(1, smooth(1, 0.96, Math.sqrt(rr)) * (day > 0.02 ? 1 : 0.55));
+    }
+  }
+  g.putImageData(img, 0, 0);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+function glowTexture() {
   const c = document.createElement("canvas");
   c.width = c.height = 128;
-  const g = c.getContext("2d"), r = 54;
-  g.translate(64, 64);
-  g.fillStyle = "rgba(70, 78, 98, 0.22)";            // the dark side, faintly
-  g.beginPath(); g.arc(0, 0, r, 0, Math.PI * 2); g.fill();
-  // the lit limb is a half disc, the terminator an ellipse
-  const k = Math.cos(age * 2 * Math.PI), waxing = age < 0.5;
-  g.fillStyle = "#f4f1e4";
-  g.beginPath();
-  g.arc(0, 0, r, -Math.PI / 2, Math.PI / 2, waxing);       // seen from the south, a waxing moon is lit on the left
-  g.ellipse(0, 0, Math.abs(k) * r, r, 0, Math.PI / 2, -Math.PI / 2, waxing ? k > 0 : k < 0);
-  g.fill();
-  g.globalAlpha = 0.16;
-  g.fillStyle = "#6f7480";
-  [[-16, -14, 13], [14, 8, 10], [-6, 20, 8], [20, -20, 7]].forEach((m) => { g.beginPath(); g.arc(m[0], m[1], m[2], 0, Math.PI * 2); g.fill(); });
+  const g = c.getContext("2d"), gr = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+  gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(0.25, "rgba(255,255,255,0.35)"); gr.addColorStop(1, "rgba(255,255,255,0)");
+  g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
 }
 
 const KEYS = [   // sun elevation: zenith, horizon (hex), glow strength
-  [-18, 0x02040c, 0x0a1022, 0],
-  [-12, 0x060b1c, 0x151d38, 0.05],
+  [-18, 0x010208, 0x060a18, 0],
+  [-12, 0x040818, 0x111933, 0.05],
   [-6, 0x122045, 0x46486e, 0.55],
   [-2, 0x27407a, 0xc98a6c, 1.0],
   [1.5, 0x3d6aa8, 0xf0b98a, 0.9],
@@ -209,9 +307,15 @@ export function createSky(scene, o) {
   scene.add(stars);
 
   const moon = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthWrite: false, fog: false }));
-  moon.scale.set(26, 26, 1);
+  moon.scale.set(24, 24, 1);
   moon.renderOrder = -4;
   scene.add(moon);
+  const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), color: 0xc9d6ff, transparent: true, depthWrite: false, fog: false, blending: THREE.AdditiveBlending }));
+  halo.scale.set(110, 110, 1);
+  halo.renderOrder = -5;
+  scene.add(halo);
+  const fx = streaks();
+  scene.add(fx);
 
   // The sierras of the Punilla valley: the Sierras Chicas close to the east,
   // the higher Sierras Grandes farther west, lower hills up and down the valley.
@@ -234,11 +338,13 @@ export function createSky(scene, o) {
   const sun = new THREE.DirectionalLight(0xfff1dc, 3.4);
   sun.castShadow = true;
   sun.shadow.mapSize.set(o.touch ? 1024 : 2048, o.touch ? 1024 : 2048);
-  Object.assign(sun.shadow.camera, { left: -36, right: 36, top: 36, bottom: -36, near: 1, far: 140 });
+  const span = o.span || 36;
+  Object.assign(sun.shadow.camera, { left: -span, right: span, top: span, bottom: -span, near: 1, far: span * 4 });
   sun.shadow.camera.updateProjectionMatrix();
   sun.shadow.bias = -0.0004;
   sun.shadow.normalBias = 0.03;
   sun.target.position.copy(center);
+  const reach = span * 2;
   scene.add(hemi, ambient, sun, sun.target);
   // lamps: a handful of warm lights that come on as it gets dark
   const lamps = (o.lamps || []).slice(0, o.touch ? 5 : 14).map((p) => {
@@ -296,11 +402,11 @@ export function createSky(scene, o) {
     const moonUp = smooth(-2, 6, Math.asin(clamp(q.moon[2], -1, 1)) / DEG);
     // sunlight by day, moonlight by night, from wherever each one is
     if (el > -1.5) {
-      sun.position.copy(center).addScaledVector(sd.clone().setY(Math.max(sd.y, 0.06)).normalize(), 70);
+      sun.position.copy(center).addScaledVector(sd.clone().setY(Math.max(sd.y, 0.06)).normalize(), reach);
       sun.intensity = 3.4 * smooth(-1.5, 12, el);
       lerpHex(sun.color, 0xff8a4a, 0xfff1dc, smooth(0, 22, el));
     } else {
-      sun.position.copy(center).addScaledVector(md.clone().setY(Math.max(md.y, 0.12)).normalize(), 70);
+      sun.position.copy(center).addScaledVector(md.clone().setY(Math.max(md.y, 0.12)).normalize(), reach);
       sun.intensity = 0.42 * moonUp * (0.25 + 0.75 * q.lit) * st.night;
       sun.color.setHex(0xa9bcff);
     }
@@ -329,7 +435,85 @@ export function createSky(scene, o) {
     }
     moon.position.copy(center).addScaledVector(md, 395);
     moon.visible = md.y > -0.02;
-    moon.material.opacity = 0.35 + 0.65 * (1 - day);
+    moon.material.opacity = 0.4 + 0.6 * (1 - day);
+    halo.position.copy(moon.position);
+    halo.visible = moon.visible && st.night > 0.2;
+    halo.material.opacity = 0.32 * q.lit * st.night;
+    dirs.moon.copy(md); dirs.sun.copy(sd);
+  }
+
+  /* The moon's lit side faces the sun, wherever the camera looks. */
+  const dirs = { moon: new THREE.Vector3(0, 1, 0), sun: new THREE.Vector3(0, -1, 0) };
+  const right = new THREE.Vector3(), upv = new THREE.Vector3(), tang = new THREE.Vector3();
+  function turnMoon() {
+    if (!o.camera || !moon.visible) return;
+    right.set(1, 0, 0).applyQuaternion(o.camera.quaternion);
+    upv.set(0, 1, 0).applyQuaternion(o.camera.quaternion);
+    tang.copy(dirs.sun).addScaledVector(dirs.moon, -dirs.moon.dot(dirs.sun));
+    moon.material.rotation = Math.atan2(tang.dot(upv), tang.dot(right));
+  }
+
+  /* Shooting stars every few seconds of a dark night, a comet now and then.
+     Each is a run of points: a bright head and a fading tail. */
+  let nextMeteor = 0, nextComet = 0, meteor = null, comet = null;
+  const rand = Math.random;
+  const skyPoint = (az, el) => toScene(Math.sin(az) * Math.cos(el), Math.cos(az) * Math.cos(el), Math.sin(el)).normalize();
+  function launch(t, slow) {
+    const a = skyPoint(rand() * 2 * Math.PI, (25 + rand() * 50) * DEG);
+    // a direction along the sky, falling a little more often than rising
+    const side = new THREE.Vector3().crossVectors(a, new THREE.Vector3(0, 1, 0)).normalize();
+    const down = new THREE.Vector3().crossVectors(side, a).normalize();
+    const turn = (rand() - 0.5) * 2.4;
+    const dir = side.multiplyScalar(Math.cos(turn)).addScaledVector(down, -Math.abs(Math.sin(turn)) * (rand() < 0.75 ? 1 : -1)).normalize();
+    return slow
+      ? { t0: t, life: 16000 + rand() * 8000, from: a, dir, sweep: (5 + rand() * 6) * DEG, tail: (9 + rand() * 7) * DEG }
+      : { t0: t, life: 450 + rand() * 900, from: a, dir, sweep: (8 + rand() * 18) * DEG, tail: (3 + rand() * 4) * DEG, bright: rand() < 0.15 };
+  }
+  const tmp = new THREE.Vector3(), awayFromSun = new THREE.Vector3();
+  function drawStreaks(t) {
+    const night = stars.material.uniforms.fade.value;
+    if (night < 0.4) { fx.geometry.setDrawRange(0, 0); meteor = comet = null; return; }
+    if (!nextMeteor) { nextMeteor = t + 3000 + rand() * 9000; nextComet = t + 40000 + rand() * 80000; }
+    if (!meteor && t > nextMeteor) { meteor = launch(t, false); nextMeteor = t + meteor.life + 2500 + rand() * 11000; }
+    if (!comet && t > nextComet) { comet = launch(t, true); nextComet = t + comet.life + 90000 + rand() * 150000; }
+    const pos = fx.geometry.attributes.position.array, size = fx.geometry.attributes.size.array;
+    const alpha = fx.geometry.attributes.alpha.array, col = fx.geometry.attributes.color.array;
+    let n = 0;
+    const put = (v, s, a, r, g, b) => { if (n >= 140) return; pos.set([center.x + v.x * 380, v.y * 380, center.z + v.z * 380], n * 3); size[n] = s; alpha[n] = a * night; col.set([r, g, b], n * 3); n++; };
+    const along = (from, dir, ang) => tmp.copy(from).multiplyScalar(Math.cos(ang)).addScaledVector(dir, Math.sin(ang)).normalize();
+    if (meteor) {
+      const u = (t - meteor.t0) / meteor.life;
+      if (u >= 1) meteor = null;
+      else {
+        const head = meteor.sweep * u, fadeIn = smooth(0, 0.15, u) * (1 - smooth(0.7, 1, u)), k = meteor.bright ? 1.6 : 1;
+        for (let i = 0; i < 30; i++) {
+          const f = i / 29, ang = head - meteor.tail * f * Math.min(1, u * 4);
+          put(along(meteor.from, meteor.dir, ang), (5.5 - 3.8 * f) * k, fadeIn * Math.pow(1 - f, 1.4), 1, 0.97 - 0.2 * f, 0.88 - 0.3 * f);
+        }
+      }
+    }
+    if (comet) {
+      const u = (t - comet.t0) / comet.life;
+      if (u >= 1) comet = null;
+      else {
+        const vis = smooth(0, 0.2, u) * (1 - smooth(0.8, 1, u));
+        const h = along(comet.from, comet.dir, comet.sweep * u).clone();
+        put(h, 10, vis, 0.9, 0.97, 1);
+        put(h, 30, vis * 0.45, 0.6, 0.85, 1);
+        // the tail points away from the sun, along the sky
+        awayFromSun.copy(dirs.sun).multiplyScalar(-1).addScaledVector(h, -h.dot(dirs.sun) * -1).normalize();
+        awayFromSun.addScaledVector(h, -awayFromSun.dot(h)).normalize();
+        for (let i = 1; i < 90; i++) {
+          const f = i / 89, spread = (((Math.sin(i * 12.9898) * 43758.5453) % 1) - 0.25) * comet.tail * 0.06 * f;
+          const p = along(h, awayFromSun, comet.tail * f).clone();
+          const sideways = new THREE.Vector3().crossVectors(p, awayFromSun).normalize();
+          p.addScaledVector(sideways, spread).normalize();
+          put(p, 14 - 6 * f + 6 * f * f, vis * 0.42 * Math.pow(1 - f, 1.2), 0.7 + 0.3 * f, 0.85, 1);
+        }
+      }
+    }
+    ["position", "size", "alpha", "color"].forEach((k) => { fx.geometry.attributes[k].needsUpdate = true; });
+    fx.geometry.setDrawRange(0, n);
   }
 
   return {
@@ -337,11 +521,17 @@ export function createSky(scene, o) {
     setHour(h) { chosen = h; last = -1; },
     hour: clock,
     hourAt,
+    /* Sends a shooting star (or a comet) across the night sky now. */
+    shoot(isComet) { const t = performance.now(); if (isComet) comet = launch(t, true); else meteor = launch(t, false); },
     state: () => st,
     update(t) {
       stars.material.uniforms.time.value = t / 1000;
-      stars.material.uniforms.px.value = o.pixelRatio ? o.pixelRatio() : 1;
+      const px = o.pixelRatio ? o.pixelRatio() : 1;
+      stars.material.uniforms.px.value = px;
+      fx.material.uniforms.px.value = px;
       if (last < 0 || t - last > 15000) { last = t; refresh(); }
+      turnMoon();
+      drawStreaks(t);
     }
   };
 }

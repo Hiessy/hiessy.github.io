@@ -1,7 +1,7 @@
 /* Small geometry helpers: shapes, slabs, bars, primitives, and the merge that turns thousands of meshes into a few dozen. */
 import * as THREE from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
-import { DEG, F, H, S } from "./core.js";
+import { DEG, F, H, K, KZ, S } from "./core.js";
 
 export function shapeOf(poly) { return new THREE.Shape(poly.map((p) => new THREE.Vector2(p[0], p[1]))); }
 
@@ -90,10 +90,13 @@ export function ball(g, r, x, y, z, material, detail) {
   return m;
 }
 
-/* Puts a piece at plan point (x, y) on `level`, turned rot degrees. */
+/* Puts a piece at plan point (x, y) on `level`, turned rot degrees. The
+   model is stretched when drawn; a piece is shrunk by as much here, so it
+   keeps its true size. */
 export function place(piece, x, y, level, rot) {
   piece.position.set(x, zAt(x, y, level || 0), -y);
   piece.rotation.y = (rot || 0) * DEG;
+  piece.scale.set(1 / K, 1 / KZ, 1 / K);
   S.static.add(piece);
   return piece;
 }

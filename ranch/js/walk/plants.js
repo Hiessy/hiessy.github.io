@@ -1,8 +1,9 @@
 /* The garden: irises, flower beds, shrubs, urns, the ivy-covered post, stepping stones.
    PLANTS are single pieces at a point; ROWS are planted from a to b. */
 import * as THREE from "three";
+import { K } from "./core.js";
 import { ball, bx, cy, lathe, place, rng } from "./geometry.js";
-import { M, mat, texMat } from "./materials.js";
+import { M, mat, texTrue } from "./materials.js";
 
 const BLADE = 0x3f7a35, DEEP = 0x2f5d2a;
 const petal = (c) => mat(c, { roughness: 0.75 });
@@ -141,7 +142,7 @@ export const PLANTS = {
 
 /* Planted or laid from a to b. Each takes (p, level). */
 function along(p, step, fn) {
-  const dx = p.b[0] - p.a[0], dy = p.b[1] - p.a[1], len = Math.hypot(dx, dy), n = Math.max(1, Math.round(len / step));
+  const dx = p.b[0] - p.a[0], dy = p.b[1] - p.a[1], len = Math.hypot(dx, dy), n = Math.max(1, Math.round(len * K / step));
   const R = rng(Math.round((p.a[0] * 31 + p.a[1] * 17) * 10) + 99), wide = p.wide || 0;
   for (let i = 0; i <= n; i++) {
     const u = n ? i / n : 0, off = (R() - 0.5) * wide;
@@ -184,7 +185,7 @@ export const ROWS = {
     const R = rng(41), h = p.h || 1.6, t = p.t || 0.6;
     along(p, t * 0.8, (x, y) => {
       const g = new THREE.Group();
-      ball(g, t * 0.62, 0, h * 0.5, 0, R() < 0.5 ? M.leaf : M.leaf2, 1).scale.y = h / (t * 1.24);
+      ball(g, t * 0.62 * K, 0, h * 0.5, 0, R() < 0.5 ? M.leaf : M.leaf2, 1).scale.y = h / (t * K * 1.24);
       place(g, x, y, lv, R() * 360);
     });
   },
@@ -192,7 +193,7 @@ export const ROWS = {
   stones(p, lv) {
     along(p, p.step || 0.62, (x, y, R) => {
       const g = new THREE.Group();
-      const s = cy(g, 0.26, 0.28, 0.035, 0, 0.03, 0, texMat("flagstone"), 7);
+      const s = cy(g, 0.26, 0.28, 0.035, 0, 0.03, 0, texTrue("flagstone"), 7);
       s.scale.set(1 + R() * 0.3, 1, 0.8 + R() * 0.2);
       s.castShadow = false;
       place(g, x, y, lv, R() * 360);
@@ -202,14 +203,15 @@ export const ROWS = {
   rail(p, lv) {
     const dx = p.b[0] - p.a[0], dy = p.b[1] - p.a[1], len = Math.hypot(dx, dy), rot = Math.atan2(dy, dx) / Math.PI * 180;
     const g = new THREE.Group();
-    bx(g, len, 0.04, 0.04, 0, 0.42, 0, M.white);
-    const n = Math.max(1, Math.round(len / 1.4));
-    for (let i = 0; i <= n; i++) bx(g, 0.05, 0.45, 0.05, -len / 2 + i * len / n, 0.225, 0, M.white);
+    const L = len * K;       // a piece keeps its true size, so the rail is built at the length it is shown
+    bx(g, L, 0.04, 0.04, 0, 0.42, 0, M.white);
+    const n = Math.max(1, Math.round(L / 1.4));
+    for (let i = 0; i <= n; i++) bx(g, 0.05, 0.45, 0.05, -L / 2 + i * L / n, 0.225, 0, M.white);
     place(g, p.a[0] + dx / 2, p.a[1] + dy / 2, lv, rot);
   },
   /* Flowers in a ring: round the ivy post. a is the middle, r the radius. */
   ring(p, lv) {
-    const R = rng(23), n = Math.round(p.r * 6.28 / 0.38);
+    const R = rng(23), n = Math.round(p.r * K * 6.28 / 0.38);
     for (let i = 0; i < n; i++) {
       const a = i / n * 6.28, g = new THREE.Group();
       mound(g, R, 0.24, 0.3, i % 2 ? M.leaf : M.leaf2, p.colors, 14);

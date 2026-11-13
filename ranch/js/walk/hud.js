@@ -1,6 +1,6 @@
 /* The on-screen state: level, hints, buttons, and the camera modes. */
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { $, CENTER, H, S, t, touch } from "./core.js";
+import { $, CENTER, H, K, S, t, touch } from "./core.js";
 import { inside } from "./geometry.js";
 import { freeSpot, jump, levelOf, standAt, step } from "./physics.js";
 import { setHover, updatePrompt } from "./pointer.js";
@@ -63,23 +63,23 @@ export function setMode(mode) {
       S.orbit.enableDamping = true;
       S.orbit.maxPolarAngle = 1.45;
       S.orbit.minDistance = 4;
-      S.orbit.maxDistance = 110;
+      S.orbit.maxDistance = 110 * K;
     }
     S.orbit.enabled = true;
     S.orbit.minPolarAngle = 0;
     if (aerial) {
       // straight down from 40 m, north (the plan's top) up on screen
-      S.camera.position.set(CENTER.x - 1, 40, -CENTER.y + 0.01);
+      S.camera.position.set((CENTER.x - 1) * K, 40 * K, -CENTER.y * K + 0.01);
       S.camera.up.set(0, 1, 0);
-    } else S.camera.position.set(CENTER.x + 4, 22, -CENTER.y + 22);
-    S.orbit.target.set(CENTER.x - 1, 0, -CENTER.y);
+    } else S.camera.position.set((CENTER.x + 4) * K, 22 * K, (-CENTER.y + 22) * K);
+    S.orbit.target.set((CENTER.x - 1) * K, 0, -CENTER.y * K);
     S.orbit.update();
     S.roofs.visible = false;
   } else {
     if (S.orbit) S.orbit.enabled = false;
     S.roofs.visible = true;
     if (prev === "orbit" && S.flown && S.orbit) {
-      const tx = S.orbit.target.x, ty = -S.orbit.target.z;
+      const tx = S.orbit.target.x / K, ty = -S.orbit.target.z / K;
       if (inside(tx, ty, H.lot)) {
         const p = S.player, feet = standAt(tx, ty, 0), spot = freeSpot(tx, ty, feet, null);
         p.x = spot[0]; p.y = spot[1]; p.feet = standAt(p.x, p.y, 0); p.vx = p.vy = p.vz = 0; p.eye = undefined;

@@ -1,5 +1,6 @@
 /* Floor, wall and roof finishes, drawn on canvases so nothing is downloaded. */
 import * as THREE from "three";
+import { K } from "./core.js";
 
 export function tiles(g, s, n, colors, grout, gw) {
   const k = s / n;
@@ -399,7 +400,8 @@ export function tex(name) {
   tx.wrapS = tx.wrapT = THREE.RepeatWrapping;
   tx.colorSpace = THREE.SRGBColorSpace;
   tx.anisotropy = 8;
-  tx.repeat.set(1 / spec.m, 1 / spec.m);
+  // floors and walls are drawn K times wider than the survey: keep a tile its size
+  tx.repeat.set(K / spec.m, K / spec.m);
   if (spec.art) tx.wrapS = tx.wrapT = THREE.ClampToEdgeWrapping;
   texCache.set(name, tx);
   return tx;

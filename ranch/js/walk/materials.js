@@ -33,6 +33,19 @@ export function texBox(name, w, h, opts) {
   return mats.get(key);
 }
 
+/* A texture at its true size, for furniture: tex() is stretched for the
+   floors and walls of a model drawn bigger than the survey. */
+export function texTrue(name, opts) {
+  const key = "true:" + name + "|" + JSON.stringify(opts || {});
+  if (!mats.has(key)) {
+    const map = tex(name).clone();
+    map.repeat.set(1 / TEX[name].m, 1 / TEX[name].m);
+    map.needsUpdate = true;
+    mats.set(key, new THREE.MeshStandardMaterial(Object.assign({ map, color: 0xffffff, roughness: 0.85 }, opts || {})));
+  }
+  return mats.get(key);
+}
+
 export const GLASS = { transparent: true, opacity: 0.3, roughness: 0.1, metalness: 0.1, depthWrite: false };
 
 /* Slabs that are a room's ceiling cast their shadow from their top face.

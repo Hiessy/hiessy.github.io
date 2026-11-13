@@ -2,7 +2,7 @@
    cylinders and hoops, shaped after the listing photos. Front toward -z. */
 import * as THREE from "three";
 import { ball, bx, cy, hoop } from "./geometry.js";
-import { M, mat, texBox, texMat } from "./materials.js";
+import { M, mat, texBox, texTrue } from "./materials.js";
 import { texFor } from "./textures.js";
 
 const LEGS = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
@@ -64,7 +64,7 @@ function director(color) {
 
 /* The glazed room's striped upholstered chairs. */
 function striped() {
-  const g = new THREE.Group(), fabric = texMat("stripes");
+  const g = new THREE.Group(), fabric = texTrue("stripes");
   LEGS.forEach((q) => bx(g, 0.04, 0.4, 0.04, q[0] * 0.2, 0.2, q[1] * 0.19, M.dark));
   bx(g, 0.5, 0.12, 0.48, 0, 0.46, 0, fabric);
   const back = cy(g, 0.25, 0.25, 0.09, 0, 0.82, 0.23, fabric, 16);
@@ -239,7 +239,7 @@ export const BUILD = {
   sofa(p) {
     const g = new THREE.Group(), w = p.w || 1.9, style = p.style || "box";
     const frame = mat(p.frame || 0x8a5a2b, { roughness: 0.7 });
-    const cushion = p.fabric ? texMat(p.fabric) : mat(p.color || 0xd98c5f);
+    const cushion = p.fabric ? texTrue(p.fabric) : mat(p.color || 0xd98c5f);
     const n = Math.max(1, Math.round((w - 0.2) / 0.62)), cw = (w - 0.2) / n, xs = [];
     for (let i = 0; i < n; i++) xs.push(-(w - 0.2) / 2 + (i + 0.5) * cw);
     const legs = (r, h, inset) => LEGS.forEach((q) => cy(g, r, r * 0.8, h, q[0] * (w / 2 - inset), h / 2, q[1] * 0.32, frame, 8));
@@ -460,7 +460,7 @@ export const BUILD = {
     bx(g, w - 0.06, 0.1, 0.5, 0, 0.05, 0.03, M.black);
     for (let x = -w / 2 + 0.5; x < w / 2 - 0.1; x += 0.5) { bx(g, 0.01, 0.7, 0.01, x, 0.48, -0.292, M.black); bx(g, 0.015, 0.1, 0.02, x - 0.05, 0.72, -0.3, M.steel); }
     bx(g, w + 0.02, 0.04, 0.62, 0, 0.88, 0, p.top ? mat(p.top, { roughness: 0.35 }) : mat(0xd8cdb8, { roughness: 0.35 }));
-    if (p.splash !== false) bx(g, w, 0.62, 0.02, 0, 1.22, 0.3, texMat(p.splash || "tiles"));
+    if (p.splash !== false) bx(g, w, 0.62, 0.02, 0, 1.22, 0.3, texTrue(p.splash || "tiles"));
     if (p.sink !== undefined) {
       bx(g, 0.5, 0.012, 0.38, p.sink, 0.901, -0.02, M.steel);
       bx(g, 0.42, 0.01, 0.3, p.sink, 0.905, -0.02, mat(0x8a8f93, { roughness: 0.3, metalness: 0.6 }));

@@ -22,7 +22,7 @@
 import * as THREE from "three";
 import { createSky } from "./walk/sky.js";
 import { bindControls } from "./walk/controls.js";
-import { $, CENTER, H, S, t, touch } from "./walk/core.js";
+import { $, CENTER, H, K, KZ, S, t, touch } from "./walk/core.js";
 import { byId, center } from "./walk/geometry.js";
 import { hud, setMode, setToggle } from "./walk/hud.js";
 import { loop, resize } from "./walk/loop.js";
@@ -54,16 +54,20 @@ export function start() {
 
   Object.assign(S, {
     canvas, renderer, scene, camera,
-    static: new THREE.Group(), roofs: null, labels: new THREE.Group(),
+    world: new THREE.Group(), static: new THREE.Group(), roofs: null, labels: new THREE.Group(),
     colliders: [], surfaces: [], blocks: [], doors: [], clickable: [], hover: null, pointer: null,
     player: { x: H.start.x, y: H.start.y, feet: 0, vz: 0, yaw: H.start.yaw, pitch: -0.02 },
     keys: {}, joy: { f: 0, s: 0 }, frame: 0, lamps: [], sky: null, skyMode: 0,
     mode: "walk", active: false, running: true, mini: $("minimap")
   });
+  // the model, stretched to the size it is shown at (see K and KZ in core.js)
+  S.world.scale.set(K, KZ, K);
+  scene.add(S.world);
   palette();
   buildScene();
+  S.lamps = S.lamps.map((l) => [l[0] * K, l[1] * KZ, l[2] * K, (l[3] || 9) * 1.2, l[4]]);
   // The sun, the moon, the stars and every light, by the clock (walk/sky.js).
-  S.sky = createSky(scene, { center: CENTER, north: H.NORTH, touch, lamps: S.lamps, glass: M.glass, glow: M.glow,
+  S.sky = createSky(scene, { center: { x: CENTER.x * K, y: CENTER.y * K }, span: 36 * K, camera, north: H.NORTH, touch, lamps: S.lamps, glass: M.glass, glow: M.glow,
                              pixelRatio: () => renderer.getPixelRatio() });
   bindControls();
   const sb = $("sky-btn");

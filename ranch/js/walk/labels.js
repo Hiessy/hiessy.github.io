@@ -1,6 +1,6 @@
 /* Room name labels floating in the model. */
 import * as THREE from "three";
-import { $, H, S, X, plain, t } from "./core.js";
+import { $, H, K, KZ, S, X, plain, t } from "./core.js";
 import { center } from "./geometry.js";
 
 export function roundRect(g, x, y, w, h, r) {
@@ -38,7 +38,7 @@ export function makeLabel(text, num) {
   // A fixed size on screen, like a pin on a map: readable from afar and never
   // huge when you stand next to it.
   const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tx, transparent: true, depthWrite: false, sizeAttenuation: false }));
-  sp.scale.set(0.3, 0.075, 1);
+  sp.scale.set(0.3 / K, 0.075 / KZ, 1);
   sp.renderOrder = 10;
   return sp;
 }

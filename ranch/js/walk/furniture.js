@@ -1,5 +1,5 @@
 /* Placing furniture from the data, its footprints (solid to walk into) and the baths. */
-import { DEG, H, S } from "./core.js";
+import { DEG, H, K, KZ, S } from "./core.js";
 import { bath } from "./bathroom.js";
 import { DECOR, curtain } from "./decor.js";
 import { byId, place, zAt } from "./geometry.js";
@@ -28,10 +28,27 @@ export const BLOCK = {
   urn: (p) => [0.4 * (p.size || 1), 0.4 * (p.size || 1)], ivypost: () => [0.5, 0.5]
 };
 
+/* Footprints are true sizes; the plan they are laid on is the survey's, K
+   times smaller than the model is shown, so they shrink by K on it. */
 export function blockPiece(type, p, x, y, level, rot) {
   if (!BLOCK[type]) return;
   const fp = BLOCK[type](p);
-  solid(x, y, fp[0], fp[1], rot, level);
+  solid(x, y, fp[0] / K, fp[1] / K, rot, level);
+}
+
+/* Where a piece `depth` deep (true size) goes when the data put it with its
+   back to a wall: the wall is found behind the point and the piece set
+   against its face. In a model drawn bigger than the survey a bed would
+   otherwise stand off its wall. No wall close behind: the point is kept. */
+export function backToWall(x, y, rot, depth, level) {
+  const a = (rot || 0) * DEG, fx = -Math.sin(a), fy = Math.cos(a);
+  if (inWall(x, y, level)) return [x, y];
+  for (let s = 0.01; s <= depth / 2 + 0.25; s += 0.01) {
+    if (!inWall(x - fx * s, y - fy * s, level)) continue;
+    const k = depth / (2 * K) + 0.01 - (s - 0.01);
+    return [x + fx * k, y + fy * k];
+  }
+  return [x, y];
 }
 
 /* A solid box w by d (d toward the piece's front) at (x, y), turned rot. */
@@ -66,7 +83,7 @@ export function buildFurniture() {
   H.furniture.forEach((p) => {
     if (p.type === "bath") {
       const item = byId(p.room);
-      if (item) bath({ rect: p.rect, level: p.level, z: item.z }, Object.assign({ solid }, p));
+      if (item) bath({ rect: p.rect, level: p.level, z: item.z }, Object.assign({ solid, backToWall }, p));
       return;
     }
     if (p.type === "curtain") {
@@ -77,7 +94,10 @@ export function buildFurniture() {
     const make = PIECES[p.type];
     if (!make) return;
     if (ON_WALL[p.type]) { const q = onWall(p); place(make(p), q[0], q[1], p.level, p.rot); return; }
-    place(make(p), p.at[0], p.at[1], p.level, p.rot);
-    if (!p.soft) blockPiece(p.type, p, p.at[0], p.at[1], p.level, p.rot);
+    // a lamp hangs from a ceiling that is drawn KZ times higher
+    const q = p.h && (p.type === "pendant" || p.type === "chandelier") ? Object.assign({}, p, { h: p.h * KZ }) : p;
+    const at = BLOCK[p.type] ? backToWall(p.at[0], p.at[1], p.rot, BLOCK[p.type](p)[1], p.level) : p.at;
+    place(make(q), at[0], at[1], p.level, p.rot);
+    if (!p.soft) blockPiece(p.type, p, at[0], at[1], p.level, p.rot);
   });
 }
