@@ -1,4 +1,4 @@
-# Ranch
+# Norita Ranch
 
 <https://hiessy.github.io/ranch/> — the house in La Cumbre (López y Planes 132),
 the former Hostería Norita Ranch, in four views:
