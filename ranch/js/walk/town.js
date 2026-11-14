@@ -17,7 +17,10 @@ function walls(poly, h) {
 
 /* A rectangular house: its walls up to the eaves and its roof. */
 function house(b) {
-  const r = b.rect, x1 = r[0], y1 = r[1], x2 = r[2], y2 = r[3], h = b.h || 3, rise = b.rise || 1.5, o = 0.35;
+  // each a little inside its traced outline, so two houses built wall to
+  // wall never share a face (they would flicker)
+  const r = [b.rect[0] + 0.02, b.rect[1] + 0.02, b.rect[2] - 0.02, b.rect[3] - 0.02];
+  const x1 = r[0], y1 = r[1], x2 = r[2], y2 = r[3], h = b.h || 3, rise = b.rise || 1.5, o = 0.35;
   const add = (m) => { if (m) S.static.add(m); return m; };
   add(slab(rectPoly(r), wallMat(b.wall || 0xf1ece2), h, h));
   if (b.stone) add(slab([[x2 - 0.02, y1], [x2 + 0.03, y1], [x2 + 0.03, y2], [x2 - 0.02, y2]], texMat("stone"), 1.2, 1.2));
@@ -87,6 +90,9 @@ export function buildTown() {
       if (m) S.static.add(m);
       collider(a[0], a[1], c[0], c[1], 0, b.h || 1.8, 0.12);
     } else if (b.poly) {
+      // an old cadastre block gives way to a house traced where it stands
+      const xs = b.poly.map((q) => q[0]), ys = b.poly.map((q) => q[1]);
+      if (H.neighbours.some((t) => t.rect && t.rect[0] < Math.max(...xs) && t.rect[2] > Math.min(...xs) && t.rect[1] < Math.max(...ys) && t.rect[3] > Math.min(...ys))) return;
       const h = b.floors === 2 ? 5.8 : 3.0;
       S.static.add(slab(b.poly, mat(RENDER[i % RENDER.length], { roughness: 0.9 }), h, h));
       S.static.add(slab(b.poly, mat(ROOFS[(i * 7) % ROOFS.length], { roughness: 0.75 }), h + 0.3, 0.3));

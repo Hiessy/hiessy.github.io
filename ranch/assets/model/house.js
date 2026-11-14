@@ -70,7 +70,7 @@
     { id: "stairbox", level: 0, rect: [-2.41, 12.68, 1.0, 17.0], z: Z.apt - 0.15 },
     // the stairwell: its walls go up unbroken to its ceiling, over the upper
     // plan's thinner walls, so no ledge is left half way up
-    { id: "well", level: 0, rect: [-2.7, 12.756, -0.5, 14.5], z: Z.apt + 2.6 },   // stops short of the wall under the landing (14.55)
+    { id: "well", level: 0, rect: [-2.5, 12.756, -0.5, 14.5], z: Z.apt + 2.6 },   // stops short of the wall under the landing (14.55)
     { id: "pilasters", level: 0, rect: [-14.5, 17.0, 1.0, 22.5], z: Z.apt - 0.2 },
     { id: "wing", level: 0, rect: [-28.3, -0.6, -16.7, 7.4], z: B + 2.55 },
     { id: "wing0", level: 0, rect: [-16.7, -0.6, -16.25, 4.95], z: B + 2.55 },
@@ -218,8 +218,7 @@
     { level: 1, a: [0.03, 16.9], b: [0.03, 20.1], glass: true },
     { level: 1, a: [-1.0, 16.9], b: [0.03, 16.9], glass: true },
     { level: 1, a: [-1.0, 20.25], b: [0.03, 20.1], glass: true },
-    { level: 1, a: [-1.65, 14.82], b: [-2.4, 14.82], steel: true },      // the landing's edge over the stair
-    { level: 1, a: [-1.65, 13.55], b: [-1.65, 14.82], steel: true }
+    { level: 1, a: [-1.64, 14.52], b: [-2.41, 14.52], steel: true }      // the landing's edge over the stairwell
   ];
 
   /* The neighbours' buildings, for the 3D view: each parcel within about 70 m
@@ -244,7 +243,8 @@
     // (`well`) is open from the ground to the roof, so the upper plan's walls
     // that overhang it are cut back
     { id: "aptstair", path: [[-2.05, 14.35], [-2.05, 13.12], [-1.25, 13.12], [-1.25, 14.5]], w: 0.78, h1: 0, h2: Z.apt, steps: 16, wood: true,
-      top: [-1.64, 14.5, -0.86, 14.86], well: [-2.412, 12.756, -0.86, 14.547],
+      // handrail: along the upper flight's open side, from the turn to the landing
+      top: [-2.41, 14.5, -0.86, 14.86], well: [-2.412, 12.756, -0.86, 14.547], handrail: [[-1.64, 13.12], [-1.64, 14.5]],
       rails: [[-1.65, 13.45, -1.65, 13.75, 1.75, 4.2], [-1.65, 13.75, -1.65, 14.82, 2.2, 4.2]] },
     { id: "steelstair", path: [[-26.92, 6.45], [-26.92, 4.65]], w: 0.7, h1: 0, h2: Z.terrace, steps: 15, steel: true, rails: [[-27.3, 4.65, -27.3, 6.45, 0.5, 4.2]] }
   ];

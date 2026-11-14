@@ -5,9 +5,10 @@ import { hud, setMode, setToggle } from "./hud.js";
 import { buildLabels } from "./labels.js";
 import { fly, resize } from "./loop.js";
 import { MAP, mapFrame } from "./minimap.js";
-import { jump, jumpTo } from "./physics.js";
+import { jump, jumpTo, levelOf } from "./physics.js";
 import { doorAt, setHover, tapAt, updatePrompt, use } from "./pointer.js";
 import { skyLabel } from "./skybar.js";
+import { switchAll, switchHere } from "./lights.js";
 
 export function bindControls() {
   const canvas = S.canvas, keys = S.keys;
@@ -23,6 +24,12 @@ export function bindControls() {
     if (VIEW_KEYS[e.code] && canvas.offsetParent !== null) { setMode(VIEW_KEYS[e.code]); return; }
     // C shows or hides the compass and location overlay (walk/geo.js)
     if (e.code === "KeyC" && canvas.offsetParent !== null && S.geo) { S.geo.toggle(); return; }
+    // L switches the lights of the room you stand in (walk/lights.js)
+    if (e.code === "KeyL" && canvas.offsetParent !== null && S.lights) {
+      switchHere(S.player.x, S.player.y, levelOf(S.player));
+      setToggle("toggle-lights", S.lights.some((l) => l.on));
+      return;
+    }
     // the overview and the aerial view fly like a ghost: WASD or arrows
     // across, E up, Q down, through walls
     if (S.mode === "orbit" && ghostKeysLive()) {
@@ -171,6 +178,7 @@ export function bindControls() {
   $("mode-orbit").addEventListener("click", () => setMode("orbit"));
   if ($("mode-aerial")) $("mode-aerial").addEventListener("click", () => setMode("aerial"));
   $("toggle-roofs").addEventListener("click", () => { S.roofs.visible = !S.roofs.visible; setToggle("toggle-roofs", S.roofs.visible); });
+  $("toggle-lights").addEventListener("click", () => { switchAll(); setToggle("toggle-lights", S.lights.some((l) => l.on)); });
   $("toggle-labels").addEventListener("click", () => { S.labels.visible = !S.labels.visible; setToggle("toggle-labels", S.labels.visible); });
   $("toggle-full").addEventListener("click", () => {
     const stage = $("stage");

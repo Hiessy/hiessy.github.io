@@ -2,7 +2,7 @@
 import * as THREE from "three";
 import { CENTER, F, H, K, KZ, S, X, t } from "./core.js";
 import { buildFurniture, solid } from "./furniture.js";
-import { ball, bar, beam3, bx, byId, center, cy, flat, merge, place, rectPoly, slab, zAt } from "./geometry.js";
+import { ball, bar, beam3, bx, byId, center, cy, flat, merge, place, quad, rectPoly, slab, zAt } from "./geometry.js";
 import { buildLabels } from "./labels.js";
 import { M, TOP_SHADOW, mat, texMat } from "./materials.js";
 import { buildOpenings } from "./openings.js";
@@ -80,6 +80,7 @@ export function buildScene() {
   // a block from the ground up, so a raised floor shows no gap at the doors.
   // Ceilings: flat where the room has its own height, else under the roof.
   const ceil = new THREE.MeshStandardMaterial({ color: 0xf6f4ee, side: THREE.BackSide, emissive: 0xf6f4ee, emissiveIntensity: 0.18 });
+  const stepFace = new THREE.MeshStandardMaterial({ color: 0xf6f4ee, side: THREE.DoubleSide, emissive: 0xf6f4ee, emissiveIntensity: 0.18 });
   const woodCeil = new THREE.MeshStandardMaterial({ map: tex("boards"), side: THREE.BackSide, roughness: 0.8, emissive: 0x2a180c, emissiveIntensity: 0.25 });
   H.rooms.concat(H.spaces).forEach((r) => {
     const poly = H.polyOf(r);
@@ -97,7 +98,22 @@ export function buildScene() {
       if (z.level !== r.level) return;
       const piece = clipRect(poly, z.rect);
       if (piece.length < 3 || Math.abs(areaOf(piece)) < 1e-3) return;
-      S.static.add(sloped(piece, (x) => z.z + (z.g || 0) * (x - z.rect[0]) - 0.012, r.h === "mono" ? woodCeil : ceil));
+      const zf = (x) => z.z + (z.g || 0) * (x - z.rect[0]) - 0.012;
+      S.static.add(sloped(piece, zf, r.h === "mono" ? woodCeil : ceil));
+      // where the next part of the ceiling is higher, a face from this one
+      // up to it closes the step between them
+      const R = z.rect;
+      piece.forEach((a, i) => {
+        const b = piece[(i + 1) % piece.length];
+        const onX = (v) => Math.abs(a[0] - v) < 1e-6 && Math.abs(b[0] - v) < 1e-6, onY = (v) => Math.abs(a[1] - v) < 1e-6 && Math.abs(b[1] - v) < 1e-6;
+        const out = onX(R[0]) ? [-0.03, 0] : onX(R[2]) ? [0.03, 0] : onY(R[1]) ? [0, -0.03] : onY(R[3]) ? [0, 0.03] : null;
+        if (!out || Math.hypot(b[0] - a[0], b[1] - a[1]) < 0.02) return;
+        const ha = zf(a[0]), hb = zf(b[0]), na = H.topAt(a[0] + out[0], a[1] + out[1], r.level) - 0.012, nb = H.topAt(b[0] + out[0], b[1] + out[1], r.level) - 0.012;
+        if (na - ha < 0.02 && nb - hb < 0.02) return;
+        const m = quad([[a[0], a[1], ha], [b[0], b[1], hb], [b[0], b[1], Math.max(hb, nb)], [a[0], a[1], Math.max(ha, na)]], stepFace);
+        m.castShadow = false;
+        S.static.add(m);
+      });
     });
   });
   // the stair's own ground, and where you can stand on the stairs' level
@@ -209,15 +225,40 @@ export function buildScene() {
     };
     const hAt = (s) => r.h1 + (r.h2 - r.h1) * s / r.len;
     const tread = r.steel ? mat(0x3a3a3a, { roughness: 0.6, metalness: 0.4 }) : mat(0x8a5a33, { roughness: 0.6 });
-    const run = r.len / r.steps;
+    const run = r.len / r.steps, rise = (r.h2 - r.h1) / r.steps;
+    const board = r.wood ? mat(0xa8713f, { roughness: 0.55 }) : null;
     for (let i = 0; i < r.steps; i++) {
-      const p = at((i + 0.5) * run);
-      const m = new THREE.Mesh(new THREE.BoxGeometry(run + 0.04, 0.04, r.w), tread);
-      m.position.set(p.x, hAt((i + 1) * run) - 0.02, -p.y);
+      const p = at((i + 0.5) * run), top = hAt((i + 1) * run);
+      // a wooden stair is built solid: each step a block down past the one
+      // below, with a lighter board on top whose nose overhangs the riser;
+      // the steel one keeps its open treads
+      const deep = r.wood ? rise + 0.16 : 0.04;
+      const m = new THREE.Mesh(new THREE.BoxGeometry(run + 0.01, deep, r.w), tread);
+      m.position.set(p.x, top - (r.wood ? 0.03 : 0) - deep / 2, -p.y);
       m.rotation.y = p.ang;
       m.castShadow = true;
       m.receiveShadow = true;
       S.static.add(m);
+      if (r.wood) {
+        const b = new THREE.Mesh(new THREE.BoxGeometry(run + 0.04, 0.03, r.w + 0.01), board);
+        b.position.set(p.x - Math.cos(p.ang) * 0.015, top - 0.015, -(p.y - Math.sin(p.ang) * 0.015));
+        b.rotation.y = p.ang;
+        b.castShadow = true;
+        b.receiveShadow = true;
+        S.static.add(b);
+      }
+    }
+    // a steel handrail along an open side, following the flight
+    if (r.handrail) {
+      const steel = mat(0x1d1d1d, { roughness: 0.4, metalness: 0.5 });
+      const hOf = (x, y) => { const hs = r.segs.map((g) => { const dx = g.b[0] - g.a[0], dy = g.b[1] - g.a[1]; const u = Math.max(0, Math.min(1, ((x - g.a[0]) * dx + (y - g.a[1]) * dy) / (g.len * g.len))); return { d: Math.hypot(x - g.a[0] - u * dx, y - g.a[1] - u * dy), h: hAt(g.s0 + u * g.len) }; }); return hs.sort((p, q) => p.d - q.d)[0].h; };
+      const [a, b] = r.handrail, len = Math.hypot(b[0] - a[0], b[1] - a[1]), n = Math.max(2, Math.round(len / 0.35));
+      for (let i = 0; i <= n; i++) {
+        const x = a[0] + (b[0] - a[0]) * i / n, y = a[1] + (b[1] - a[1]) * i / n, h = hOf(x, y);
+        beam3([x, y, h], [x, y, h + 0.9], 0.03, 0.03, steel);
+      }
+      beam3([a[0], a[1], hOf(a[0], a[1]) + 0.9], [b[0], b[1], hOf(b[0], b[1]) + 0.9], 0.05, 0.04, steel);
+      beam3([a[0], a[1], hOf(a[0], a[1]) + 0.45], [b[0], b[1], hOf(b[0], b[1]) + 0.45], 0.03, 0.025, steel);
     }
     r.segs.forEach((g) => {
       const ux = (g.b[0] - g.a[0]) / g.len, uy = (g.b[1] - g.a[1]) / g.len;
@@ -299,9 +340,8 @@ export function buildScene() {
   buildFurniture();
   // the lamps that come on at night: where the photos hang chandeliers and pendants
   H.furniture.forEach((p) => {
-    if (p.type === "chandelier" || p.type === "pendant") S.lamps.push([p.at[0], zAt(p.at[0], p.at[1], p.level) + (p.h || 2.7) - 0.75, -p.at[1], 9, 13]);
+    // the rooms' own lights are the pool in lights.js; only the garden's are here
   });
-  S.lamps.push([-3.6, H.Z.apt + 2.5, -18.4, 9, 13], [-10.2, H.Z.apt + 2.3, -18.3, 7, 9], [-7.0, H.Z.front + 2.5, -6.9, 7, 8], [-7.0, H.Z.front + 2.5, -14.6, 7, 8]);
 
   // Roofs, which the walk shows and the overview hides by default.
   buildRoofs();

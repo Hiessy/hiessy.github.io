@@ -37,7 +37,7 @@
     // across the street: the hostería's green sheet roofs, its steep gable
     // with the timber end facing the street, the pool, the brick wall
     { id: "e-long", rect: [13.5, 4, 21, 31], h: 3.0, roof: "gable", axis: "y", rise: 2.2, wall: CREAM, top: GREEN },
-    { id: "e-aframe", rect: [13.5, 7, 24, 15], h: 3.2, roof: "gable", axis: "x", rise: 5.0, wall: 0x6b4a32, top: GREEN },
+    { id: "e-aframe", rect: [13.2, 7, 24, 15], h: 3.2, roof: "gable", axis: "x", rise: 5.0, wall: 0x6b4a32, top: GREEN },
     { id: "e-north", rect: [13.5, 31, 25, 44], h: 3.2, roof: "gable", axis: "x", rise: 2.6, wall: CREAM, top: GREEN },
     { id: "e-pool", pool: [25, 18, 30.5, 28] },
     { id: "e-wall", fence: [[13, -24], [13, 48]], h: 1.9, wall: 0xb4774f },

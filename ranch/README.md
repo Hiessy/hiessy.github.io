@@ -104,8 +104,12 @@ it. The plan view is unchanged. The survey's narrow doors (under 85 cm)
 are built 40% wider in the walk, cut out of the wall beside them
 (`widenDoors` in `js/walk/walls.js`).
 
-Each room's lamps are one circuit: click any lamp (or press E looking at
-it) to turn that room's lights off or on (`js/walk/lights.js`). Pictures,
+Every room has lights: its lamps from the photos, or a ceiling light where
+the photos show none, and a switch beside its door. Click a lamp or the
+switch (or press E looking at it), press L for the room you stand in, or
+use the Lights button for the whole house (`js/walk/lights.js`). A few
+point lights go to the lit rooms nearest you, each reaching just past its
+room's walls. Pictures,
 mirrors, extinguishers and other wall pieces are set on the face of a real
 wall, sliding off windows, doorways and furniture (`onWall` in
 `js/walk/furniture.js`).

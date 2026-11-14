@@ -114,6 +114,7 @@ export function spanOf(o) { return (S.doorSpan && S.doorSpan.get(o)) || [o.a, o.
 
 export function widenDoors() {
   S.doorSpan = new Map();
+  S.doorLimited = new Set();       // doors the walls or rooms beside them keep from the full widening
   S.holes = { 0: [], 1: [], 2: [] };
   // stairwells open from the ground up: no upper wall overhangs them
   H.ramps.forEach((r) => { if (r.well) S.holes[1].push(r.well); });
@@ -131,12 +132,18 @@ export function widenDoors() {
       const u = Math.max(0, Math.min(1, ((x - q.a[0]) * ex + (y - q.a[1]) * ey) / l2));
       return Math.hypot(x - q.a[0] - u * ex, y - q.a[1] - u * ey) < (q.t || 0.2) / 2 + 0.12;
     });
+    // the two rooms the door joins; its extra width must keep between them,
+    // never reaching past a corner into a third room or a crossing wall
+    const off = o.t / 2 + 0.15, ox = -uy * off, oy = ux * off, mid = [(o.a[0] + o.b[0]) / 2, (o.a[1] + o.b[1]) / 2];
+    const idAt = (x, y) => { const r = H.at(x, y, lv); return r ? H.idOf(r) : "out"; };
+    const sides = [idAt(mid[0] + ox, mid[1] + oy), idAt(mid[0] - ox, mid[1] - oy)];
     // how much wall there is past a jamb, toward d (1 or -1 along the door)
     const room = (p, d, want) => {
       let k = 0;
       for (; k < want + 0.12; k += 0.01) {
         const x = p[0] + ux * d * (k + 0.01), y = p[1] + uy * d * (k + 0.01);
         if (!solid(x + nx, y + ny, lv) || !solid(x - nx, y - ny, lv) || nearOther(x, y)) break;
+        if (idAt(x + ox, y + oy) !== sides[0] || idAt(x - ox, y - oy) !== sides[1]) break;
       }
       return Math.max(0, k - 0.12);
     };
@@ -144,6 +151,7 @@ export function widenDoors() {
     const fa = room(o.a, -1, want), fb = room(o.b, 1, want);
     let ea = Math.min(fa, want / 2), eb = Math.min(fb, want - ea);
     ea = Math.min(fa, want - eb);
+    if (ea + eb < want - 0.01) S.doorLimited.add(o);
     if (ea + eb < 0.02) return;
     const a = [o.a[0] - ux * ea, o.a[1] - uy * ea], b = [o.b[0] + ux * eb, o.b[1] + uy * eb];
     S.doorSpan.set(o, [a, b]);

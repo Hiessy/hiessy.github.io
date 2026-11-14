@@ -23,8 +23,8 @@ export function narrowDoors() {
   return H.openings.filter((o) => o.kind === "door").map((o) => {
     const len = Math.hypot(o.b[0] - o.a[0], o.b[1] - o.a[1]), sp = spanOf(o);
     const axis = Math.abs(o.b[0] - o.a[0]) < 0.02 || Math.abs(o.b[1] - o.a[1]) < 0.02;
-    return { id: o.id, at: [+o.a[0].toFixed(2), +o.a[1].toFixed(2)], survey: +len.toFixed(2), built: +Math.hypot(sp[1][0] - sp[0][0], sp[1][1] - sp[0][1]).toFixed(2), axis };
-  }).filter((d) => d.axis && d.survey < 0.849 && d.built < d.survey * 1.36);
+    return { id: o.id, at: [+o.a[0].toFixed(2), +o.a[1].toFixed(2)], survey: +len.toFixed(2), built: +Math.hypot(sp[1][0] - sp[0][0], sp[1][1] - sp[0][1]).toFixed(2), axis, limited: S.doorLimited && S.doorLimited.has(o) };
+  }).filter((d) => d.axis && d.survey < 0.849 && d.built < d.survey * 1.36 && !d.limited);
 }
 
 export function looseWallPieces() {
@@ -275,7 +275,135 @@ export function roofs() {
   return bad.filter((b) => { const k = b.replace(/(-?\d+\.\d)\d*,(-?\d+\.\d)\d*$/, (m, a, c) => Math.round(+a) + "," + Math.round(+c)); if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 25);
 }
 
+/* A widened door stays between the two rooms it joins: its extra width
+   never reaches past a corner into a third room or a wall. */
+export function doorsInRooms() {
+  const bad = [];
+  H.openings.filter((o) => o.kind === "door").forEach((o) => {
+    const sp = spanOf(o), dx = o.b[0] - o.a[0], dy = o.b[1] - o.a[1], len = Math.hypot(dx, dy), nx = -dy / len, ny = dx / len;
+    const off = o.t / 2 + 0.15, mid = [(o.a[0] + o.b[0]) / 2, (o.a[1] + o.b[1]) / 2];
+    const side = (p, s) => { const r = H.at(p[0] + nx * off * s, p[1] + ny * off * s, o.level); return r ? H.idOf(r) : "out"; };
+    const want = [side(mid, 1), side(mid, -1)];
+    [sp[0], sp[1]].forEach((e) => {
+      const p = [e[0] - (e[0] - mid[0]) * 0.04, e[1] - (e[1] - mid[1]) * 0.04];
+      if (side(p, 1) !== want[0] || side(p, -1) !== want[1]) bad.push(o.id + " at " + o.a.map((v) => v.toFixed(2)) + " reaches past " + want.join("/"));
+    });
+  });
+  return bad;
+}
+
+/* A room's ceiling has no open step: where two parts of it stand at
+   different heights, a face closes the gap between them. */
+export async function ceilings() {
+  const THREE = await import("three");
+  const objs = [];
+  S.scene.traverse((o) => { if (o.isMesh && o.visible) objs.push(o); });
+  const rc = new THREE.Raycaster(), bad = [];
+  H.rooms.forEach((r) => {
+    if (typeof r.h === "number" || r.h === "vault") return;
+    const poly = H.polyOf(r), xs = poly.map((q) => q[0]), ys = poly.map((q) => q[1]);
+    for (let x = Math.min(...xs) + 0.05; x < Math.max(...xs); x += 0.1) for (let y = Math.min(...ys) + 0.05; y < Math.max(...ys); y += 0.1) {
+      [[0.1, 0], [0, 0.1]].forEach((d) => {
+        const x2 = x + d[0], y2 = y + d[1];
+        if (!inside(x, y, poly) || !inside(x2, y2, poly) || inWall(x, y, r.level) || inWall(x2, y2, r.level)) return;
+        const h1 = H.topAt(x, y, r.level), h2 = H.topAt(x2, y2, r.level);
+        if (Math.abs(h1 - h2) < 0.05) return;
+        const lo = h1 < h2 ? [x, y] : [x2, y2], hi = h1 < h2 ? [x2, y2] : [x, y], z = (h1 + h2) / 2;
+        rc.set(new THREE.Vector3(lo[0] * K, z * KZ, -lo[1] * K), new THREE.Vector3((hi[0] - lo[0]) * K, 0, -(hi[1] - lo[1]) * K).normalize());
+        rc.far = 0.15 * K;
+        if (!rc.intersectObjects(objs, false).length) bad.push("room " + r.n + " near " + x.toFixed(1) + "," + y.toFixed(1));
+      });
+    }
+  });
+  return [...new Set(bad)].slice(0, 10);
+}
+
+/* Nothing flickers on the houses around: no two faces of different
+   materials meet the eye at the same depth. */
+export async function flicker() {
+  const THREE = await import("three");
+  const objs = [];
+  S.scene.traverse((o) => { if (o.isMesh && o.visible) objs.push(o); });
+  const rc = new THREE.Raycaster(), bad = [];
+  const look = (o, d, where) => {
+    rc.set(o, d);
+    const h = rc.intersectObjects(objs, false);
+    if (h.length < 2 || h[1].distance - h[0].distance >= 0.006 || h[0].object.material === h[1].object.material) return;
+    // two faces that look the same can't be seen to flicker
+    const look1 = (m) => (m.color ? m.color.getHexString() : "") + (m.map ? m.map.uuid.slice(0, 0) + (m.map.image && m.map.image.width) : "");
+    if (look1(h[0].object.material) === look1(h[1].object.material)) return;
+    bad.push(where);
+  };
+  for (let x = -70; x <= 58; x += 1.5) for (let y = -45; y <= 50; y += 1.5) {
+    if (inside(x, y, H.lot)) continue;                 // the houses around, not our garden's flowers
+    look(new THREE.Vector3(x * K, 40, -y * K), new THREE.Vector3(0, -1, 0), "above " + x + "," + y);
+  }
+  // from far off on each side, and from the middle of the street both ways
+  const from = [[[1, 0], -90], [[-1, 0], 70], [[0, 1], -60], [[0, -1], 80], [[1, 0], 7], [[-1, 0], 7]];
+  from.forEach(([dir, c]) => {
+    for (let a = -45; a <= 55; a += 1) for (const z of [1.13, 2.37, 3.71, 5.23]) {
+      const o = dir[0] !== 0 ? new THREE.Vector3(c * K, z * KZ, -a * K) : new THREE.Vector3(a * K, z * KZ, -c * K);
+      look(o, new THREE.Vector3(dir[0], 0, -dir[1]), "from " + dir + " at " + a + ", " + z + " m");
+    }
+  });
+  return bad.slice(0, 12);
+}
+
+/* The apartment stair has its rails: walking off the landing toward the
+   stairwell, or off the upper flight sideways, you are stopped. */
+export async function stairRails() {
+  const ph = await import("../js/walk/physics.js");
+  const p = S.player, bad = [], was = S.running;
+  S.running = false;
+  const walk = (x, y, feet, yaw, what) => {
+    Object.assign(p, { x, y, feet, vz: 0, vx: 0, vy: 0, eye: undefined, yaw });
+    S.keys.forward = true;
+    let low = feet;
+    for (let i = 0; i < 120; i++) { ph.step(1 / 60); low = Math.min(low, p.feet); }
+    S.keys.forward = false;
+    if (low < feet - 0.5) bad.push(what + ": fell to " + low.toFixed(2));
+  };
+  walk(-2.0, 15.2, H.Z.apt, Math.PI, "off the landing into the stairwell");
+  walk(-1.3, 14.0, ph.floorAt(-1.3, 14.0, 3), Math.PI / 2, "off the upper flight onto the lower one");
+  S.running = was;
+  return bad;
+}
+
+/* Every room has lights you can switch: a lamp, a switch by the door, the L
+   key for the room you stand in and the Lights button for the whole house. */
+export async function roomLights() {
+  const bad = [];
+  if (!S.lights) return ["no lights"];
+  H.rooms.forEach((r) => {
+    const l = S.lights.filter((x) => x.room === H.idOf(r))[0];
+    if (!l) { bad.push("room " + r.n + " has no lights"); return; }
+    if (!l.glows.length) bad.push("room " + r.n + " has no lamp");
+    if (!l.switch) bad.push("room " + r.n + " has no switch");
+  });
+  const r6 = H.rooms.filter((r) => r.n === 6)[0], c = H.polyOf(r6);
+  Object.assign(S.player, { x: -3.5, y: 14.5, feet: r6.z });
+  const l6 = S.lights.filter((x) => x.room === "6")[0];
+  if (l6) {
+    const was = l6.on;
+    document.dispatchEvent(new KeyboardEvent("keydown", { code: "KeyL", key: "l", bubbles: true }));
+    if (l6.on === was) bad.push("L doesn't switch the room you stand in");
+    l6.set(was);
+  }
+  const btn = document.getElementById("toggle-lights");
+  if (!btn) bad.push("no Lights button");
+  else {
+    btn.click();
+    if (S.lights.some((l) => l.on)) bad.push("the Lights button doesn't turn them all off");
+    btn.click();
+    if (S.lights.some((l) => !l.on)) bad.push("the Lights button doesn't turn them all on");
+  }
+  return bad;
+}
+
 export async function run() {
-  return { narrowDoors: narrowDoors(), looseWallPieces: looseWallPieces(), lights: lights(), cristo: await cristo(), neighbours: neighbours(), geo: await geo(), stairs: stairs(), reach: await reach(), cristoSize: await cristoSize(), chairs: await chairs(), roofs: roofs() };
+  // the scene's positions as drawn, even if nothing has been drawn yet
+  S.scene.updateMatrixWorld(true);
+  return { narrowDoors: narrowDoors(), looseWallPieces: looseWallPieces(), lights: lights(), cristo: await cristo(), neighbours: neighbours(), geo: await geo(), stairs: stairs(), reach: await reach(), cristoSize: await cristoSize(), chairs: await chairs(), roofs: roofs(),
+    doorsInRooms: doorsInRooms(), ceilings: await ceilings(), flicker: await flicker(), stairRails: await stairRails(), roomLights: await roomLights() };
 }
 
