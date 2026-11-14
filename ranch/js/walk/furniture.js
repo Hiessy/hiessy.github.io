@@ -106,6 +106,7 @@ export function onWall(p) {
 
 export function buildFurniture() {
   S.wallPieces = [];
+  S.pieces = [];
   const later = [];
   H.furniture.forEach((p) => {
     if (p.type === "bath") {
@@ -125,7 +126,8 @@ export function buildFurniture() {
     // a lamp hangs from a ceiling that is drawn KZ times higher
     const q = p.h && (p.type === "pendant" || p.type === "chandelier") ? Object.assign({}, p, { h: p.h * KZ }) : p;
     const at = BLOCK[p.type] ? backToWall(p.at[0], p.at[1], p.rot, BLOCK[p.type](p)[1], p.level) : p.at;
-    place(make(q), at[0], at[1], p.level, p.rot, lampGroup(p, at));
+    const piece = place(make(q), at[0], at[1], p.level, p.rot, lampGroup(p, at));
+    S.pieces.push({ p, piece });
     if (!p.soft) blockPiece(p.type, p, at[0], at[1], p.level, p.rot);
   });
   later.forEach((p) => {

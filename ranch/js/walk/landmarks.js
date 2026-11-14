@@ -42,7 +42,9 @@ export function buildLandmarks(scene) {
   g.add(head);
   // its arms open across the line to the town: it faces the house
   g.rotation.y = Math.atan2(ux, uz);
-  g.scale.setScalar(k);
+  // H.landmarks.cristo.enlarge: larger than life, standing where it does
+  const big = k * (c.enlarge || 1);
+  g.scale.setScalar(big);
   g.position.copy(origin).add(new THREE.Vector3(ux * DRAWN, c.ground * k, uz * DRAWN));
   g.name = "cristo";
   scene.add(g);
@@ -64,8 +66,8 @@ export function buildLandmarks(scene) {
   gr.addColorStop(0, "rgba(255,240,210,0.9)"); gr.addColorStop(1, "rgba(255,240,210,0)");
   x.fillStyle = gr; x.fillRect(0, 0, 64, 64);
   const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(cv), transparent: true, depthWrite: false, fog: false, blending: THREE.AdditiveBlending }));
-  glow.scale.setScalar(16 * k * 3);
-  glow.position.copy(g.position).add(new THREE.Vector3(0, (B + T * 0.6) * k, 0));
+  glow.scale.setScalar(16 * big * 2);
+  glow.position.copy(g.position).add(new THREE.Vector3(0, (B + T * 0.6) * big, 0));
   scene.add(glow);
 
   S.cristo = g;

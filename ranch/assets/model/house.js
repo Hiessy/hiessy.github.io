@@ -91,16 +91,19 @@
   /* Roofs, for the upper plan's labels and the 3D view. slab: a flat
      concrete roof, its top `t` above the ceiling; sheet: corrugated sheet. */
   var roofs = [
-    { id: "main", name: t("roof.main"), kind: "gable", rect: [-12.1, 4.5, -2.2, 16.95], lab: [-7.2, 10.7] },
+    // the gable stops at the old house's south wall (4.8), clear of the
+    // kitchen's flat roof, and short of the stair tower (notch), which
+    // rises past it
+    { id: "main", name: t("roof.main"), kind: "gable", rect: [-12.1, 4.8, -2.2, 16.95], notch: { y: 12.68, x: -2.6 }, lab: [-7.2, 10.7] },
     { id: "hall", name: t("roof.hall"), kind: "slab", poly: [[-2.41, 4.95], [-0.21, 4.95], [-0.53, 12.6], [-2.41, 12.6]], z: F + 2.7, t: 0.2 },
     { id: "south", name: t("roof.south"), kind: "slab", poly: [[0, 0], [-0.21, 4.95], [-2.41, 4.95], [-2.41, 4.8], [-10.2, 4.8], [-10.2, 0.95]], z: F + 2.7, t: 0.2, lab: [-5.0, 2.5] },
-    { id: "kitchen", name: t("roof.kitchen"), kind: "slab", poly: [[-10.2, 0.95], [-10.2, 4.8], [-11.9, 4.8], [-11.9, 4.95], [-13.85, 4.95], [-13.85, 1.29]], z: F + 2.9, t: 0.2 },
-    { id: "laundry", name: t("roof.laundry"), kind: "slab", poly: [[-13.85, 1.29], [-13.85, 4.95], [-16.25, 5.05], [-16.25, 1.51]], z: F + 2.3, t: 0.2 },
+    { id: "kitchen", name: t("roof.kitchen"), kind: "slab", poly: [[-10.2, 0.95], [-10.2, 4.8], [-12.1, 4.8], [-12.1, 4.95], [-13.85, 4.95], [-13.85, 1.29]], z: F + 2.9, t: 0.2 },
+    { id: "laundry", name: t("roof.laundry"), kind: "slab", poly: [[-13.85, 1.29], [-13.85, 4.95], [-16.25, 4.95], [-16.25, 1.51]], z: F + 2.3, t: 0.2 },   // up to the glazed room's wall, not into it
     { id: "glazed", name: t("roof.glazed"), kind: "vault", rect: [-16.7, 4.95, -11.86, 13.3], lab: [-14.3, 9.1] },
     { id: "wing", name: t("roof.wing"), kind: "slab", poly: [[-16.25, 1.51], [-16.25, 5.05], [-18.0, 5.3], [-18.0, 7.2], [-26.5, 7.2], [-26.5, 4.65], [-28.1, 4.65], [-28.1, 2.61]], z: B + 2.55, t: 0.15, terrace: true },
     { id: "galeria", name: t("roof.galeria"), kind: "leanto", poly: [[-16.66, 7.2], [-16.66, 8.45], [-26.55, 8.45], [-26.55, 7.2]], z: 2.72, drop: 0.38, lab: [-21.6, 7.82] },
     { id: "grill", name: t("roof.grill"), kind: "sheet", poly: [[-28.1, 2.7], [-28.1, 7.2], [-33.85, 7.2], [-33.85, 3.25]], z: 2.45, lab: [-30.9, 5.0] },
-    { id: "carport", name: t("roof.carport"), kind: "sheet", poly: [[-33.7, 3.7], [-33.3, 12.55], [-37.3, 12.8], [-37.75, 3.85]], z: 2.4, lab: [-35.5, 8.2] }
+    { id: "carport", name: t("roof.carport"), kind: "sheet", poly: [[-33.9, 3.7], [-33.9, 7.3], [-33.3, 12.55], [-37.3, 12.8], [-37.75, 3.85]], z: 2.4, lab: [-35.5, 8.2] }   // beside the grill's roof, not over it
   ];
 
   /* Solid parapets on top of walls: from a to b, `t` thick, between z0 and z1. */
@@ -179,7 +182,9 @@
   var geo = { lat: -30.98084738, lon: -64.49239543, ground: 1142, utc: -3 };
 
   var landmarks = {
-    cristo: { at: [1148.1, 315.9], ground: 99, statue: 8, base: 4, ridge: 150, ridgeAt: 1450 }
+    // enlarge: drawn this many times its true size, so it can be made out
+    // from the house (at true size it is a few pixels); its place is true
+    cristo: { at: [1148.1, 315.9], ground: 99, statue: 8, base: 4, ridge: 150, ridgeAt: 1450, enlarge: 8 }
   };
 
   var garden = {

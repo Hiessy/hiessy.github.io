@@ -19,12 +19,20 @@ export function buildRoofs() {
   const main = H.roofs.filter((r) => r.id === "main")[0].rect;
   const zr = (x) => (x >= R.ridge ? Fz + 3.31 + (-2.6 - x) * R.gf : Fz + 4.6 - (R.ridge - x) * R.gr) + SKIN;
   const xf = main[2], xb = main[0], y1 = main[1], y2 = main[3];
-  roofs.add(quad([[xf, y1, zr(xf)], [xf, y2, zr(xf)], [R.ridge, y2, zr(R.ridge)], [R.ridge, y1, zr(R.ridge)]], blue));
+  // the front slope stops short of the stair tower past `notch.y`
+  const notch = H.roofs.filter((r) => r.id === "main")[0].notch || { y: y2, x: xf }, ny = notch.y, nx = notch.x;
+  roofs.add(quad([[xf, y1, zr(xf)], [xf, ny, zr(xf)], [R.ridge, ny, zr(R.ridge)], [R.ridge, y1, zr(R.ridge)]], blue));
+  if (ny < y2) {
+    roofs.add(quad([[nx, ny, zr(nx)], [nx, y2, zr(nx)], [R.ridge, y2, zr(R.ridge)], [R.ridge, ny, zr(R.ridge)]], blue));
+    roofs.add(quad([[xf, ny, zr(xf)], [xf, ny, zr(xf) - 0.22], [nx, ny, zr(nx) - 0.22], [nx, ny, zr(nx)]], M.trim));
+  }
   roofs.add(quad([[R.ridge, y1, zr(R.ridge)], [R.ridge, y2, zr(R.ridge)], [xb, y2, zr(xb)], [xb, y1, zr(xb)]], blue));
   roofs.add(bar(R.ridge, y1, R.ridge, y2, zr(R.ridge) - 0.03, zr(R.ridge) + 0.05, 0.3, mat(0x7f95a8)));
-  [xf, xb].forEach((x) => roofs.add(bar(x, y1, x, y2, zr(x) - 0.22, zr(x), 0.03, M.trim)));
+  roofs.add(bar(xf, y1, xf, ny, zr(xf) - 0.22, zr(xf), 0.03, M.trim));
+  if (ny < y2) roofs.add(bar(nx, ny, nx, y2, zr(nx) - 0.22, zr(nx), 0.03, M.trim));
+  roofs.add(bar(xb, y1, xb, y2, zr(xb) - 0.22, zr(xb), 0.03, M.trim));
   [y1, y2].forEach((y) => {
-    [[xf, R.ridge], [R.ridge, xb]].forEach((s) => {
+    [[y === y1 ? xf : nx, R.ridge], [R.ridge, xb]].forEach((s) => {
       const b = beam3([s[0], y, zr(s[0]) - 0.11], [s[1], y, zr(s[1]) - 0.11], 0.03, 0.22, M.trim);
       if (b) { S.static.remove(b); roofs.add(b); }
     });
@@ -84,7 +92,8 @@ export function buildRoofs() {
   // round the top of the house. hf gives a sloping roof's height.
   const rect = (r) => [[r[0], r[1]], [r[2], r[1]], [r[2], r[3]], [r[0], r[3]]];
   const top = (poly, h, hf) => S.surfaces.push({ poly, h, hf, level: 2, roof: true });
-  top(rect(main), 0, (x) => zr(x));
+  top(rect([main[0], main[1], xf, ny]), 0, (x) => zr(x));
+  if (ny < y2) top(rect([main[0], ny, nx, main[3]]), 0, (x) => zr(x));
   top(rect(g), 0, (x) => H.arch(Math.max(-16.64, Math.min(-11.86, x))) + 0.012);
   top(A, 0, (x) => za2(x));
   top(X.landingRoof, H.Z.apt + 2.75);

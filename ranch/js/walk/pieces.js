@@ -97,7 +97,12 @@ function plastic() {
 
 /* A chair by the name of its style. */
 export function seatOf(style, o) {
-  o = o || {};
+  const g = seatShape(style, o || {});
+  g.name = "chair";
+  return g;
+}
+
+function seatShape(style, o) {
   if (style === "bentwood") return bentwood(o.seat);
   if (style === "carved") return carved();
   if (style === "director") return director(o.color);

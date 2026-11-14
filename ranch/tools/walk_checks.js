@@ -68,7 +68,9 @@ export async function cristo() {
   const planAngle = Math.atan2(d.x, -d.z) * 180 / Math.PI;             // clockwise from +y
   const bearing = (planAngle - H.NORTH + 360) % 360;
   if (Math.abs(bearing - 67.1) > 1.5) bad.push("bearing " + bearing.toFixed(1));
-  const elev = Math.atan2(d.y, Math.hypot(d.x, d.z)) * 180 / Math.PI;
+  // its foot stands at its true height above the horizon, however large it is drawn
+  const foot = new THREE.Box3().setFromObject(S.cristo).min.y - from.y;
+  const elev = Math.atan2(foot, Math.hypot(d.x, d.z)) * 180 / Math.PI;
   if (elev < 3.5 || elev > 6.5) bad.push("elevation " + elev.toFixed(1));
   const ray = new THREE.Raycaster(from, d.clone().normalize());
   ray.camera = S.camera;
@@ -177,7 +179,103 @@ export async function reach() {
   return H.rooms.concat(H.spaces).map(H.idOf).filter((id) => !rooms[id]).map((id) => id + " can't be reached");
 }
 
+/* The Cristo can be made out from the street balcony: it looks at least
+   1.5 degrees tall. */
+export async function cristoSize() {
+  if (!S.cristo) return ["no Cristo"];
+  const THREE = await import("three");
+  const b = new THREE.Box3().setFromObject(S.cristo), from = new THREE.Vector3(-0.6 * K, (H.Z.apt + 1.55 / KZ) * KZ, -18.5 * K);
+  const top = new THREE.Vector3((b.min.x + b.max.x) / 2, b.max.y, (b.min.z + b.max.z) / 2), foot = top.clone().setY(b.min.y);
+  const deg = top.sub(from).angleTo(foot.sub(from)) * 180 / Math.PI;
+  return deg < 1.5 ? ["looks " + deg.toFixed(2) + " degrees tall"] : [];
+}
+
+/* The footprint of a placed group on the plan: its box's four corners. */
+async function footprint(o) {
+  const THREE = await import("three");
+  const box = new THREE.Box3();
+  o.updateWorldMatrix(true, true);
+  const inv = new THREE.Matrix4().copy(o.matrixWorld).invert();
+  o.traverse((m) => {
+    if (!m.isMesh) return;
+    m.geometry.computeBoundingBox();
+    box.union(m.geometry.boundingBox.clone().applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv, m.matrixWorld)));
+  });
+  const c = [[box.min.x, box.min.z], [box.max.x, box.min.z], [box.max.x, box.max.z], [box.min.x, box.max.z]].map((q) => {
+    const v = new THREE.Vector3(q[0], 0, q[1]).applyMatrix4(o.matrixWorld);
+    return [v.x, -v.z];
+  });
+  return { poly: c, y0: new THREE.Vector3(0, box.min.y, 0).applyMatrix4(o.matrixWorld).y };
+}
+function overlap(a, b) {
+  const axes = (p) => p.map((q, i) => { const r = p[(i + 1) % p.length]; return [-(r[1] - q[1]), r[0] - q[0]]; });
+  let depth = 1e9;
+  for (const ax of axes(a).concat(axes(b))) {
+    const l = Math.hypot(ax[0], ax[1]) || 1, n = [ax[0] / l, ax[1] / l];
+    const pr = (p) => p.reduce((m, q) => { const v = q[0] * n[0] + q[1] * n[1]; return [Math.min(m[0], v), Math.max(m[1], v)]; }, [1e9, -1e9]);
+    const pa = pr(a), pb = pr(b), o = Math.min(pa[1], pb[1]) - Math.max(pa[0], pb[0]);
+    if (o <= 0) return 0;
+    depth = Math.min(depth, o);
+  }
+  return depth;
+}
+
+/* No chair runs into another chair, a piece of furniture or a wall. */
+export async function chairs() {
+  const bad = [], seats = [], others = [];
+  for (const { p, piece } of S.pieces || []) {
+    const mine = [];
+    piece.traverse((o) => { if (o.name === "chair") mine.push(o); });
+    for (const c of mine) seats.push({ owner: piece, fp: await footprint(c), at: p.at, type: p.type, level: p.level });
+    if (!mine.length || piece.name !== "chair") {
+      // the piece without its chairs
+      const body = piece.clone(false);
+      piece.children.forEach((ch) => { if (ch.name !== "chair") body.add(ch.clone()); });
+      body.matrixWorld.copy(piece.matrixWorld);
+      body.matrixAutoUpdate = false;
+      if (body.children.length) others.push({ owner: piece, fp: await footprint(body), at: p.at, type: p.type, level: p.level });
+    }
+  }
+  const shrink = (poly, k) => { const cx = poly.reduce((s, q) => s + q[0], 0) / 4, cy = poly.reduce((s, q) => s + q[1], 0) / 4; return poly.map((q) => [cx + (q[0] - cx) * k, cy + (q[1] - cy) * k]); };
+  seats.forEach((a, i) => {
+    seats.slice(i + 1).forEach((b) => {
+      if (a.level === b.level && overlap(shrink(a.fp.poly, 0.92), shrink(b.fp.poly, 0.92)) > 0.005) bad.push("chairs of " + a.type + " at " + a.at + " and " + b.type + " at " + b.at + " overlap");
+    });
+    others.forEach((b) => {
+      if (b.owner === a.owner || a.level !== b.level || /^(curtain|picture|mirror|sconce|pendant|chandelier|aircon)$/.test(b.type)) return;
+      if (overlap(shrink(a.fp.poly, 0.9), shrink(b.fp.poly, 0.95)) > 0.005) bad.push("a chair of " + a.type + " at " + a.at + " runs into the " + b.type + " at " + b.at);
+    });
+    const inner = shrink(a.fp.poly, 0.8);
+    if (inner.some((q) => inWall(q[0], q[1], a.level))) bad.push("a chair of " + a.type + " at " + a.at + " is in a wall");
+  });
+  return [...new Set(bad)];
+}
+
+/* No roof runs into another, and no wall pokes up through one. */
+export function roofs() {
+  const bad = [], tops = S.surfaces.filter((s) => s.roof);
+  const hAt = (s, x, y) => (s.hf ? s.hf(x, y) : s.h);
+  for (let x = -38; x <= 1; x += 0.25) {
+    for (let y = -0.5; y <= 23; y += 0.25) {
+      const here = tops.filter((s) => inside(x, y, s.poly));
+      for (let i = 0; i < here.length; i++) for (let j = i + 1; j < here.length; j++) {
+        const d = Math.abs(hAt(here[i], x, y) - hAt(here[j], x, y));
+        if (d < 0.25) bad.push("two roofs meet within " + d.toFixed(2) + " m near " + x.toFixed(1) + "," + y.toFixed(1));
+      }
+      here.forEach((s) => {
+        const h = hAt(s, x, y);
+        [0, 1, 2].forEach((lv) => {
+          if (inWall(x, y, lv) && H.topAt(x, y, lv) > h + 0.03 && (lv === 0 || H.FLOOR[lv] - 0.2 < h)) bad.push("a wall up to " + H.topAt(x, y, lv).toFixed(2) + " pokes through a roof at " + h.toFixed(2) + " near " + x.toFixed(1) + "," + y.toFixed(1));
+        });
+      });
+    }
+  }
+  // one line per place, roughly
+  const seen = new Set();
+  return bad.filter((b) => { const k = b.replace(/(-?\d+\.\d)\d*,(-?\d+\.\d)\d*$/, (m, a, c) => Math.round(+a) + "," + Math.round(+c)); if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 25);
+}
+
 export async function run() {
-  return { narrowDoors: narrowDoors(), looseWallPieces: looseWallPieces(), lights: lights(), cristo: await cristo(), neighbours: neighbours(), geo: await geo(), stairs: stairs(), reach: await reach() };
+  return { narrowDoors: narrowDoors(), looseWallPieces: looseWallPieces(), lights: lights(), cristo: await cristo(), neighbours: neighbours(), geo: await geo(), stairs: stairs(), reach: await reach(), cristoSize: await cristoSize(), chairs: await chairs(), roofs: roofs() };
 }
 
