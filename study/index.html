@@ -51,6 +51,12 @@
   .kw span { font-size: 13px; padding: 2px 8px; border: 1px solid var(--line); border-radius: 6px; }
   .more li { font-size: 15px; }
   .more a { color: var(--accent); }
+  .tabs { display: flex; gap: 4px; margin: 22px 0 0; border-bottom: 1px solid var(--line); }
+  .tabs button { font: inherit; font-size: 15px; padding: 8px 14px; border: 0; background: none;
+                 color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -1px; }
+  .tabs button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+  .panel[hidden] { display: none; }
+  .note { color: var(--muted); font-size: 15px; }
   footer { color: var(--muted); font-size: 14px; text-align: center; margin-top: 28px; }
 </style>
 </head>
@@ -58,8 +64,16 @@
 <div class="wrap">
 <header>
   <h1>Bedtime review</h1>
-  <p>Wednesday, 18 November. Read once, then say each rule out loud.</p>
+  <p>Read once, then say each rule out loud.</p>
 </header>
+
+<div class="tabs" role="tablist">
+  <button role="tab" id="t-review" aria-controls="review" aria-selected="true">Today&rsquo;s review</button>
+  <button role="tab" id="t-hood" aria-controls="hood" aria-selected="false">Under the hood</button>
+</div>
+
+<div class="panel" id="review" role="tabpanel" aria-labelledby="t-review">
+<p class="note">Wednesday, 18 November.</p>
 
 <nav>
   <a href="#react">React effects</a><a href="#probes">Probes</a><a href="#xss">XSS vs CSRF</a>
@@ -210,7 +224,178 @@
   <ul class="more"><li><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/atomic/AtomicInteger.html" target="_blank" rel="noopener">Javadoc: AtomicInteger</a> · incrementAndGet, compareAndSet</li></ul>
 </section>
 
+</div>
+
+<div class="panel" id="hood" role="tabpanel" aria-labelledby="t-hood" hidden>
+<p class="note">How Java and JavaScript turn source code into running code and manage memory.</p>
+<nav>
+  <a href="#jvm-run">JVM: running code</a><a href="#jvm-mem">JVM memory</a><a href="#jvm-gc">Java GC</a>
+  <a href="#js-run">JS engine</a><a href="#js-mem">JS memory</a><a href="#js-loop">Event loop</a><a href="#compare">Side by side</a>
+</nav>
+
+<section id="jvm-run">
+  <h2>How the JVM runs Java</h2>
+  <p class="rule">Compile once to bytecode, interpret it at first, then JIT-compile the hot parts to machine code.</p>
+  <h3>Steps in order</h3>
+  <ol>
+    <li><code>javac</code> compiles <code>.java</code> to <b>bytecode</b> in <code>.class</code> files (platform-independent).</li>
+    <li>The <b>class loader</b> loads classes lazily, on first use (bootstrap → platform → application loaders, parent first).</li>
+    <li>The <b>bytecode verifier</b> checks the code is type-safe before it runs.</li>
+    <li>The <b>interpreter</b> runs bytecode straight away; the JVM counts how often each method and loop runs.</li>
+    <li>Hot code goes to the <b>JIT compiler</b>: <b>C1</b> (fast, light optimisation), then <b>C2</b> (slower, aggressive: inlining, escape analysis). This is <b>tiered compilation</b>.</li>
+    <li>If an optimistic assumption breaks (say a new subclass gets loaded), the JVM <b>deoptimises</b> back to the interpreter and recompiles later.</li>
+  </ol>
+  <p>Why Java "warms up": the first requests run interpreted; after thousands of calls the hot paths are native code. One reason the readiness probe waits.</p>
+  <div class="kw"><span>bytecode</span><span>class loader</span><span>HotSpot</span><span>JIT</span><span>C1 / C2</span><span>tiered compilation</span><span>inlining</span><span>deoptimisation</span><span>warm-up</span></div>
+  <h3>Go deeper</h3>
+  <ul class="more"><li><a href="https://dev.java/learn/jvm/" target="_blank" rel="noopener">Dev.java: Getting to know the JVM</a> · official, beginner-friendly tour</li><li><a href="https://docs.oracle.com/en/java/javase/21/vm/java-virtual-machine-technology-overview.html" target="_blank" rel="noopener">Oracle: Java Virtual Machine Technology Overview</a> · HotSpot, JIT, GC at a glance</li><li><a href="https://docs.oracle.com/javase/specs/jvms/se21/html/index.html" target="_blank" rel="noopener">The JVM Specification (Java 21)</a> · reference: class files, loading, bytecode</li></ul>
+</section>
+
+<section id="jvm-mem">
+  <h2>JVM memory areas</h2>
+  <p class="rule">Objects live on the shared heap; each thread has its own stack holding local variables and references.</p>
+  <div class="table"><table>
+    <tr><th>Area</th><th>Holds</th><th>Shared?</th><th>Error when full</th></tr>
+    <tr><td><b>Heap</b></td><td>Every object and array (<code>new</code>)</td><td>All threads</td><td><code>OutOfMemoryError: Java heap space</code></td></tr>
+    <tr><td><b>Stack</b> (one per thread)</td><td>Frames: local primitives, references, return address</td><td>No</td><td><code>StackOverflowError</code> (deep recursion)</td></tr>
+    <tr><td><b>Metaspace</b></td><td>Class metadata (native memory; replaced PermGen in Java 8)</td><td>All threads</td><td><code>OutOfMemoryError: Metaspace</code></td></tr>
+    <tr><td>Code cache</td><td>JIT-compiled machine code</td><td>All threads</td><td>JIT stops compiling</td></tr>
+  </table></div>
+  <pre><code>void approve(long id) {        // new frame on this thread's stack
+    long limit = 10_000;        // primitive: in the frame
+    Claim c = new Claim(id);    // reference c in the frame, Claim object on the heap
+}                               // frame popped; Claim unreachable → GC can free it</code></pre>
+  <p>Why platform threads are expensive: each reserves its own stack (often 1 MB). <b>Virtual threads</b> keep their stack on the heap and grow it only as needed, so millions fit.</p>
+  <div class="kw"><span>heap</span><span>stack frame</span><span>metaspace</span><span>reference vs object</span><span>-Xmx / -Xss</span><span>escape analysis</span></div>
+</section>
+
+<section id="jvm-gc">
+  <h2>Java garbage collection</h2>
+  <p class="rule">The GC frees objects no longer <b>reachable</b> from GC roots. Most objects die young, so the heap is split by age.</p>
+  <h3>Steps in order (a generational collection)</h3>
+  <ol>
+    <li>New objects go into the <b>young generation</b> (Eden).</li>
+    <li>Eden fills → <b>minor GC</b>: mark what is reachable from <b>GC roots</b> (stack references, static fields, live threads).</li>
+    <li>Survivors are copied to a survivor space; the rest is freed in one go (cheap).</li>
+    <li>Objects that survive several collections are <b>promoted</b> to the <b>old generation</b>.</li>
+    <li>Old generation fills → <b>major / mixed GC</b>, more expensive.</li>
+  </ol>
+  <div class="table"><table>
+    <tr><th>Collector</th><th>When to name it</th></tr>
+    <tr><td><b>G1</b></td><td>Default since Java 9. Heap in regions, aims for a pause-time target (<code>-XX:MaxGCPauseMillis</code>).</td></tr>
+    <tr><td><b>ZGC</b></td><td>Sub-millisecond pauses on huge heaps; generational since Java 21.</td></tr>
+    <tr><td>Parallel</td><td>Batch jobs: best throughput, longer pauses.</td></tr>
+    <tr><td>Serial</td><td>Tiny heaps, one core, small containers.</td></tr>
+  </table></div>
+  <p><b>Stop-the-world</b> pause: application threads halt while the GC works. A Java "memory leak" is an object still reachable but no longer needed: a growing static <code>Map</code>, a cache with no eviction, a <code>ThreadLocal</code> never cleared in a pool, or today's unreachable mutable-key entry.</p>
+  <div class="kw"><span>reachability</span><span>GC roots</span><span>young / old generation</span><span>minor GC</span><span>promotion</span><span>G1</span><span>ZGC</span><span>stop-the-world</span><span>heap dump</span></div>
+  <h3>Go deeper</h3>
+  <ul class="more"><li><a href="https://docs.oracle.com/en/java/javase/21/gctuning/introduction-garbage-collection-tuning.html" target="_blank" rel="noopener">Oracle: Garbage Collection Tuning Guide</a> · generations, G1, ZGC from the JDK team</li><li><a href="https://openjdk.org/jeps/439" target="_blank" rel="noopener">JEP 439: Generational ZGC</a> · why generations matter</li><li><a href="https://openjdk.org/jeps/444" target="_blank" rel="noopener">JEP 444: Virtual Threads</a> · how their stacks live on the heap</li></ul>
+</section>
+
+<section id="js-run">
+  <h2>How a JavaScript engine runs code (V8)</h2>
+  <p class="rule">Same idea as the JVM, but starting from source: parse, run as bytecode, JIT the hot functions using the types it has seen.</p>
+  <h3>Steps in order</h3>
+  <ol>
+    <li>The browser (or Node) hands source text to <b>V8</b>.</li>
+    <li>The <b>parser</b> builds an <b>AST</b>; functions not called yet are only pre-parsed (<b>lazy parsing</b>).</li>
+    <li><b>Ignition</b>, the interpreter, compiles the AST to <b>bytecode</b> and runs it, recording the types it sees (<b>type feedback</b>).</li>
+    <li>Warm functions go to <b>Sparkplug</b> / <b>Maglev</b> (quick compilers); hot ones to <b>TurboFan</b>, the optimising JIT.</li>
+    <li>TurboFan assumes the types stay the same. Pass a string where it always saw numbers and it <b>deoptimises</b> back to bytecode.</li>
+  </ol>
+  <p><b>Hidden classes</b> (V8 calls them maps): objects created with the same properties in the same order share a shape, so property access becomes a fixed offset, cached by <b>inline caches</b>. Adding properties in different orders, or using <code>delete</code>, changes the shape and slows access.</p>
+  <div class="kw"><span>V8</span><span>AST</span><span>Ignition</span><span>TurboFan</span><span>JIT</span><span>type feedback</span><span>hidden classes</span><span>inline cache</span><span>deoptimisation</span></div>
+  <h3>Go deeper</h3>
+  <ul class="more"><li><a href="https://v8.dev/blog/launching-ignition-and-turbofan" target="_blank" rel="noopener">V8 blog: Launching Ignition and TurboFan</a> · the interpreter + optimiser pipeline</li><li><a href="https://v8.dev/blog/maglev" target="_blank" rel="noopener">V8 blog: Maglev</a> · the mid-tier compiler and today's tiers</li><li><a href="https://v8.dev/docs/hidden-classes" target="_blank" rel="noopener">V8 docs: Maps (hidden classes)</a> · object shapes and why property order matters</li></ul>
+</section>
+
+<section id="js-mem">
+  <h2>JavaScript memory</h2>
+  <p class="rule">No manual freeing: the engine collects whatever is no longer reachable. Leaks come from references you forgot to drop.</p>
+  <ul>
+    <li><b>Stack</b>: call frames with primitives and references. <b>Heap</b>: objects, arrays, functions, closures.</li>
+    <li><b>Mark-and-sweep</b>: mark everything reachable from the roots (globals, the current stack), free the rest. Cycles are fine, unlike reference counting.</li>
+    <li>V8 is <b>generational</b> too: a fast <b>scavenger</b> for the young generation, <b>mark-compact</b> for the old one, mostly concurrent and incremental so frames don't stutter (the GC project is called <b>Orinoco</b>).</li>
+    <li>A <b>closure</b> keeps the variables it uses alive as long as the function itself is reachable.</li>
+  </ul>
+  <h3>Classic front-end leaks</h3>
+  <ol>
+    <li>Event listeners or <code>setInterval</code> never removed. In React: the missing <b>effect cleanup</b>.</li>
+    <li>Detached DOM nodes still referenced from a variable or array.</li>
+    <li>Ever-growing global caches or arrays.</li>
+    <li>Closures holding large objects (a big response captured by a long-lived callback).</li>
+  </ol>
+  <p>Find them in Chrome DevTools: <b>Memory</b> panel → take a heap snapshot, compare two, look for "Detached" nodes.</p>
+  <div class="kw"><span>reachability</span><span>mark-and-sweep</span><span>generational GC</span><span>closure</span><span>detached DOM</span><span>heap snapshot</span><span>WeakMap</span></div>
+  <h3>Go deeper</h3>
+  <ul class="more"><li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Memory_management" target="_blank" rel="noopener">MDN: Memory management</a> · reachability, mark-and-sweep, WeakMap</li><li><a href="https://v8.dev/blog/trash-talk" target="_blank" rel="noopener">V8 blog: Trash talk (Orinoco GC)</a> · how V8's generational GC works</li><li><a href="https://developer.chrome.com/docs/devtools/memory-problems" target="_blank" rel="noopener">Chrome DevTools: Fix memory problems</a> · heap snapshots and detached nodes, hands-on</li></ul>
+</section>
+
+<section id="js-loop">
+  <h2>The event loop</h2>
+  <p class="rule">JavaScript runs your code on one thread. I/O is handed off, and callbacks wait in queues until the call stack is empty.</p>
+  <h3>Steps in order (one turn of the loop)</h3>
+  <ol>
+    <li>Run the current script or task until the <b>call stack</b> is empty.</li>
+    <li>Run <b>all microtasks</b>: promise callbacks (<code>.then</code>, code after <code>await</code>), <code>queueMicrotask</code>.</li>
+    <li>The browser may <b>render</b> (style, layout, paint; <code>requestAnimationFrame</code> callbacks run just before).</li>
+    <li>Take <b>one task</b> (macrotask) from the queue: a <code>setTimeout</code> callback, a click, a network event. Run it.</li>
+    <li>Back to step 2.</li>
+  </ol>
+  <pre><code>console.log("1");
+setTimeout(() =&gt; console.log("4"), 0);          // task
+Promise.resolve().then(() =&gt; console.log("3")); // microtask
+console.log("2");
+// prints 1, 2, 3, 4: microtasks run before the next task, even a 0 ms timeout</code></pre>
+  <p>Java contrast: Java runs many threads on many cores with shared memory, so it needs locks and atomics (today's lost-update question). Plain JS on one thread can't hit that race; <b>Web Workers</b> add threads, but they share nothing by default and talk by messages.</p>
+  <div class="kw"><span>call stack</span><span>task queue</span><span>microtask queue</span><span>event loop</span><span>non-blocking I/O</span><span>Web Workers</span></div>
+  <h3>Go deeper</h3>
+  <ul class="more"><li><a href="https://www.youtube.com/watch?v=8aGhZQkoFbQ" target="_blank" rel="noopener">Video: What the heck is the event loop anyway? (Philip Roberts)</a> · the classic visual explanation</li><li><a href="https://javascript.info/event-loop" target="_blank" rel="noopener">javascript.info: Event loop</a> · microtasks vs macrotasks, with exercises</li><li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop" target="_blank" rel="noopener">MDN: The event loop</a> · stack, heap and queue model</li></ul>
+</section>
+
+<section id="compare">
+  <h2>Java and JavaScript side by side</h2>
+  <div class="table"><table>
+    <tr><th></th><th>Java (HotSpot JVM)</th><th>JavaScript (V8)</th></tr>
+    <tr><td>Ships as</td><td>Bytecode (<code>.class</code>, <code>.jar</code>)</td><td>Source text</td></tr>
+    <tr><td>First run</td><td>Interpreter</td><td>Ignition interpreter</td></tr>
+    <tr><td>Optimising JIT</td><td>C2 (after C1)</td><td>TurboFan (after Sparkplug / Maglev)</td></tr>
+    <tr><td>Types</td><td>Static, checked by <code>javac</code></td><td>Dynamic, learned from feedback</td></tr>
+    <tr><td>Memory freed by</td><td>Generational GC (G1, ZGC)</td><td>Generational GC (Orinoco)</td></tr>
+    <tr><td>Concurrency</td><td>Many threads, shared memory, locks</td><td>One thread + event loop; workers share nothing</td></tr>
+    <tr><td>Typical leak</td><td>Static collections, caches, <code>ThreadLocal</code></td><td>Listeners, timers, detached DOM, closures</td></tr>
+  </table></div>
+</section>
+</div>
+
 <footer>Good night. Tomorrow morning: the same rules, new questions.</footer>
 </div>
+<script>
+(function () {
+  var tabs = document.querySelectorAll('[role="tab"]');
+  function show(id) {
+    tabs.forEach(function (t) {
+      var on = t.getAttribute('aria-controls') === id;
+      t.setAttribute('aria-selected', on);
+      document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+    });
+  }
+  tabs.forEach(function (t) {
+    t.addEventListener('click', function () {
+      var id = t.getAttribute('aria-controls');
+      show(id);
+      try { history.replaceState(null, '', '#' + id); } catch (e) {}
+    });
+  });
+  function fromHash() {
+    var h = location.hash.slice(1); if (!h) return;
+    var el = document.getElementById(h); if (!el) return;
+    var panel = el.closest('.panel'); if (panel) show(panel.id);
+  }
+  window.addEventListener('hashchange', fromHash);
+  fromHash();
+})();
+</script>
 </body>
 </html>
