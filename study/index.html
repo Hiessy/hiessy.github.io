@@ -49,6 +49,8 @@
   th { color: var(--muted); font-weight: 600; font-size: 13px; }
   .kw { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
   .kw span { font-size: 13px; padding: 2px 8px; border: 1px solid var(--line); border-radius: 6px; }
+  .more li { font-size: 15px; }
+  .more a { color: var(--accent); }
   footer { color: var(--muted); font-size: 14px; text-align: center; margin-top: 28px; }
 </style>
 </head>
@@ -85,6 +87,8 @@
   </ol>
   <p>The cleanup is a <b>closure</b>: it remembers the values from the render that created it, which is why it says <code>stop A</code>.</p>
   <div class="kw"><span>render</span><span>commit</span><span>mount</span><span>unmount</span><span>dependency array</span><span>cleanup</span><span>closure</span></div>
+  <h3>Go deeper</h3>
+  <ul class="more"><li><a href="https://react.dev/learn/synchronizing-with-effects" target="_blank" rel="noopener">react.dev: Synchronizing with Effects</a> · the official walkthrough of effects and cleanup</li><li><a href="https://react.dev/learn/lifecycle-of-reactive-effects" target="_blank" rel="noopener">react.dev: Lifecycle of Reactive Effects</a> · why deps decide when effects re-run</li><li><a href="https://react.dev/learn/you-might-not-need-an-effect" target="_blank" rel="noopener">react.dev: You Might Not Need an Effect</a> · common interview follow-up</li></ul>
 </section>
 
 <section id="probes">
@@ -105,6 +109,8 @@
     <li>Never ready → rollout marked failed after <code>progressDeadlineSeconds</code> → a person or pipeline runs <code>oc rollout undo</code>.</li>
   </ol>
   <div class="kw"><span>image registry</span><span>readiness probe</span><span>liveness probe</span><span>Service endpoints</span><span>rolling update</span><span>oc rollout undo</span></div>
+  <h3>Go deeper</h3>
+  <ul class="more"><li><a href="https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/" target="_blank" rel="noopener">Kubernetes: Liveness, Readiness and Startup Probes</a> · examples of all three probes</li><li><a href="https://kubernetes.io/docs/concepts/workloads/controllers/deployment/" target="_blank" rel="noopener">Kubernetes: Deployments</a> · rolling updates, progress deadline, rollback</li></ul>
 </section>
 
 <section id="xss">
@@ -120,6 +126,8 @@
   Secure   → sent over HTTPS only      (man-in-the-middle, session hijacking)
   SameSite → not sent on cross-site POST (CSRF)</code></pre>
   <div class="kw"><span>exfiltration</span><span>cross-site request forgery</span><span>HttpOnly</span><span>SameSite=Lax</span><span>CSP</span></div>
+  <h3>Go deeper</h3>
+  <ul class="more"><li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">OWASP: XSS Prevention Cheat Sheet</a> · output encoding, CSP</li><li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">OWASP: CSRF Prevention Cheat Sheet</a> · SameSite, CSRF tokens</li><li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies" target="_blank" rel="noopener">MDN: Using HTTP cookies</a> · HttpOnly, Secure, SameSite explained</li></ul>
 </section>
 
 <section id="flex">
@@ -136,6 +144,8 @@
     <li>Values: <code>flex-start</code>, <code>center</code>, <code>flex-end</code>; justify also has <code>space-between</code> / <code>space-around</code> / <code>space-evenly</code>.</li>
     <li><code>align-content</code> only acts on <b>wrapped lines</b>; single items use <code>align-items</code>.</li>
   </ul>
+  <h3>Go deeper</h3>
+  <ul class="more"><li><a href="https://flexboxfroggy.com/" target="_blank" rel="noopener">Flexbox Froggy</a> · a 10-minute game that drills justify-content and align-items</li><li><a href="https://css-tricks.com/snippets/css/a-guide-to-flexbox/" target="_blank" rel="noopener">CSS-Tricks: A Complete Guide to Flexbox</a> · visual cheat sheet of every property</li><li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_flexible_box_layout/Basic_concepts_of_flexbox" target="_blank" rel="noopener">MDN: Basic concepts of flexbox</a> · main axis vs cross axis</li></ul>
 </section>
 
 <section id="idem">
@@ -149,6 +159,8 @@
     <li>Server finds the key → creates nothing → replays the same <code>201</code> and <code>Location</code>.</li>
   </ol>
   <p><code>Idempotency-Key</code> goes in the request; <code>Location</code> comes back in the response and holds the server's id, not the UUID.</p>
+  <h3>Go deeper</h3>
+  <ul class="more"><li><a href="https://docs.stripe.com/api/idempotent_requests" target="_blank" rel="noopener">Stripe: Idempotent requests</a> · the classic real-world implementation</li><li><a href="https://datatracker.ietf.org/doc/draft-ietf-httpapi-idempotency-key-header/" target="_blank" rel="noopener">IETF draft: The Idempotency-Key HTTP header</a> · the proposed standard</li></ul>
 </section>
 
 <section id="hash">
@@ -161,6 +173,8 @@
     <li>Both match → value; otherwise <code>null</code>.</li>
   </ol>
   <p>Equal objects must have equal hash codes. Keys should be immutable: <code>final</code> fields or a <code>record</code>.</p>
+  <h3>Go deeper</h3>
+  <ul class="more"><li><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Map.html" target="_blank" rel="noopener">Javadoc: java.util.Map</a> · see the warning about mutable keys</li></ul>
 </section>
 
 <section id="tdd">
@@ -171,6 +185,8 @@
     <li>"Over $10,000": ask whether it's inclusive, then test <code>10,000.00 → false</code> and <code>10,000.01 → true</code>. Money is <code>BigDecimal</code>.</li>
     <li>Driver: tactics, types and narrates. Navigator: strategy, next test, edge cases, design.</li>
   </ul>
+  <h3>Go deeper</h3>
+  <ul class="more"><li><a href="https://martinfowler.com/bliki/TestDrivenDevelopment.html" target="_blank" rel="noopener">Martin Fowler: Test Driven Development</a> · short, the red-green-refactor loop</li><li><a href="https://martinfowler.com/articles/on-pair-programming.html" target="_blank" rel="noopener">martinfowler.com: On Pair Programming</a> · driver/navigator and other styles</li></ul>
 </section>
 
 <section id="tx">
@@ -182,12 +198,16 @@
     <li>Each repository call commits on its own; the exception rolls nothing back.</li>
   </ol>
   <p>Fix 1: <code>@Transactional</code> on <code>approveAll</code> → all or nothing. Fix 2: move <code>approve</code> to another bean → one transaction per item.</p>
+  <h3>Go deeper</h3>
+  <ul class="more"><li><a href="https://docs.spring.io/spring-framework/reference/data-access/transaction/declarative/tx-decl-explained.html" target="_blank" rel="noopener">Spring docs: Declarative transaction implementation</a> · the proxy diagram and the self-invocation note</li></ul>
 </section>
 
 <section id="race">
   <h2>Lost updates</h2>
   <p class="rule"><code>count++</code> is a read-modify-write, not atomic. <code>volatile</code> gives visibility, never atomicity.</p>
   <p>Fixes: <code>AtomicInteger.incrementAndGet()</code> (lock-free CAS), a <code>synchronized</code> method, or <code>LongAdder</code> under heavy contention.</p>
+  <h3>Go deeper</h3>
+  <ul class="more"><li><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/atomic/AtomicInteger.html" target="_blank" rel="noopener">Javadoc: AtomicInteger</a> · incrementAndGet, compareAndSet</li></ul>
 </section>
 
 <footer>Good night. Tomorrow morning: the same rules, new questions.</footer>
