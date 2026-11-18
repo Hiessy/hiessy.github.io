@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bedtime Review</title>
+<meta name="description" content="Short review sheet of Java, Spring, React, CSS, web security and platform concepts.">
+<style>
+  :root {
+    --bg: #f5f6f8; --card: #ffffff; --ink: #1d2430; --muted: #5b6676;
+    --accent: #3d6a9e; --accent-soft: #e6eef7; --code: #eef1f5; --line: #dde2e9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14181e; --card: #1c222b; --ink: #e4e8ee; --muted: #9aa5b4;
+      --accent: #8cb4e0; --accent-soft: #233243; --code: #252d38; --line: #2e3744;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14181e; --card: #1c222b; --ink: #e4e8ee; --muted: #9aa5b4;
+    --accent: #8cb4e0; --accent-soft: #233243; --code: #252d38; --line: #2e3744;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
+  header h1 { margin: 0 0 4px; font-size: 28px; }
+  header p { margin: 0; color: var(--muted); }
+  nav { margin: 20px 0 28px; display: flex; flex-wrap: wrap; gap: 8px; }
+  nav a { font-size: 14px; padding: 4px 10px; border-radius: 999px; background: var(--accent-soft);
+          color: var(--accent); text-decoration: none; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+            padding: 20px 22px; margin-bottom: 18px; }
+  h2 { margin: 0 0 6px; font-size: 20px; }
+  .rule { margin: 0 0 12px; padding: 10px 14px; border-left: 4px solid var(--accent);
+          background: var(--accent-soft); border-radius: 0 8px 8px 0; font-weight: 600; }
+  h3 { font-size: 14px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted);
+       margin: 16px 0 6px; }
+  ol, ul { margin: 0; padding-left: 22px; }
+  li { margin: 3px 0; }
+  code { font: 14px ui-monospace, Consolas, monospace; background: var(--code);
+         padding: 1px 5px; border-radius: 4px; }
+  pre { background: var(--code); padding: 12px 14px; border-radius: 8px; overflow-x: auto;
+        font: 13.5px/1.5 ui-monospace, Consolas, monospace; margin: 8px 0; }
+  pre code { background: none; padding: 0; }
+  .table { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; margin: 6px 0; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 13px; }
+  .kw { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .kw span { font-size: 13px; padding: 2px 8px; border: 1px solid var(--line); border-radius: 6px; }
+  footer { color: var(--muted); font-size: 14px; text-align: center; margin-top: 28px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Bedtime review</h1>
+  <p>Wednesday, 18 November. Read once, then say each rule out loud.</p>
+</header>
+
+<nav>
+  <a href="#react">React effects</a><a href="#probes">Probes</a><a href="#xss">XSS vs CSRF</a>
+  <a href="#flex">Flexbox</a><a href="#idem">Idempotency</a><a href="#hash">Hash keys</a>
+  <a href="#tdd">TDD</a><a href="#tx">Transactions</a><a href="#race">Races</a>
+</nav>
+
+<section id="react">
+  <h2>React: when effects run</h2>
+  <p class="rule">Events change state, state causes renders, renders run effects. The dependency array is a filter, not a trigger.</p>
+  <div class="table"><table>
+    <tr><th>Moment</th><th>Deps compared</th><th>Logged</th></tr>
+    <tr><td>Mount</td><td>first render</td><td><code>start A</code></td></tr>
+    <tr><td>Re-render, still A</td><td><code>["A"]</code> vs <code>["A"]</code>: same</td><td>nothing</td></tr>
+    <tr><td>A → B</td><td><code>["A"]</code> vs <code>["B"]</code>: changed</td><td><code>stop A</code>, then <code>start B</code></td></tr>
+    <tr><td>Unmount</td><td>-</td><td><code>stop B</code></td></tr>
+  </table></div>
+  <h3>Steps in order</h3>
+  <ol>
+    <li>Props or state change → component re-renders.</li>
+    <li>React commits the DOM, the browser paints.</li>
+    <li>React compares each dependency with the previous render (<code>Object.is</code>).</li>
+    <li>Changed → run the <b>previous</b> effect's cleanup, then the new effect.</li>
+    <li>Unmount → run the last cleanup.</li>
+  </ol>
+  <p>The cleanup is a <b>closure</b>: it remembers the values from the render that created it, which is why it says <code>stop A</code>.</p>
+  <div class="kw"><span>render</span><span>commit</span><span>mount</span><span>unmount</span><span>dependency array</span><span>cleanup</span><span>closure</span></div>
+</section>
+
+<section id="probes">
+  <h2>Kubernetes / OpenShift probes</h2>
+  <p class="rule">Readiness controls traffic. Liveness controls restarts. Neither rolls anything back.</p>
+  <div class="table"><table>
+    <tr><th>Probe</th><th>Question</th><th>On failure</th></tr>
+    <tr><td>Readiness</td><td>Can it take traffic now?</td><td>Kept out of the Service endpoints, not restarted</td></tr>
+    <tr><td>Liveness</td><td>Is it still alive?</td><td>Container killed and restarted (<code>CrashLoopBackOff</code> if it keeps failing)</td></tr>
+    <tr><td>Startup</td><td>Has it finished starting?</td><td>Holds the other two off during slow warm-up</td></tr>
+  </table></div>
+  <h3>The release pipeline</h3>
+  <ol>
+    <li>Jenkins builds the <b>container image</b> from the <b>Dockerfile</b>.</li>
+    <li>Pushes <code>app:2.0</code> to the <b>image registry</b>.</li>
+    <li>Updates the Deployment manifest to that tag; OpenShift pulls the image.</li>
+    <li>Rolling update: old pods keep serving until new pods pass readiness.</li>
+    <li>Never ready → rollout marked failed after <code>progressDeadlineSeconds</code> → a person or pipeline runs <code>oc rollout undo</code>.</li>
+  </ol>
+  <div class="kw"><span>image registry</span><span>readiness probe</span><span>liveness probe</span><span>Service endpoints</span><span>rolling update</span><span>oc rollout undo</span></div>
+</section>
+
+<section id="xss">
+  <h2>XSS vs CSRF</h2>
+  <p class="rule">XSS runs on your site, so it can read storage. CSRF runs on another site and only rides the cookie the browser sends automatically.</p>
+  <div class="table"><table>
+    <tr><th>Token stored in</th><th>XSS can steal it?</th><th>CSRF possible?</th></tr>
+    <tr><td><code>localStorage</code> + header</td><td>Yes: <code>localStorage.getItem()</code>, then exfiltrate</td><td>No, the header is never added automatically</td></tr>
+    <tr><td><code>HttpOnly</code> cookie</td><td>No: invisible to <code>document.cookie</code></td><td>Yes, unless <code>SameSite</code> or a CSRF token</td></tr>
+  </table></div>
+  <pre><code>Set-Cookie: session=abc; HttpOnly; Secure; SameSite=Lax
+  HttpOnly → hidden from scripts       (XSS token theft)
+  Secure   → sent over HTTPS only      (man-in-the-middle, session hijacking)
+  SameSite → not sent on cross-site POST (CSRF)</code></pre>
+  <div class="kw"><span>exfiltration</span><span>cross-site request forgery</span><span>HttpOnly</span><span>SameSite=Lax</span><span>CSP</span></div>
+</section>
+
+<section id="flex">
+  <h2>Flexbox alignment</h2>
+  <p class="rule">Find the direction first. <code>justify-content</code> = main axis, <code>align-items</code> = cross axis. Values say start and end, never top or bottom.</p>
+  <pre><code>.box {
+  display: flex;
+  flex-direction: column;     /* main axis → vertical   */
+  justify-content: flex-end;  /* main axis: bottom      */
+  align-items: center;        /* cross axis: middle     */
+}</code></pre>
+  <ul>
+    <li><code>row</code> (default): main horizontal, cross vertical. <code>column</code>: the other way round.</li>
+    <li>Values: <code>flex-start</code>, <code>center</code>, <code>flex-end</code>; justify also has <code>space-between</code> / <code>space-around</code> / <code>space-evenly</code>.</li>
+    <li><code>align-content</code> only acts on <b>wrapped lines</b>; single items use <code>align-items</code>.</li>
+  </ul>
+</section>
+
+<section id="idem">
+  <h2>Idempotent POST</h2>
+  <p class="rule">The client generates the key once per action; the server looks it up and replays the stored response.</p>
+  <ol>
+    <li>User taps Submit → app generates a UUID <b>once</b>.</li>
+    <li><code>POST /claims</code> with <code>Idempotency-Key: 9b2f…</code>.</li>
+    <li>Server has no record → creates claim 555 → stores <code>key → 201, Location: /claims/555</code>.</li>
+    <li>Response lost; app retries with the <b>same</b> key.</li>
+    <li>Server finds the key → creates nothing → replays the same <code>201</code> and <code>Location</code>.</li>
+  </ol>
+  <p><code>Idempotency-Key</code> goes in the request; <code>Location</code> comes back in the response and holds the server's id, not the UUID.</p>
+</section>
+
+<section id="hash">
+  <h2>HashMap keys</h2>
+  <p class="rule"><code>get</code> recomputes the hash from the key's current fields. Mutate a key after <code>put</code> and the entry becomes unreachable.</p>
+  <ol>
+    <li>Call <code>key.hashCode()</code> now.</li>
+    <li>Pick the bucket from that hash.</li>
+    <li>Compare the stored hash, then call <code>equals</code>.</li>
+    <li>Both match → value; otherwise <code>null</code>.</li>
+  </ol>
+  <p>Equal objects must have equal hash codes. Keys should be immutable: <code>final</code> fields or a <code>record</code>.</p>
+</section>
+
+<section id="tdd">
+  <h2>TDD and pairing</h2>
+  <p class="rule">Ask the clarifying question, then test the exact edge where the answer flips.</p>
+  <ul>
+    <li><b>Red</b>: one failing test. <b>Green</b>: minimum code. <b>Refactor</b>: clean up with tests green.</li>
+    <li>"Over $10,000": ask whether it's inclusive, then test <code>10,000.00 → false</code> and <code>10,000.01 → true</code>. Money is <code>BigDecimal</code>.</li>
+    <li>Driver: tactics, types and narrates. Navigator: strategy, next test, edge cases, design.</li>
+  </ul>
+</section>
+
+<section id="tx">
+  <h2>@Transactional and self-invocation</h2>
+  <p class="rule">The proxy does the work, not the annotation. A call through <code>this</code> never reaches the proxy.</p>
+  <ol>
+    <li>Controller → proxy<code>.approveAll()</code>: not transactional, just forwarded.</li>
+    <li><code>approveAll</code> calls <code>this.approve(7)</code>: self-invocation, no transaction.</li>
+    <li>Each repository call commits on its own; the exception rolls nothing back.</li>
+  </ol>
+  <p>Fix 1: <code>@Transactional</code> on <code>approveAll</code> → all or nothing. Fix 2: move <code>approve</code> to another bean → one transaction per item.</p>
+</section>
+
+<section id="race">
+  <h2>Lost updates</h2>
+  <p class="rule"><code>count++</code> is a read-modify-write, not atomic. <code>volatile</code> gives visibility, never atomicity.</p>
+  <p>Fixes: <code>AtomicInteger.incrementAndGet()</code> (lock-free CAS), a <code>synchronized</code> method, or <code>LongAdder</code> under heavy contention.</p>
+</section>
+
+<footer>Good night. Tomorrow morning: the same rules, new questions.</footer>
+</div>
+</body>
+</html>
