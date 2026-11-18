@@ -14,7 +14,7 @@ import * as THREE from "three";
 import { H, K, KZ, S, touch } from "./core.js";
 import { bx, cy, merge, place, zAt } from "./geometry.js";
 import { M, mat } from "./materials.js";
-import { spanOf } from "./walls.js";
+import { inWall, spanOf } from "./walls.js";
 
 const POOL = touch ? 4 : 8;
 
@@ -41,7 +41,9 @@ function circuit(id) {
 /* The group a lamp is built into, or undefined for any other piece. */
 export function lampGroup(p, at) {
   if (!isLamp(p)) return undefined;
-  return circuit(circuitAt(at[0], at[1], p.level)).group;
+  const c = circuit(circuitAt(at[0], at[1], p.level));
+  if (p.type === "chandelier" || p.type === "pendant") c.ceiling = true;
+  return c.group;
 }
 
 /* A flush ceiling light: a white disc that glows. */
@@ -74,7 +76,45 @@ function middleOf(poly) {
   return best || c;
 }
 
-/* Every room gets a ceiling light if it has no lamp, a switch beside a door,
+/* Where a room's switch goes: on the wall beside the jamb of a door into
+   it, on the room's own side, on a stretch of real wall (not past the
+   room's corner, not over another opening). Inner doors first, then the
+   doors out to balconies and the garden. */
+const KINDS = [/^(door|double|open)$/, /glass|slide/];
+function switchSpot(id, level) {
+  for (const kind of KINDS) for (const gap of [0.2, 0.13, 0.08]) {
+    for (const o of H.openings) {
+      if (o.level !== level || !kind.test(o.kind)) continue;
+      const sp = spanOf(o), dx = sp[1][0] - sp[0][0], dy = sp[1][1] - sp[0][1], len = Math.hypot(dx, dy) || 1;
+      const ux = dx / len, uy = dy / len;
+      const mid = [(sp[0][0] + sp[1][0]) / 2, (sp[0][1] + sp[1][1]) / 2];
+      for (const side of [1, -1]) {
+        const nx = -uy * side, ny = ux * side;
+        // a door into this room, from this side
+        if (circuitAt(mid[0] + nx * (o.t / 2 + 0.2), mid[1] + ny * (o.t / 2 + 0.2), level) !== id) continue;
+        for (const end of [[sp[0], -1], [sp[1], 1]]) {
+          const j = end[0], along = end[1];
+          const c0 = [j[0] + ux * along * gap, j[1] + uy * along * gap];
+          // walk out from the wall's middle to its face on this side
+          let f = -1;
+          for (let d = 0; d <= 0.4; d += 0.01) if (!inWall(c0[0] + nx * d, c0[1] + ny * d, level)) { f = d; break; }
+          if (f <= 0) continue;
+          const face = [c0[0] + nx * f, c0[1] + ny * f];
+          if (circuitAt(face[0] + nx * 0.25, face[1] + ny * 0.25, level) !== id) continue;
+          // the whole plate backed by wall, and the room in front of all of it
+          const ok = [-0.045, 0, 0.045].every((s) => inWall(face[0] + ux * s - nx * 0.03, face[1] + uy * s - ny * 0.03, level) &&
+            !inWall(face[0] + ux * s + nx * 0.03, face[1] + uy * s + ny * 0.03, level) &&
+            circuitAt(face[0] + ux * s + nx * 0.25, face[1] + uy * s + ny * 0.25, level) === id);
+          if (!ok) continue;
+          return { at: [face[0] + nx * 0.002, face[1] + ny * 0.002], nx, ny };
+        }
+      }
+    }
+  }
+  return null;
+}
+
+/* Every room gets a ceiling light (see below), a switch beside a door,
    and the place its light shines from. */
 function wireRooms() {
   H.rooms.forEach((r) => {
@@ -86,22 +126,18 @@ function wireRooms() {
     const xs = poly.map((q) => q[0]), ys = poly.map((q) => q[1]);
     c.reach = Math.hypot(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) / 2 + 0.6;
     c.level = r.level;
-    if (!c.group.children.length) place(ceilingLight((ceil - floor) * KZ), m[0], m[1], r.level, 0, c.group);
-    // the switch: on the wall beside the jamb of a door into the room, on the room's side
-    const door = H.openings.filter((o) => o.level === r.level && /door|double|open|glass|slide/.test(o.kind)).map((o) => {
-      const sp = spanOf(o), dx = sp[1][0] - sp[0][0], dy = sp[1][1] - sp[0][1], len = Math.hypot(dx, dy) || 1, nx = -dy / len, ny = dx / len;
-      const mid = [(sp[0][0] + sp[1][0]) / 2, (sp[0][1] + sp[1][1]) / 2], off = o.t / 2 + 0.2;
-      const s = circuitAt(mid[0] + nx * off, mid[1] + ny * off, o.level) === id ? 1 : circuitAt(mid[0] - nx * off, mid[1] - ny * off, o.level) === id ? -1 : 0;
-      return s ? { o, sp, ux: dx / len, uy: dy / len, nx: nx * s, ny: ny * s } : null;
-    }).filter(Boolean)[0];
-    if (!door) return;
-    const j = door.sp[0], k = door.o.t / 2 + 0.006;
-    const at = [j[0] - door.ux * 0.18 + door.nx * k, j[1] - door.uy * 0.18 + door.ny * k];
+    // a ceiling light where none hangs: indoors even beside table, bedside
+    // and wall lamps (they don't light a room on their own)
+    if (!c.group.children.length || (!c.ceiling && !/balcony|terrace|covered/.test(r.kind || ""))) place(ceilingLight((ceil - floor) * KZ), m[0], m[1], r.level, 0, c.group);
+    const sw = switchSpot(id, r.level);
+    if (!sw) return;
     const plate = switchPlate();
     plate.position.y = 1.15;                // 1.15 m above the floor, true size
     const holder = new THREE.Group();
     holder.add(plate);
-    place(holder, at[0], at[1], r.level, Math.atan2(door.nx, -door.ny) * 180 / Math.PI + 180, c.group);
+    // the plate's face looks along local -z, which place() turns to +y at 0°
+    place(holder, sw.at[0], sw.at[1], r.level, Math.atan2(-sw.nx, sw.ny) * 180 / Math.PI, c.group);
+    c.switchAt = sw.at;
     c.sw = true;
   });
 }
@@ -129,7 +165,7 @@ export function finishLights() {
     const merged = merge(c.group);
     S.world.add(merged);
     const light = {
-      isLight: true, room: c.room, glows: c.glows, points: c.points, parts: merged.children, pos: c.pos, level: c.level, switch: c.sw, reach: c.reach,
+      isLight: true, room: c.room, switchAt: c.switchAt, glows: c.glows, points: c.points, parts: merged.children, pos: c.pos, level: c.level, switch: c.sw, reach: c.reach,
       get on() { return c.on; },
       set(on) {
         c.on = on;

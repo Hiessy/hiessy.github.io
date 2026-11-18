@@ -100,12 +100,16 @@ higher than the survey (`K` and `KZ` in `js/walk/core.js`), so rooms and
 doors are easy to move through. All the data and the walking physics stay
 in the survey's meters; only the drawing is stretched (the `S.world`
 group), and furniture, plants and the visitor keep their true size inside
-it. The plan view is unchanged. The survey's narrow doors (under 85 cm)
+it. The plan view is unchanged. The apartment's stair is
+built tread by tread (`flights` in `assets/model/house.js`): a straight run,
+a half turn of winders and a run back to the landing; you walk on the same
+treads that are drawn. The survey's narrow doors (under 85 cm)
 are built 40% wider in the walk, cut out of the wall beside them
 (`widenDoors` in `js/walk/walls.js`).
 
-Every room has lights: its lamps from the photos, or a ceiling light where
-the photos show none, and a switch beside its door. Click a lamp or the
+Every room has lights: its lamps from the photos, a ceiling light indoors
+wherever the photos show none hanging, and a switch beside its door, flat
+on the wall on the room's own side. Click a lamp or the
 switch (or press E looking at it), press L for the room you stand in, or
 use the Lights button for the whole house (`js/walk/lights.js`). A few
 point lights go to the lit rooms nearest you, each reaching just past its

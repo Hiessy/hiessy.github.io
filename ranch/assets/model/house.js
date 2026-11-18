@@ -199,7 +199,7 @@
     ],
     tree: { c: [-25.0, 19.0], r: 3.1 },
     statue: [-29.6, 20.9],
-    bench: [-21.8, 20.4],
+    bench: [-28.75, 20.05],
     hedge: [[-28.2, 2.75], [-37.5, 3.6]]      // the survey's "cerco verde" along the south line
   };
 
@@ -245,6 +245,17 @@
     { id: "aptstair", path: [[-2.05, 14.35], [-2.05, 13.12], [-1.25, 13.12], [-1.25, 14.5]], w: 0.78, h1: 0, h2: Z.apt, steps: 16, wood: true,
       // handrail: along the upper flight's open side, from the turn to the landing
       top: [-2.41, 14.5, -0.86, 14.86], well: [-2.412, 12.756, -0.86, 14.547], handrail: [[-1.64, 13.12], [-1.64, 14.5]],
+      // what is drawn and walked on: 15 treads and the landing, 16 risers.
+      // A straight run up along the back wall (rect, climbing to `dir`), a
+      // half turn of winders fanned round the inner corner (`turn`, from
+      // one angle to the other, counterclockwise from east), and a straight
+      // run back along the street wall. `solid` runs are built down to the
+      // floor; the last passes over the way in, so it is open below.
+      flights: [
+        { rect: [-2.41, 13.51, -1.65, 14.35], dir: "s", n: 4, solid: true },
+        { turn: [-1.65, 13.51], box: [-2.41, 12.76, -0.86, 13.51], from: 180, to: 360, n: 7, solid: true },
+        { rect: [-1.65, 13.51, -0.86, 14.5], dir: "n", n: 4 }
+      ],
       rails: [[-1.65, 13.45, -1.65, 13.75, 1.75, 4.2], [-1.65, 13.75, -1.65, 14.82, 2.2, 4.2]] },
     { id: "steelstair", path: [[-26.92, 6.45], [-26.92, 4.65]], w: 0.7, h1: 0, h2: Z.terrace, steps: 15, steel: true, rails: [[-27.3, 4.65, -27.3, 6.45, 0.5, 4.2]] }
   ];

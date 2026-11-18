@@ -415,10 +415,11 @@ export const BUILD = {
     return g;
   },
   /* A table with its chairs. style: the chairs (see seatOf); cloth: a
-     tablecloth's colour; glass: a glass top; vase: flowers in the middle. */
+     tablecloth's colour; top, legs: their colours; glass: a glass top; vase:
+     flowers in the middle. */
   dining(p) {
     const g = new THREE.Group(), w = p.w || 1.0, d = p.d || w;
-    const leg = p.metal ? M.green : p.wood ? M.light : M.wood;
+    const leg = p.legs ? mat(p.legs, { roughness: 0.6 }) : p.metal ? M.green : p.wood ? M.light : M.wood;
     if (p.round) {
       cy(g, w / 2, w / 2, 0.04, 0, 0.74, 0, p.metal ? M.white : M.wood, 20);
       cy(g, 0.04, 0.04, 0.72, 0, 0.36, 0, leg, 8);

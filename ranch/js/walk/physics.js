@@ -3,11 +3,63 @@ import { BODY, EYE, F, GRAVITY, H, K, KZ, RADIUS, S, STEP } from "./core.js";
 import { inside } from "./geometry.js";
 import { hud, setMode } from "./hud.js";
 
+/* A stair built of `flights` (see house.js): each tread's outline in the
+   plan, the height of its top (h1) and of the one below it (h0), and how
+   far across it a point is (0 at its front edge, 1 at its back), so that
+   walking up is a smooth slope through the treads' noses. */
+export function treadsOf(r) {
+  if (r.treads) return r.treads;
+  const total = r.flights.reduce((n, f) => n + f.n, 0), rise = (r.h2 - r.h1) / (total + 1), out = [];
+  let k = 0;
+  const add = (poly, frac) => { out.push({ poly, frac, h0: r.h1 + rise * k, h1: r.h1 + rise * (k + 1) }); k++; };
+  r.flights.forEach((f) => {
+    if (f.rect) {
+      const [x1, y1, x2, y2] = f.rect, n = f.n;
+      for (let i = 0; i < n; i++) {
+        // climbing toward `dir`: the i-th tread from the run's foot
+        const a = i / n, b = (i + 1) / n;
+        const lerp = (p, q, u) => p + (q - p) * u;
+        let poly, frac;
+        if (f.dir === "s") { const ya = lerp(y2, y1, a), yb = lerp(y2, y1, b); poly = [[x1, yb], [x2, yb], [x2, ya], [x1, ya]]; frac = (x, y) => (ya - y) / (ya - yb); }
+        else if (f.dir === "n") { const ya = lerp(y1, y2, a), yb = lerp(y1, y2, b); poly = [[x1, ya], [x2, ya], [x2, yb], [x1, yb]]; frac = (x, y) => (y - ya) / (yb - ya); }
+        else if (f.dir === "e") { const xa = lerp(x1, x2, a), xb = lerp(x1, x2, b); poly = [[xa, y1], [xb, y1], [xb, y2], [xa, y2]]; frac = (x) => (x - xa) / (xb - xa); }
+        else { const xa = lerp(x2, x1, a), xb = lerp(x2, x1, b); poly = [[xb, y1], [xa, y1], [xa, y2], [xb, y2]]; frac = (x) => (xa - x) / (xa - xb); }
+        add(poly, (x, y) => Math.max(0, Math.min(1, frac(x, y))));
+      }
+    } else if (f.turn) {
+      // winders: wedges between rays from the inner corner, each ray cut
+      // where it leaves the box, with the box's corners between
+      const c = f.turn, [x1, y1, x2, y2] = f.box, D = Math.PI / 180;
+      const hit = (t) => {
+        const dx = Math.cos(t), dy = Math.sin(t);
+        let u = 1e9;
+        if (dx > 1e-9) u = Math.min(u, (x2 - c[0]) / dx); if (dx < -1e-9) u = Math.min(u, (x1 - c[0]) / dx);
+        if (dy > 1e-9) u = Math.min(u, (y2 - c[1]) / dy); if (dy < -1e-9) u = Math.min(u, (y1 - c[1]) / dy);
+        return [c[0] + dx * u, c[1] + dy * u];
+      };
+      const norm = (t) => { while (t < f.from * D - 1e-9) t += 2 * Math.PI; return t; };
+      const corners = [[x1, y1], [x2, y1], [x2, y2], [x1, y2]].map((p) => ({ p, t: norm(Math.atan2(p[1] - c[1], p[0] - c[0])) }));
+      for (let i = 0; i < f.n; i++) {
+        const ta = (f.from + (f.to - f.from) * i / f.n) * D, tb = (f.from + (f.to - f.from) * (i + 1) / f.n) * D;
+        const poly = [c, hit(ta)].concat(corners.filter((q) => q.t > ta + 1e-6 && q.t < tb - 1e-6).sort((p, q) => p.t - q.t).map((q) => q.p), [hit(tb)]);
+        add(poly, (x, y) => Math.max(0, Math.min(1, (norm(Math.atan2(y - c[1], x - c[0])) - ta) / (tb - ta))));
+      }
+    }
+  });
+  r.treads = out;
+  r.rise = rise;
+  return out;
+}
+
 /* The heights a stair gives at (x, y): for each run whose width covers the
    point, the height at the nearest point of its path. A winder passes over
    its own way in, so one point can have two. */
 export function rampHeights(r, x, y) {
   const out = [];
+  if (r.flights) {
+    treadsOf(r).forEach((t) => { if (inside(x, y, t.poly)) out.push(t.h0 + (t.h1 - t.h0) * t.frac(x, y)); });
+    return out;
+  }
   r.segs.forEach((g) => {
     const dx = g.b[0] - g.a[0], dy = g.b[1] - g.a[1];
     const u = Math.max(0, Math.min(1, ((x - g.a[0]) * dx + (y - g.a[1]) * dy) / (g.len * g.len)));

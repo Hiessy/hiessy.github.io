@@ -6,6 +6,7 @@ import { ball, bar, beam3, bx, byId, center, cy, flat, merge, place, quad, rectP
 import { buildLabels } from "./labels.js";
 import { M, TOP_SHADOW, mat, texMat } from "./materials.js";
 import { buildOpenings } from "./openings.js";
+import { rampHeights, treadsOf } from "./physics.js";
 import { buildRoofs } from "./roofs.js";
 import { buildTown } from "./town.js";
 import { tex, texFor } from "./textures.js";
@@ -209,6 +210,11 @@ export function buildScene() {
     collider(a[0], a[1], b[0], b[1], 0, 1.1, 0.04);
   });
 
+  const inFlight = (f, p) => {
+    const b = f.rect || f.box;
+    return p[0] >= b[0] - 1e-6 && p[0] <= b[2] + 1e-6 && p[1] >= b[1] - 1e-6 && p[1] <= b[3] + 1e-6;
+  };
+
   // Stairs: a tread for each riser along the stair's path, a stringer along
   // each straight run, open underneath so the way in passes below.
   H.ramps.forEach((r) => {
@@ -227,7 +233,33 @@ export function buildScene() {
     const tread = r.steel ? mat(0x3a3a3a, { roughness: 0.6, metalness: 0.4 }) : mat(0x8a5a33, { roughness: 0.6 });
     const run = r.len / r.steps, rise = (r.h2 - r.h1) / r.steps;
     const board = r.wood ? mat(0xa8713f, { roughness: 0.55 }) : null;
-    for (let i = 0; i < r.steps; i++) {
+    if (r.flights) {
+      // the solid runs: each tread a block cut to its outline (the winders'
+      // wedges too) down to the floor; the open run over the way in: one
+      // sawtooth piece with a straight soffit under it; a lighter board on
+      // every tread
+      const ts = treadsOf(r);
+      r.flights.forEach((f) => {
+        const own = ts.filter((t) => t.poly.every((p) => inFlight(f, p)));
+        if (f.solid) { own.forEach((t) => S.static.add(slab(t.poly, tread, t.h1 - 0.03, t.h1 - 0.03 - r.h1))); return; }
+        const [x1, y1, x2, y2] = f.rect, ns = f.dir === "n" || f.dir === "s", L = ns ? y2 - y1 : x2 - x1, wide = ns ? x2 - x1 : y2 - y1;
+        const run = L / own.length, T = r.rise + 0.12, z0 = own[0].h1 - 0.03, soffit = (u) => z0 + (r.rise / run) * u - T;
+        const shape = new THREE.Shape();
+        shape.moveTo(0, soffit(0));
+        own.forEach((t, i) => { shape.lineTo(i * run, t.h1 - 0.03); shape.lineTo((i + 1) * run, t.h1 - 0.03); });
+        shape.lineTo(L, soffit(L));
+        shape.closePath();
+        const m = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: wide, bevelEnabled: false }), tread);
+        const at = { n: [x1, y1, 90], s: [x2, y2, 270], e: [x1, y2, 0], w: [x2, y1, 180] }[f.dir];
+        m.position.set(at[0], 0, -at[1]);
+        m.rotation.y = at[2] * Math.PI / 180;
+        m.castShadow = true;
+        m.receiveShadow = true;
+        S.static.add(m);
+      });
+      ts.forEach((t) => S.static.add(slab(t.poly, board, t.h1, 0.03)));
+    }
+    for (let i = 0; i < (r.flights ? 0 : r.steps); i++) {
       const p = at((i + 0.5) * run), top = hAt((i + 1) * run);
       // a wooden stair is built solid: each step a block down past the one
       // below, with a lighter board on top whose nose overhangs the riser;
@@ -251,7 +283,7 @@ export function buildScene() {
     // a steel handrail along an open side, following the flight
     if (r.handrail) {
       const steel = mat(0x1d1d1d, { roughness: 0.4, metalness: 0.5 });
-      const hOf = (x, y) => { const hs = r.segs.map((g) => { const dx = g.b[0] - g.a[0], dy = g.b[1] - g.a[1]; const u = Math.max(0, Math.min(1, ((x - g.a[0]) * dx + (y - g.a[1]) * dy) / (g.len * g.len))); return { d: Math.hypot(x - g.a[0] - u * dx, y - g.a[1] - u * dy), h: hAt(g.s0 + u * g.len) }; }); return hs.sort((p, q) => p.d - q.d)[0].h; };
+      const hOf = r.flights ? (x, y) => Math.max(0, ...rampHeights(r, x + 0.04, y), ...rampHeights(r, x - 0.04, y)) : (x, y) => { const hs = r.segs.map((g) => { const dx = g.b[0] - g.a[0], dy = g.b[1] - g.a[1]; const u = Math.max(0, Math.min(1, ((x - g.a[0]) * dx + (y - g.a[1]) * dy) / (g.len * g.len))); return { d: Math.hypot(x - g.a[0] - u * dx, y - g.a[1] - u * dy), h: hAt(g.s0 + u * g.len) }; }); return hs.sort((p, q) => p.d - q.d)[0].h; };
       const [a, b] = r.handrail, len = Math.hypot(b[0] - a[0], b[1] - a[1]), n = Math.max(2, Math.round(len / 0.35));
       for (let i = 0; i <= n; i++) {
         const x = a[0] + (b[0] - a[0]) * i / n, y = a[1] + (b[1] - a[1]) * i / n, h = hOf(x, y);
@@ -260,7 +292,7 @@ export function buildScene() {
       beam3([a[0], a[1], hOf(a[0], a[1]) + 0.9], [b[0], b[1], hOf(b[0], b[1]) + 0.9], 0.05, 0.04, steel);
       beam3([a[0], a[1], hOf(a[0], a[1]) + 0.45], [b[0], b[1], hOf(b[0], b[1]) + 0.45], 0.03, 0.025, steel);
     }
-    r.segs.forEach((g) => {
+    if (!r.flights) r.segs.forEach((g) => {
       const ux = (g.b[0] - g.a[0]) / g.len, uy = (g.b[1] - g.a[1]) / g.len;
       [-1, 1].forEach((sd) => {
         const k = sd * r.w / 2, ox = -uy * k, oy = ux * k;

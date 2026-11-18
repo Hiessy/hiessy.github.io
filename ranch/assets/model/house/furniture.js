@@ -157,15 +157,17 @@
     { level: 0, type: "seat", at: [-29.6, 3.9], rot: 0, style: "plastic", soft: true },
     { level: 0, type: "car", at: [-35.6, 5.6], rot: 270, color: 0xf2f2f0 },
     { level: 0, type: "car", at: [-35.5, 8.6], rot: 270, color: 0x2b3a55 },
-    // the lawn north of the tracks: the white bench, black slatted chairs
-    // round a white table, the post covered in ivy with flowers round its foot
-    { level: 0, type: "bench", at: [-21.8, 20.4], rot: 180 },
-    { level: 0, type: "dining", at: [-20.4, 20.9], w: 0.8, round: true, chairs: 3, metal: true },
-    { level: 0, type: "seat", at: [-28.3, 19.4], rot: 250, style: "garden", color: IRON },
-    { level: 0, type: "seat", at: [-27.9, 18.3], rot: 290, style: "garden", color: IRON },
-    { level: 0, type: "seat", at: [-28.9, 18.0], rot: 320, style: "garden", color: IRON },
-    { level: 0, type: "ivypost", at: [-31.2, 17.6] },
-    { level: 0, type: "ring", a: [-31.2, 17.6], r: 1.0, colors: [0xe8861c, 0xf0b030] },
+    // the lawn north of the tracks (photos 6 and 7): by the statue the white
+    // bench and the white table with two black slatted chairs, three more
+    // between them and the tree, and the post covered in ivy, flowers round
+    // its foot, a few steps west of the tree
+    { level: 0, type: "bench", at: [-28.75, 20.05], rot: 70 },
+    { level: 0, type: "dining", at: [-27.6, 19.75], w: 0.9, d: 0.6, chairs: 2, top: 0xf2f0ea, legs: 0xf2f0ea, style: "garden", chairColor: IRON },
+    { level: 0, type: "seat", at: [-26.3, 20.75], rot: 100, style: "garden", color: IRON },
+    { level: 0, type: "seat", at: [-26.05, 19.85], rot: 90, style: "garden", color: IRON },
+    { level: 0, type: "seat", at: [-26.45, 18.75], rot: 65, style: "garden", color: IRON },
+    { level: 0, type: "ivypost", at: [-27.7, 17.3] },
+    { level: 0, type: "ring", a: [-27.7, 17.3], r: 1.0, colors: [0xe8861c, 0xf0b030] },
     { level: 0, type: "rail", a: [-33.2, 14.6], b: [-29.6, 15.9] },
     { level: 0, type: "bush", at: [-18.6, 20.6] },
     { level: 0, type: "bush", at: [-26.6, 21.4] },
